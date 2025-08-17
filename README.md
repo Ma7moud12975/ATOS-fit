@@ -1,4 +1,4 @@
-ATOS fit
+# ATOS fit
 
 > A real-time fitness tracking web application that uses TensorFlow.js and pose detection to monitor exercise form, count repetitions, and provide feedback — all through your webcam!
 <img width="1280" height="719" alt="image" src="https://github.com/user-attachments/assets/4f6d373a-55ce-46e1-9a1b-98d279b5a060" />
