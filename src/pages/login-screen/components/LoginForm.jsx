@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSignIn } from '@clerk/clerk-react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 
 const LoginForm = ({ onSubmit, isLoading = false }) => {
   const navigate = useNavigate();
+  const { isLoaded, signIn, setActive } = useSignIn();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
@@ -50,26 +53,34 @@ const LoginForm = ({ onSubmit, isLoading = false }) => {
   const handleSubmit = async (e) => {
     e?.preventDefault();
 
+    if (!isLoaded) return;
     if (!validateForm()) return;
 
-    try {
-      const { validateUser } = await import('../../../utils/db');
-      const user = await validateUser(formData?.email, formData?.password);
-      if (!user) {
-        setErrors({ general: 'Invalid email or password' });
-        return;
-      }
-      localStorage.setItem(
-        'fitcoach_user',
-        JSON.stringify({ id: user.id, email: user.email, name: user.name })
-      );
-    } catch (e) {
-      setErrors({ general: 'Login failed. Please try again.' });
-      return;
-    }
+    setIsSigningIn(true);
 
-    if (onSubmit) await onSubmit(formData);
-    navigate('/dashboard');
+    try {
+      const result = await signIn.create({
+        strategy: "password",
+        identifier: formData.email,
+        password: formData.password,
+      });
+
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+        
+        if (onSubmit) await onSubmit(formData);
+        navigate('/dashboard');
+      } else {
+        // Handle other statuses if needed
+        console.log(JSON.stringify(result, null, 2));
+        setErrors({ general: 'Sign in failed. Please try again.' });
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      setErrors({ general: err.errors?.[0]?.message || 'Invalid email or password' });
+    } finally {
+      setIsSigningIn(false);
+    }
   };
 
   const handleForgotPassword = () => {
@@ -137,12 +148,12 @@ const LoginForm = ({ onSubmit, isLoading = false }) => {
         type="submit"
         variant="default"
         fullWidth
-        loading={isLoading}
-        disabled={isLoading}
+        loading={isSigningIn || isLoading}
+        disabled={isSigningIn || isLoading}
         className="h-12 flex items-center justify-center space-x-2"
       >
         <Icon name="LogIn" size={18} className="text-[#edad45]" />
-        <span>Sign In</span>
+        <span>{isSigningIn ? 'Signing In...' : 'Sign In'}</span>
       </Button>
 
       {/* Forgot Password Link */}

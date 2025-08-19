@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useClerk } from '@clerk/clerk-react';
 import AppHeader from '../../components/ui/AppHeader';
 import SidebarNavigation from '../../components/ui/SidebarNavigation';
 import WelcomeSection from './components/WelcomeSection';
@@ -11,6 +12,7 @@ import QuickActionsCard from './components/QuickActionsCard';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const clerk = useClerk();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('light');
 
@@ -207,10 +209,15 @@ const Dashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('theme');
-    navigate('/login-screen');
+  const handleLogout = async () => {
+    try {
+      await clerk.signOut();
+      // Navigation will be handled by the route protection
+    } catch (error) {
+      console.error('Error signing out:', error);
+      // Fallback navigation in case of error
+      navigate('/login-screen');
+    }
   };
 
   return (

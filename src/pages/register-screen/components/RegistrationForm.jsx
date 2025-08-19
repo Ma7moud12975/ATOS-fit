@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSignUp } from '@clerk/clerk-react';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
@@ -8,8 +9,10 @@ import Icon from '../../../components/AppIcon';
 
 const RegistrationForm = () => {
   const navigate = useNavigate();
+  const { isLoaded, signUp, setActive } = useSignUp();
   const [formData, setFormData] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -22,6 +25,8 @@ const RegistrationForm = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [code, setCode] = useState('');
 
   const fitnessLevelOptions = [
     { value: 'beginner', label: 'Beginner - New to fitness' },
@@ -80,8 +85,12 @@ const RegistrationForm = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData?.fullName?.trim()) {
-      newErrors.fullName = 'Full name is required';
+    if (!formData?.firstName?.trim()) {
+      newErrors.firstName = 'First name is required';
+    }
+
+    if (!formData?.lastName?.trim()) {
+      newErrors.lastName = 'Last name is required';
     }
 
     if (!formData?.email?.trim()) {
@@ -118,60 +127,165 @@ const RegistrationForm = () => {
   const handleSubmit = async (e) => {
     e?.preventDefault();
     
+    if (!isLoaded) return;
     if (!validateForm()) return;
 
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Create user in local DB (fresh profile, no achievements, no avatar)
-      try {
-        const { registerUser, updateUserProfile } = await import('../../../utils/db');
-        const user = await registerUser(formData?.email, formData?.fullName || formData?.email?.split('@')?.[0], formData?.password);
-        // Save fitness preferences to user profile in DB
-        await updateUserProfile(user.id, {
-          fitnessLevel: formData?.fitnessLevel || 'beginner',
-          workoutDuration: formData?.workoutDuration || '30',
-          goals: formData?.goals || [],
-        });
-        // Reset per-user state for a new account (fresh start)
-        localStorage.setItem('fitcoach_user', JSON.stringify({ id: user.id, email: user.email, name: user.name }));
-        localStorage.removeItem('fitcoach_badges');
-        localStorage.removeItem('fitcoach_today_plan');
-      } catch {}
+      // Create user with Clerk
+      await signUp.create({
+        emailAddress: formData.email,
+        password: formData.password,
+      });
 
-      // Navigate to dashboard
-      navigate('/dashboard');
-    } catch (error) {
-      setErrors({ submit: 'Registration failed. Please try again.' });
+      // Send email verification
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      setPendingVerification(true);
+    } catch (err) {
+      console.error("Error:", err);
+      setErrors({ submit: err.errors?.[0]?.message || 'Registration failed. Please try again.' });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSocialRegister = (provider) => {
-    // Mock social registration
+  const onPressVerify = async (e) => {
+    e.preventDefault();
+    if (!isLoaded) return;
+
+    setIsLoading(true);
+
+    try {
+      const completeSignUp = await signUp.attemptEmailAddressVerification({
+        code,
+      });
+
+      if (completeSignUp.status !== "complete") {
+        console.log(JSON.stringify(completeSignUp, null, 2));
+      }
+
+      if (completeSignUp.status === "complete") {
+        await setActive({ session: completeSignUp.createdSessionId });
+        
+        // Save fitness preferences to Supabase after successful Clerk registration
+        try {
+          const { updateUserProfile } = await import('../../../utils/db');
+          await updateUserProfile(completeSignUp.createdUserId, {
+            fitnessLevel: formData?.fitnessLevel || 'beginner',
+            workoutDuration: formData?.workoutDuration || '30',
+            goals: formData?.goals || [],
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+          });
+          
+          // Reset per-user state for a new account (fresh start)
+          localStorage.removeItem('fitcoach_badges');
+          localStorage.removeItem('fitcoach_today_plan');
+        } catch (dbError) {
+          console.error('Error saving user profile:', dbError);
+        }
+
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      setErrors({ submit: err.errors?.[0]?.message || 'Verification failed. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSocialRegister = async (provider) => {
+    if (!isLoaded || isLoading) return;
+    
     console.log(`Registering with ${provider}`);
-    // In real app, would integrate with OAuth providers
+    
+    try {
+      setIsLoading(true);
+      setErrors({}); // Clear any previous errors
+      
+      await signUp.authenticateWithRedirect({
+        strategy: "oauth_google",
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/dashboard"
+      });
+    } catch (err) {
+      console.error("Google authentication error:", err);
+      setErrors({ submit: err.errors?.[0]?.message || 'Google authentication failed. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const passwordValidation = validatePassword(formData?.password);
+
+  // Show verification form if pending verification
+  if (pendingVerification) {
+    return (
+      <form onSubmit={onPressVerify} className="space-y-6">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold text-foreground">Verify your email</h2>
+          <p className="text-sm text-muted-foreground">
+            We've sent a verification code to {formData.email}
+          </p>
+        </div>
+        
+        <Input
+          label="Verification Code"
+          type="text"
+          placeholder="Enter verification code"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          error={errors?.submit}
+          required
+        />
+
+        {errors?.submit && (
+          <div className="p-3 bg-error/10 border border-error/20 rounded-lg">
+            <p className="text-sm text-error">{errors?.submit}</p>
+          </div>
+        )}
+
+        <Button
+          type="submit"
+          variant="default"
+          fullWidth
+          loading={isLoading}
+          disabled={isLoading}
+          className="h-12"
+        >
+          {isLoading ? 'Verifying...' : 'Verify Email'}
+        </Button>
+      </form>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Information */}
       <div className="space-y-4">
-        <Input
-          label="Full Name"
-          type="text"
-          placeholder="Enter your full name"
-          value={formData?.fullName}
-          onChange={(e) => handleInputChange('fullName', e?.target?.value)}
-          error={errors?.fullName}
-          required
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="First Name"
+            type="text"
+            placeholder="Enter your first name"
+            value={formData?.firstName}
+            onChange={(e) => handleInputChange('firstName', e?.target?.value)}
+            error={errors?.firstName}
+            required
+          />
+          
+          <Input
+            label="Last Name"
+            type="text"
+            placeholder="Enter your last name"
+            value={formData?.lastName}
+            onChange={(e) => handleInputChange('lastName', e?.target?.value)}
+            error={errors?.lastName}
+            required
+          />
+        </div>
 
         <Input
           label="Email Address"
@@ -348,6 +462,10 @@ const RegistrationForm = () => {
           <p className="text-sm text-error">{errors?.submit}</p>
         </div>
       )}
+      
+      {/* CAPTCHA Widget */}
+      <div id="clerk-captcha" data-cl-theme="auto" data-cl-size="normal"></div>
+      
       {/* Submit Button */}
       <Button
         type="submit"
@@ -368,26 +486,16 @@ const RegistrationForm = () => {
           <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="flex justify-center">
         <Button
           type="button"
           variant="outline"
           onClick={() => handleSocialRegister('Google')}
           iconName="Chrome"
           iconPosition="left"
-          className="h-11"
+          className="h-11 w-full max-w-xs"
         >
           Google
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => handleSocialRegister('Apple')}
-          iconName="Apple"
-          iconPosition="left"
-          className="h-11"
-        >
-          Apple
         </Button>
       </div>
       {/* Login Link */}

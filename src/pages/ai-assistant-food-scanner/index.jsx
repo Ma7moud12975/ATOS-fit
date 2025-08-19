@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useClerk } from '@clerk/clerk-react';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import AppHeader from '../../components/ui/AppHeader';
@@ -13,6 +14,7 @@ import ScanHistory from './components/ScanHistory';
 
 const AIAssistantFoodScanner = () => {
   const navigate = useNavigate();
+  const clerk = useClerk();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('light');
   const [activeTab, setActiveTab] = useState('chat');
@@ -374,8 +376,15 @@ User message: ${message}`
     setCurrentTheme(currentTheme === 'light' ? 'dark' : 'light');
   };
 
-  const handleLogout = () => {
-    navigate('/login-screen');
+  const handleLogout = async () => {
+    try {
+      await clerk.signOut();
+      // Navigation will be handled by the route protection
+    } catch (error) {
+      console.error('Error signing out:', error);
+      // Fallback navigation in case of error
+      navigate('/login-screen');
+    }
   };
 
   return (
