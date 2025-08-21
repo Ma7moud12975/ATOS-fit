@@ -26,14 +26,14 @@ const UserProfile = () => {
     } else {
       document.documentElement?.classList?.remove('dark');
     }
-    // Load session user from DB (not hardcoded defaults)
+    // Load session user from localStorage (matching onboarding key)
     (async () => {
       try {
-        const session = JSON.parse(localStorage.getItem('fitcoach_user') || 'null');
-        if (session?.id) {
-          const u = await getUserById(session.id);
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const u = JSON.parse(userData);
           setUser({
-            id: u?.id,
+            id: u?.id || u?.principalId,
             name: u?.name || 'New User',
             email: u?.email || '',
             phone: u?.phone || '',
@@ -52,6 +52,10 @@ const UserProfile = () => {
             weight: u?.weight || '',
             fitnessLevel: u?.fitnessLevel || 'beginner',
             primaryGoal: u?.primaryGoal || '',
+            goals: u?.goals || [],
+            workoutFrequency: u?.workoutFrequency || '',
+            preferredWorkoutTime: u?.preferredWorkoutTime || '',
+            availableEquipment: u?.availableEquipment || [],
             totalCaloriesBurned: '0',
             totalWorkoutTime: '0h',
             goalsCompleted: 0
@@ -59,7 +63,10 @@ const UserProfile = () => {
         } else {
           setUser(null);
         }
-      } catch {}
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        setUser(null);
+      }
     })();
   }, []);
 

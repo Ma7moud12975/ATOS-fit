@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import AppHeader from '../../components/ui/AppHeader';
 import SidebarNavigation from '../../components/ui/SidebarNavigation';
 import WelcomeSection from './components/WelcomeSection';
@@ -11,29 +12,50 @@ import QuickActionsCard from './components/QuickActionsCard';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('light');
 
-  // Mock user data
+  // User data from localStorage
   const [user, setUser] = useState({ name: 'New User', email: '', profilePicture: '', fitnessLevel: 'Beginner', goals: [] });
   useEffect(() => {
-    (async () => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
       try {
-        const session = JSON.parse(localStorage.getItem('fitcoach_user') || 'null');
-        if (session?.id) {
-          const { getUserById } = await import('../../utils/db');
-          const u = await getUserById(session.id);
-          setUser({
-            name: u?.name || 'New User',
-            email: u?.email || '',
-            profilePicture: u?.profilePicture || '',
-            fitnessLevel: (u?.fitnessLevel || 'beginner')?.replace(/\b\w/g, c => c.toUpperCase()),
-            goals: u?.goals || []
-          });
-        }
-      } catch {}
-    })();
+        const parsedUser = JSON.parse(userData);
+        setUser({
+          name: parsedUser?.name || 'New User',
+          email: parsedUser?.email || '',
+          profilePicture: parsedUser?.profilePicture || '',
+          fitnessLevel: (parsedUser?.fitnessLevel || 'beginner')?.replace(/\b\w/g, c => c.toUpperCase()),
+          goals: parsedUser?.goals || []
+        });
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
   }, []);
+
+  // Check if user needs to complete onboarding
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      // No user data, redirect to onboarding
+      navigate('/onboarding', { replace: true });
+      return;
+    }
+    
+    try {
+      const user = JSON.parse(userData);
+      // Check if user has completed basic onboarding (name and email)
+      if (!user.name || !user.email) {
+        navigate('/onboarding', { replace: true });
+      }
+    } catch (error) {
+      // Invalid user data, redirect to onboarding
+      navigate('/onboarding', { replace: true });
+    }
+  }, [navigate]);
 
   // Mock exercise data
   const exercises = [
@@ -166,7 +188,7 @@ const Dashboard = () => {
   useEffect(() => {
     (async () => {
       try {
-        const session = JSON.parse(localStorage.getItem('fitcoach_user') || 'null');
+        const session = JSON.parse(localStorage.getItem('user') || 'null');
         if (session?.id) {
           const { db } = await import('../../utils/db');
           const sessions = await db.sessions.where({ userId: session.id }).toArray();
@@ -207,10 +229,17 @@ const Dashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('theme');
-    navigate('/login-screen');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      localStorage.removeItem('user');
+      localStorage.removeItem('theme');
+      navigate('/login-screen');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Still navigate to login even if logout fails
+      navigate('/login-screen');
+    }
   };
 
   return (

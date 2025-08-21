@@ -17,7 +17,7 @@ const ExerciseWorkoutScreen = () => {
   
   // Check authentication on component mount
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('atos_user') || 'null');
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
     if (!user?.id) {
       navigate('/login-screen', { replace: true });
       return;
@@ -196,7 +196,7 @@ const ExerciseWorkoutScreen = () => {
           completed: i.completed
         }));
         try {
-          const user = JSON.parse(localStorage.getItem('fitcoach_user') || '{}');
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
           if (user?.id) {
             await recordWorkoutSession(user.id, sessionItems);
             const stats = await updateAggregateStats(user.id, sessionItems);
@@ -327,7 +327,7 @@ const ExerciseWorkoutScreen = () => {
     (async () => {
       try {
         const { calculateSessionCalories } = await import('../../utils/calories');
-        const user = JSON.parse(localStorage.getItem('atos_user') || '{}');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
         const { total } = calculateSessionCalories(sessionItems, user);
         if (mounted) setCaloriesBurned(total);
       } catch (error) {
@@ -380,7 +380,7 @@ const ExerciseWorkoutScreen = () => {
   const persistSessionAndStats = async () => {
     try {
       const sessionItemsToSave = sessionItems.map(i => ({ ...i }));
-      const sessionUser = JSON.parse(localStorage.getItem('atos_user') || '{}');
+      const sessionUser = JSON.parse(localStorage.getItem('user') || '{}');
       if (sessionUser?.id) {
         const { recordWorkoutSession, updateAggregateStats } = await import('../../utils/db');
         const sessionId = await recordWorkoutSession(sessionUser.id, sessionItemsToSave);

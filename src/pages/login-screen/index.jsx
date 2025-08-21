@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import AuthenticationLayout from '../../components/ui/AuthenticationLayout';
-import LoginForm from './components/LoginForm';
-import SocialLogin from './components/SocialLogin';
-import SecurityBadges from './components/SecurityBadges';
+import InternetIdentityLogin from './components/InternetIdentityLogin';
 
 const LoginScreen = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const { isAuthenticated, loading } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -15,6 +14,26 @@ const LoginScreen = () => {
     const timer = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timer);
   }, []);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !loading) {
+      // Check if user has completed onboarding
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        // If user has basic profile data, go to dashboard, otherwise onboarding
+        if (user.name && user.email) {
+          navigate('/dashboard', { replace: true });
+        } else {
+          navigate('/onboarding', { replace: true });
+        }
+      } else {
+        // New user, redirect to onboarding
+        navigate('/onboarding', { replace: true });
+      }
+    }
+  }, [isAuthenticated, loading, navigate]);
 
   // Enforce dark mode on the login screen only
   useEffect(() => {
@@ -25,92 +44,26 @@ const LoginScreen = () => {
     };
   }, []);
 
-  const handleLogin = async (formData) => {
-    setIsLoading(true);
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock successful login
-      localStorage.setItem('atos_user', JSON.stringify({
-        id: 1,
-        name: 'Alex Johnson',
-        email: formData?.email,
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        loginTime: new Date()?.toISOString()
-      }));
-
-      // Smooth transition to dashboard
-      setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 500);
-      
-    } catch (error) {
-      console.error('Login error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSocialLogin = async (provider) => {
-    setIsLoading(true);
-    
-    try {
-      // Simulate social login
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock successful social login
-      localStorage.setItem('atos_user', JSON.stringify({
-        id: 1,
-        name: 'Alex Johnson',
-        email: `user@${provider?.toLowerCase()}.com`,
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        provider: provider,
-        loginTime: new Date()?.toISOString()
-      }));
-
-      navigate('/dashboard', { replace: true });
-      
-    } catch (error) {
-      console.error('Social login error:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Show loading while auth is initializing
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm text-muted-foreground">Initializing authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
       <AuthenticationLayout
         title="Welcome Back"
-        subtitle="Sign in to continue your fitness journey"
+        subtitle="Sign in securely with Internet Identity"
         showLogo={true}
       >
-        {/* Loading Overlay */}
-        {isLoading && (
-          <div className="absolute inset-0 bg-card/80 backdrop-blur-sm rounded-xl flex items-center justify-center z-50">
-            <div className="flex flex-col items-center space-y-3">
-              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-sm text-muted-foreground">Signing you in...</p>
-            </div>
-          </div>
-        )}
-
-        {/* Login Form */}
-        <LoginForm 
-          onSubmit={handleLogin}
-          isLoading={isLoading}
-        />
-
-        {/* Social Login */}
-        <SocialLogin 
-          onSocialLogin={handleSocialLogin}
-          isLoading={isLoading}
-        />
-
-        {/* Security Badges */}
-       
-       
+        <InternetIdentityLogin />
       </AuthenticationLayout>
     </div>
   );

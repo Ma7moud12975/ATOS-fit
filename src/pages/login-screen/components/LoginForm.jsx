@@ -60,7 +60,7 @@ const LoginForm = ({ onSubmit, isLoading = false }) => {
         return;
       }
       localStorage.setItem(
-        'fitcoach_user',
+        'user',
         JSON.stringify({ id: user.id, email: user.email, name: user.name })
       );
     } catch (e) {

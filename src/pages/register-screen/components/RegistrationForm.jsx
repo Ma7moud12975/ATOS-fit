@@ -137,7 +137,7 @@ const RegistrationForm = () => {
           goals: formData?.goals || [],
         });
         // Reset per-user state for a new account (fresh start)
-        localStorage.setItem('fitcoach_user', JSON.stringify({ id: user.id, email: user.email, name: user.name }));
+        localStorage.setItem('user', JSON.stringify({ id: user.id, email: user.email, name: user.name }));
         localStorage.removeItem('fitcoach_badges');
         localStorage.removeItem('fitcoach_today_plan');
       } catch {}
