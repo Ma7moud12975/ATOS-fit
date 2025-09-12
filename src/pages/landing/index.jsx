@@ -18,19 +18,19 @@ const LandingPage = () => {
         video: "/schools-header-vp9-chrome-1.webm",
         className: "lg:col-start-1 lg:col-span-4 lg:row-start-1 lg:row-span-2 md:col-start-1 md:col-span-8 md:row-start-1 col-start-1 col-span-4 row-start-1",
     },
-    {
-        id: "ai_coach",
-        heading: "AI Coach",
-        body: "Ask about anything fitness-related, from workout plans to nutrition advice, and get instant, personalized answers.",
-        image: "artificial-intelligence.svg",
-        className: "lg:col-start-5 lg:col-span-4 lg:row-start-1 md:col-start-1 md:col-span-4 md:row-start-2 col-start-1 col-span-4 row-start-2 svg-white",
+   {
+      id: "ai_coach",
+      heading: "AI Coach",
+      body: "Ask about anything fitness-related, from workout plans to nutrition advice, and get instant, personalized answers.",
+      image: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/openai.svg",
+      className: "lg:col-start-5 lg:col-span-4 lg:row-start-1 md:col-start-1 md:col-span-4 md:row-start-2 col-start-1 col-span-4 row-start-2 svg-white",
     },
     {
-        id: "food_scanner",
-        heading: "Food Scanner",
-        body: "Instantly identify food items and get detailed nutritional information to stay on top of your diet.",
-        image: "scanner.svg",
-        className: "lg:col-start-5 lg:col-span-4 lg:row-start-2 md:col-start-5 md:col-span-4 md:row-start-2 col-start-1 col-span-4 row-start-3 svg-white",
+      id: "food_scanner",
+      heading: "Food Scanner",
+      body: "Instantly identify food items and get detailed nutritional information to stay on top of your diet.",
+      image: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f50d.svg",
+      className: "lg:col-start-5 lg:col-span-4 lg:row-start-2 md:col-start-5 md:col-span-4 md:row-start-2 col-start-1 col-span-4 row-start-3 svg-white",
     },
     {
         id: "rep_counting",
@@ -188,9 +188,9 @@ const LandingPage = () => {
             <div className={`space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <div className="space-y-6">
                 <h1 className="text-6xl font-bold leading-tight text-white">
-                  PERFECT YOUR FORM.
+                  PERFECT YOUR FORM
                   <br />
-                  <span className="text-[#FF8A00]">MAX YOUR RESULTS.</span>
+                  <span className="text-[#FF8A00]">MAX YOUR RESULTS</span>
                 </h1>
                 <p className="text-xl text-[#E0E0E0] leading-relaxed max-w-lg">
                   Stop wasting workouts with bad form that leads to injuries. A fitness app that's truly yours.
