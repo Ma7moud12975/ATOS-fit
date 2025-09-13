@@ -149,11 +149,11 @@ const AboutPage = () => {
             Meet the <span className="text-[#FF8A00]">ATOSfit</span> Team
           </h1>
           <p className="text-xl text-[#E0E0E0] leading-relaxed mb-12">
-            We're a group of passionate AI students and friends from Delta University in Egypt, 
+            We're a group of passionate Egyptian AI students and friends, 
             united by a shared mission to create technology that genuinely benefits people's lives.
           </p>
           
-          <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8 mb-16">
+          <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8 mb-16 hover:border-[rgba(255,138,0,0.3)] hover:shadow-[0px_0px_40px_rgba(255,138,0,0.1)] transition-all duration-300">
             <h2 className="text-3xl font-semibold text-white mb-4">Our Mission</h2>
             <p className="text-lg text-[#E0E0E0] leading-relaxed">
               To revolutionize fitness and wellness through AI-powered solutions that prioritize user privacy, 
@@ -180,7 +180,7 @@ const AboutPage = () => {
             {teamMembers.map((member, index) => (
               <div
                 key={index}
-                className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8 text-center hover:border-[#FF8A00] transition-all duration-300 hover:shadow-[0px_0px_30px_rgba(255,138,0,0.1)]"
+                className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8 text-center hover:border-[rgba(255,138,0,0.4)] hover:shadow-[0px_0px_40px_rgba(255,138,0,0.15)] transition-all duration-300"
               >
                 <div className="w-20 h-20 bg-[rgba(255,138,0,0.1)] rounded-full flex items-center justify-center mx-auto mb-6">
                   <Icon name="User" size={32} className="text-[#FF8A00]" />
@@ -201,17 +201,17 @@ const AboutPage = () => {
             ))}
           </div>
 
-          {/* University Section */}
-          <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-10 text-center">
+          {/* Education Section */}
+          <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-10 text-center hover:border-[rgba(255,138,0,0.3)] hover:shadow-[0px_0px_40px_rgba(255,138,0,0.1)] transition-all duration-300">
             <div className="flex items-center justify-center space-x-4 mb-6">
               <Icon name="GraduationCap" size={40} className="text-[#FF8A00]" />
-              <h3 className="text-3xl font-semibold text-white">Delta University, Egypt</h3>
+              <h3 className="text-3xl font-semibold text-white">Egyptian AI Students</h3>
             </div>
             <p className="text-lg text-[#E0E0E0] leading-relaxed max-w-3xl mx-auto">
-              We're currently pursuing our studies in Artificial Intelligence at Delta University in Egypt. 
+              We're Egyptian students passionate about Artificial Intelligence and its applications in health and wellness. 
               Our academic journey has provided us with a strong foundation in machine learning, computer vision, 
-              and AI ethics, which we apply directly to building ATOSfit. The collaborative environment at Delta 
-              has taught us the importance of teamwork and diverse perspectives in solving complex problems.
+              and AI ethics, which we apply directly to building ATOSfit. Our diverse backgrounds and collaborative spirit 
+              drive us to create innovative solutions that work for everyone.
             </p>
           </div>
         </div>
@@ -233,7 +233,7 @@ const AboutPage = () => {
             {values.map((value, index) => (
               <div
                 key={index}
-                className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8"
+                className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8 hover:border-[rgba(255,138,0,0.3)] hover:shadow-[0px_0px_40px_rgba(255,138,0,0.1)] transition-all duration-300"
               >
                 <div className="w-16 h-16 bg-[rgba(255,255,255,0.05)] rounded-2xl flex items-center justify-center mb-6">
                   <Icon name={value.icon} size={32} className="text-[#FF8A00]" />
@@ -249,7 +249,7 @@ const AboutPage = () => {
       {/* Journey Section */}
       <section className="relative z-10 px-6 lg:px-8 pb-24 lg:pb-32">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-10">
+          <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-10 hover:border-[rgba(255,138,0,0.3)] hover:shadow-[0px_0px_40px_rgba(255,138,0,0.1)] transition-all duration-300">
             <h2 className="text-4xl font-semibold text-white mb-8 text-center">
               Our Journey
             </h2>

@@ -4,6 +4,7 @@ import Icon from '../../components/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
 import InteractiveImage from '../../components/InteractiveImage';
 
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const { login, loading: authLoading } = useAuth();
@@ -12,32 +13,32 @@ const LandingPage = () => {
 
   const featureWidgets = [
     {
-        id: "real_time_feedback",
-        heading: "Real-Time Feedback & Form Correction",
-        body: "Get immediate and actionable insights that will help you push past plateaus and smash your goals.",
-        video: "/schools-header-vp9-chrome-1.webm",
-        className: "lg:col-start-1 lg:col-span-4 lg:row-start-1 lg:row-span-2 md:col-start-1 md:col-span-8 md:row-start-1 col-start-1 col-span-4 row-start-1",
+      id: "real_time_feedback",
+      heading: "Real-Time Feedback & Form Correction",
+      body: "Get immediate and actionable insights that will help you push past plateaus and smash your goals.",
+      video: "/schools-header-vp9-chrome-1.webm",
+      className: "lg:col-start-1 lg:col-span-4 lg:row-start-1 lg:row-span-2 md:col-start-1 md:col-span-8 md:row-start-1 col-start-1 col-span-4 row-start-1",
     },
-   {
+    {
       id: "ai_coach",
       heading: "AI Coach",
       body: "Ask about anything fitness-related, from workout plans to nutrition advice, and get instant, personalized answers.",
-      image: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/openai.svg",
+      image: "artificial-intelligence.svg",
       className: "lg:col-start-5 lg:col-span-4 lg:row-start-1 md:col-start-1 md:col-span-4 md:row-start-2 col-start-1 col-span-4 row-start-2 svg-white",
     },
     {
       id: "food_scanner",
       heading: "Food Scanner",
       body: "Instantly identify food items and get detailed nutritional information to stay on top of your diet.",
-      image: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f50d.svg",
+      image: "scanner.svg",
       className: "lg:col-start-5 lg:col-span-4 lg:row-start-2 md:col-start-5 md:col-span-4 md:row-start-2 col-start-1 col-span-4 row-start-3 svg-white",
     },
     {
-        id: "rep_counting",
-        heading: "Automatic Rep Counting",
-        body: "Focus on your form, not the count. Our AI automatically tracks your reps with precision.",
-        image: "Gemini_Generated_Image_5ysnl85ysnl85ysn.png",
-        className: "lg:col-start-9 lg:col-span-4 lg:row-start-1 lg:row-span-2 md:col-start-1 md:col-span-8 md:row-start-3 col-start-1 col-span-4 row-start-4",
+      id: "rep_counting",
+      heading: "Automatic Rep Counting",
+      body: "Focus on your form, not the count. Our AI automatically tracks your reps with precision.",
+      image: "Gemini_Generated_Image_5ysnl85ysnl85ysn.png",
+      className: "lg:col-start-9 lg:col-span-4 lg:row-start-1 lg:row-span-2 md:col-start-1 md:col-span-8 md:row-start-3 col-start-1 col-span-4 row-start-4",
     }
   ];
 
@@ -181,28 +182,25 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="relative z-10 py-16 lg:py-20">
+      <section id="home" className="relative z-10 pt-4 pb-12 lg:pt-6 lg:pb-16">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
             {/* Left Content */}
-            <div className={`space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className={`space-y-6 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <div className="space-y-6">
                 <h1 className="text-6xl font-bold leading-tight text-white">
-                  PERFECT YOUR FORM
-                  <br />
-                  <span className="text-[#FF8A00]">MAX YOUR RESULTS</span>
+                  <div className="mb-3">PERFECT FORM</div>
+                  <div className="text-[#FF8A00] mb-4">MAX RESULTS</div>
                 </h1>
                 <p className="text-xl text-[#E0E0E0] leading-relaxed max-w-lg">
-                  Stop wasting workouts with bad form that leads to injuries. A fitness app that's truly yours.
-                  Your video never leaves your device, your identity is secured by the blockchain,
-                  and you have full control over your data.
+                  <span className="text-[#FF8A00] font-semibold">ATOSfit</span> corrects your form in real-time. With privacy-first technology, your video never leaves your device and you have full control of your data.
                 </p>
               </div>
 
               <button
                 onClick={handleGetStarted}
                 disabled={authLoading}
-                className="bg-[#FF8A00] hover:bg-[#E67B00] text-black font-semibold px-8 py-4 rounded-2xl text-lg transition-all duration-300 hover:shadow-[0px_4px_15px_rgba(255,138,0,0.2)] transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-[#FF8A00] hover:bg-[#E67B00] text-black font-semibold px-8 py-4 rounded-2xl text-lg transition-all duration-300 hover:shadow-[0px_4px_15px_rgba(255,138,0,0.2)] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {authLoading ? 'Starting...' : 'Start Your Journey'}
               </button>
@@ -210,7 +208,7 @@ const LandingPage = () => {
 
             {/* Right Content - Interactive iPhone */}
             <div className="relative">
-                <InteractiveImage />
+              <InteractiveImage />
             </div>
           </div>
         </div>
@@ -219,12 +217,12 @@ const LandingPage = () => {
       {/* Features Section Title */}
       <section className="relative z-10 pt-16 lg:pt-20 pb-8">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
-            <h2 className="text-5xl font-semibold text-white mb-6">
-              Why Choose <span className="text-[#FF8A00]">ATOSfit</span>?
-            </h2>
-            <p className="text-xl text-[#E0E0E0] max-w-3xl mx-auto">
-              Discover the revolutionary features that make ATOSfit the ultimate AI-powered fitness companion
-            </p>
+          <h2 className="text-5xl font-semibold text-white mb-6">
+            Why Choose <span className="text-[#FF8A00]">ATOSfit</span>?
+          </h2>
+          <p className="text-xl text-[#E0E0E0] max-w-3xl mx-auto">
+            Discover the revolutionary features that make ATOSfit the ultimate AI-powered fitness companion
+          </p>
         </div>
       </section>
 
@@ -237,17 +235,16 @@ const LandingPage = () => {
               return (
                 <div
                   key={feature.id}
-                  className={`bg-[#1A1A1A] rounded-[32px] ${isLargeWidget ? '' : 'p-6 md:p-8'} flex flex-col text-white transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'} ${feature.className}`}
-                  style={{ transitionDelay: `${index * 150}ms` }}
+                  className={`bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] ${isLargeWidget ? '' : 'p-6 md:p-8'} flex flex-col text-white transition-all duration-300 hover:border-[rgba(255,138,0,0.5)] hover:shadow-[0px_0px_60px_rgba(255,138,0,0.2)] ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'} ${feature.className}`}
                 >
                   {isLargeWidget ? (
                     <div className="relative flex-grow flex flex-col justify-end">
                       {feature.video ? (
-                        <video 
-                          src={feature.video} 
-                          autoPlay 
-                          loop 
-                          muted 
+                        <video
+                          src={feature.video}
+                          autoPlay
+                          loop
+                          muted
                           playsInline
                           className="absolute inset-0 w-full h-full object-cover rounded-[32px]"
                         />
@@ -262,11 +259,23 @@ const LandingPage = () => {
                     </div>
                   ) : (
                     <div className="flex-grow flex flex-col">
-                      <div className="flex justify-between items-start mb-4">
-                        {feature.id === 'food_scanner' && <img src={feature.image} alt={feature.heading} className={`w-16 h-16 object-contain ${feature.className.includes('svg-white') ? 'filter-white' : ''}`} />}
-                        <h3 className="text-3xl font-semibold text-[#FF8A00]">{feature.heading}</h3>
-                        {feature.id === 'ai_coach' && <img src={feature.image} alt={feature.heading} className={`w-16 h-16 object-contain ${feature.className.includes('svg-white') ? 'filter-white' : ''}`} />}
+                      {/* Use a row flex with gap to control spacing between image and heading consistently */}
+                      <div className="flex items-start mb-4 gap-4">
+                        {/* For food_scanner: image on the left, heading next to it */}
+                        {feature.id === 'food_scanner' && (
+                          <img src={feature.image} alt={feature.heading} className={`w-16 h-16 object-contain flex-shrink-0 ${feature.className.includes('svg-white') ? 'filter-white' : ''}`} />
+                        )}
+
+                        <div className="flex-1">
+                          <h3 className="text-3xl font-semibold text-[#FF8A00]">{feature.heading}</h3>
+                        </div>
+
+                        {/* For ai_coach: image on the right */}
+                        {feature.id === 'ai_coach' && (
+                          <img src={feature.image} alt={feature.heading} className={`w-16 h-16 object-contain flex-shrink-0 ${feature.className.includes('svg-white') ? 'filter-white' : ''}`} />
+                        )}
                       </div>
+
                       <p className="text-lg text-[rgba(255,255,255,0.4)] leading-relaxed">{feature.body}</p>
                     </div>
                   )}
@@ -291,7 +300,7 @@ const LandingPage = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
             {/* Local Processing */}
-            <div className={`bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: '100ms' }}>
+            <div className={`bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8 transition-all duration-300 hover:border-[rgba(255,138,0,0.5)] hover:shadow-[0px_0px_60px_rgba(255,138,0,0.2)] ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <div className="text-center">
                 <div className="w-20 h-20 bg-[rgba(255,255,255,0.05)] rounded-2xl flex items-center justify-center mx-auto mb-6">
                   <img src="/ai-secured.svg" alt="AI Secured" className="w-12 h-12 object-contain filter-orange" />
@@ -320,7 +329,7 @@ const LandingPage = () => {
             </div>
 
             {/* Internet Identity */}
-            <div className={`bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: '200ms' }}>
+            <div className={`bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8 transition-all duration-300 hover:border-[rgba(255,138,0,0.5)] hover:shadow-[0px_0px_60px_rgba(255,138,0,0.2)] ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <div className="text-center">
                 <div className="w-20 h-20 bg-[rgba(255,255,255,0.05)] rounded-2xl flex items-center justify-center mx-auto mb-6">
                   <img src="/global-identity.svg" alt="Global Identity" className="w-12 h-12 object-contain filter-orange" />
@@ -349,7 +358,7 @@ const LandingPage = () => {
             </div>
 
             {/* Blockchain Storage */}
-            <div className={`bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: '300ms' }}>
+            <div className={`bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8 transition-all duration-300 hover:border-[rgba(255,138,0,0.5)] hover:shadow-[0px_0px_60px_rgba(255,138,0,0.2)] ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <div className="text-center">
                 <div className="w-20 h-20 bg-[rgba(255,255,255,0.05)] rounded-2xl flex items-center justify-center mx-auto mb-6">
                   <img src="/internet-computer.svg" alt="Internet Computer" className="w-12 h-12 object-contain filter-orange" />
@@ -389,7 +398,7 @@ const LandingPage = () => {
               </p>
               <button
                 onClick={() => navigate('/privacy')}
-                className="bg-[#FF8A00] hover:bg-[#E67B00] text-black font-semibold px-8 py-4 rounded-2xl transition-all duration-300 hover:shadow-[0px_4px_15px_rgba(255,138,0,0.2)] transform hover:scale-105"
+                className="bg-[#FF8A00] hover:bg-[#E67B00] text-black font-semibold px-8 py-4 rounded-2xl transition-all duration-300 hover:shadow-[0px_4px_15px_rgba(255,138,0,0.2)]"
               >
                 Read Our Privacy Policy
               </button>

@@ -158,7 +158,7 @@ const PrivacyPage = () => {
             {privacyFeatures.map((feature, index) => (
               <div
                 key={index}
-                className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8"
+                className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8 hover:border-[rgba(255,138,0,0.3)] hover:shadow-[0px_0px_40px_rgba(255,138,0,0.1)] transition-all duration-300"
               >
                 <div className="w-16 h-16 bg-[rgba(255,255,255,0.05)] rounded-2xl flex items-center justify-center mb-6">
                   <img 
@@ -182,7 +182,7 @@ const PrivacyPage = () => {
           </div>
 
           {/* Detailed Privacy Policy */}
-          <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-10">
+          <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-10 hover:border-[rgba(255,138,0,0.3)] hover:shadow-[0px_0px_40px_rgba(255,138,0,0.1)] transition-all duration-300">
             <h2 className="text-4xl font-semibold text-white mb-8 text-center">
               Complete Privacy Policy
             </h2>

@@ -248,7 +248,7 @@ const PricingPage = () => {
             {plans.map((plan, index) => (
               <div
                 key={plan.name}
-                className={`relative bg-[#1A1A1A] border rounded-[32px] p-8 transition-all duration-300 hover:scale-105 ${
+                className={`relative bg-[#1A1A1A] border rounded-[32px] p-8 transition-all duration-300 hover:border-[rgba(255,138,0,0.4)] hover:shadow-[0px_0px_40px_rgba(255,138,0,0.15)] ${
                   plan.popular 
                     ? 'border-[#FF8A00] shadow-[0px_0px_30px_rgba(255,138,0,0.2)]' 
                     : 'border-[rgba(255,255,255,0.1)]'
@@ -325,7 +325,7 @@ const PricingPage = () => {
             </p>
           </div>
 
-          <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] overflow-hidden">
+          <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] overflow-hidden hover:border-[rgba(255,138,0,0.3)] hover:shadow-[0px_0px_40px_rgba(255,138,0,0.1)] transition-all duration-300">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -381,7 +381,7 @@ const PricingPage = () => {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6">
+            <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6 hover:border-[rgba(255,138,0,0.3)] hover:shadow-[0px_0px_40px_rgba(255,138,0,0.1)] transition-all duration-300">
               <h3 className="text-xl font-medium text-white mb-3">
                 Why is everything free during beta?
               </h3>
@@ -391,7 +391,7 @@ const PricingPage = () => {
               </p>
             </div>
 
-            <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6">
+            <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6 hover:border-[rgba(255,138,0,0.3)] hover:shadow-[0px_0px_40px_rgba(255,138,0,0.1)] transition-all duration-300">
               <h3 className="text-xl font-medium text-white mb-3">
                 When will paid plans become active?
               </h3>
@@ -401,7 +401,7 @@ const PricingPage = () => {
               </p>
             </div>
 
-            <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6">
+            <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6 hover:border-[rgba(255,138,0,0.3)] hover:shadow-[0px_0px_40px_rgba(255,138,0,0.1)] transition-all duration-300">
               <h3 className="text-xl font-medium text-white mb-3">
                 Is my data really private?
               </h3>
