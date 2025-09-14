@@ -32,7 +32,7 @@ const ExerciseCard = ({ exercise }) => {
     'Mountain Climbers': 'https://i.pinimg.com/originals/bd/f2/a3/bdf2a3ec9beb4f231033af0d744057bb.gif',
     'Jumping Jacks': 'https://i.pinimg.com/originals/b4/b5/b9/b4b5b94c119dde698d138b8fe0b8d521.gif',
     'High Knees': 'https://i.pinimg.com/originals/95/db/ae/95dbae82f51c67fc0f5aa30a57da663c.gif',
-    'Plank': 'https://i.pinimg.com/originals/8d/51/1e/8d511edb34e36c468aef1027f7642621.gif',
+    'Plank': 'https://i.pinimg.com/736x/83/84/65/83846529c8c33a1d03b493c82bb23570.jpg',
     'Side Plank': 'https://i.pinimg.com/originals/4b/bb/42/4bbb42ef233861f68ca244692493cb3d.gif',
     'Wall Sit': 'https://i.pinimg.com/originals/50/bb/fa/50bbfa9d11ce94feff442ad0c1a3e250.gif'
   };
