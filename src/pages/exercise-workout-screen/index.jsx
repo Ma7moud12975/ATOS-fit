@@ -14,6 +14,7 @@ import { evaluateAchievements } from '../../utils/achievements';
 const ExerciseWorkoutScreen = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isFullScreen, setIsFullScreen] = useState(false);
   
   // Check authentication on component mount
   useEffect(() => {
@@ -23,6 +24,18 @@ const ExerciseWorkoutScreen = () => {
       return;
     }
   }, [navigate]);
+
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullScreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullScreenChange);
+    };
+  }, []);
   
   // Error handling state
   const [hasError, setHasError] = useState(false);
@@ -439,11 +452,23 @@ const ExerciseWorkoutScreen = () => {
     );
   }
 
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
   try {
     return (
-      <div className="min-h-screen bg-background">
+      <div className={`min-h-screen bg-background ${isFullScreen ? 'fullscreen' : ''}`}>
       {/* Header with Breadcrumb */}
-      <div className="bg-card border-b border-border">
+      <div className={`bg-card border-b border-border ${isFullScreen ? 'hidden' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -469,6 +494,9 @@ const ExerciseWorkoutScreen = () => {
             </div>
             
             <div className="flex items-center space-x-3">
+               <Button variant="ghost" size="icon" onClick={toggleFullScreen}>
+                <Icon name={isFullScreen ? "Minimize" : "Maximize"} size={18} />
+              </Button>
               <Button variant="ghost" size="icon">
                 <Icon name="Settings" size={18} />
               </Button>
@@ -480,9 +508,9 @@ const ExerciseWorkoutScreen = () => {
         </div>
       </div>
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 ${isFullScreen ? 'h-full' : ''}`}>
         {/* Tab Navigation */}
-        <div className="flex items-center justify-center mb-6">
+        <div className={`flex items-center justify-center mb-6 ${isFullScreen ? 'hidden' : ''}`}>
           <div className="bg-muted rounded-lg p-1 flex">
             <button
               onClick={() => setActiveTab('live')}
@@ -507,12 +535,13 @@ const ExerciseWorkoutScreen = () => {
 
         {activeTab === 'live' ? (
           /* Live Workout Layout */
-          (<div className="grid lg:grid-cols-3 gap-6">
+          (<div className={`grid lg:grid-cols-3 gap-6 ${isFullScreen ? 'h-full' : ''}`}>
             {/* Camera Feed - Takes 2 columns on desktop */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="aspect-video bg-black rounded-lg overflow-hidden">
+            <div className={`lg:col-span-2 space-y-6 ${isFullScreen ? 'h-full w-full fixed inset-0 z-50' : ''}`}>
+              <div className={`aspect-video bg-black rounded-lg overflow-hidden ${isFullScreen ? 'h-full w-full' : ''}`}>
                 <CameraFeed
                   isActive={isCameraActive}
+                  isFullScreen={isFullScreen}
                   onToggleCamera={handleCameraToggle}
                   showPoseOverlay={showPoseOverlay}
                   setShowPoseOverlay={setShowPoseOverlay}
@@ -536,7 +565,7 @@ const ExerciseWorkoutScreen = () => {
               </div>
             </div>
             {/* Controls Sidebar */}
-            <div className="space-y-6">
+            <div className={`space-y-6 ${isFullScreen ? 'hidden' : ''}`}>
               <ExerciseControls
                 selectedExercise={currentExercise}
                 onExerciseChange={handleExerciseChange}

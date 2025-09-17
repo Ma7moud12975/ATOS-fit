@@ -7,6 +7,9 @@ import WelcomeSection from './components/WelcomeSection';
 import TodayWorkoutCard from './components/TodayWorkoutCard';
 import DailyTipsCard from './components/DailyTipsCard';
 import ProgressWidget from './components/ProgressWidget';
+import DashboardCharts from './components/DashboardCharts';
+import StaffWelcome from './components/StaffWelcome';
+import ManualLogForm from './components/ManualLogForm';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -168,6 +171,19 @@ const Dashboard = () => {
             </div>
             <div>
               <DailyTipsCard />
+            </div>
+          </div>
+
+          <div className="my-6">
+              <ManualLogForm />
+            </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div className="lg:col-span-2">
+              <DashboardCharts />
+            </div>
+            <div>
+              <StaffWelcome />
             </div>
           </div>
 

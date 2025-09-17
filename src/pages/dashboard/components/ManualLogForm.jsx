@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 const ManualLogForm = () => {
-  const [log, setLog] = useState({ workoutType: '', reps: '', time: '' });
+  const [log, setLog] = useState({ workoutName: '', reps: '', time: '' });
   const [logs, setLogs] = useState(() => {
     const saved = localStorage.getItem('atos_manual_logs');
     return saved ? JSON.parse(saved) : [];
@@ -13,7 +13,7 @@ const ManualLogForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!log.workoutType || !log.reps || !log.time) {
+    if (!log.workoutName || !log.reps || !log.time) {
       alert('Please fill in all fields');
       return;
     }
@@ -21,7 +21,7 @@ const ManualLogForm = () => {
     const updatedLogs = [newLog, ...logs];
     setLogs(updatedLogs);
     localStorage.setItem('atos_manual_logs', JSON.stringify(updatedLogs));
-    setLog({ workoutType: '', reps: '', time: '' });
+    setLog({ workoutName: '', reps: '', time: '' });
   };
 
   return (
@@ -29,9 +29,9 @@ const ManualLogForm = () => {
       <form className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4" onSubmit={handleSubmit}>
         <input
           type="text"
-          name="workoutType"
-          placeholder="Workout Type (e.g. Squats)"
-          value={log.workoutType}
+          name="workoutName"
+          placeholder="Workout Name (e.g. Push-ups)"
+          value={log.workoutName}
           onChange={handleChange}
           className="p-3 border border-border rounded-lg bg-background text-card-foreground focus:outline-none focus:ring-2 focus:ring-primary"
         />
@@ -46,7 +46,7 @@ const ManualLogForm = () => {
         <input
           type="text"
           name="time"
-          placeholder="Time (e.g. 30 min)"
+          placeholder="Time Taken (e.g. 2 min)"
           value={log.time}
           onChange={handleChange}
           className="p-3 border border-border rounded-lg bg-background text-card-foreground focus:outline-none focus:ring-2 focus:ring-primary"
@@ -58,7 +58,7 @@ const ManualLogForm = () => {
           <ul className="divide-y divide-border">
             {logs.map((entry, idx) => (
               <li key={idx} className="py-2 flex flex-col md:flex-row md:items-center md:space-x-4">
-                <span className="font-medium">{entry.workoutType}</span>
+                <span className="font-medium">{entry.workoutName}</span>
                 <span className="text-muted-foreground">{entry.reps} reps</span>
                 <span className="text-muted-foreground">{entry.time}</span>
                 <span className="text-xs text-muted-foreground ml-auto">{entry.date}</span>

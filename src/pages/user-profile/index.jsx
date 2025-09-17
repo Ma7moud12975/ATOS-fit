@@ -312,25 +312,7 @@ const UserProfile = () => {
           {/* Quick Actions */}
           <div className="bg-card border border-border rounded-lg p-6">
             <h3 className="text-lg font-semibold text-card-foreground mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Button
-                variant="outline"
-                onClick={() => navigate('/exercise-workout-screen')}
-                className="flex items-center justify-center space-x-2 h-12"
-              >
-                <Icon name="Play" size={18} />
-                <span>Start Workout</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => navigate('/ai-assistant-food-scanner')}
-                className="flex items-center justify-center space-x-2 h-12"
-              >
-                <Icon name="MessageCircle" size={18} />
-                <span>AI Assistant</span>
-              </Button>
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Button
                 variant="outline"
                 onClick={handleExportData}

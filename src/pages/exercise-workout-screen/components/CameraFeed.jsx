@@ -4,6 +4,7 @@ import Button from '../../../components/ui/Button';
 
 const CameraFeed = ({
   isActive = false,
+  isFullScreen = false,
   onToggleCamera,
   showPoseOverlay = true,
   onFormFeedback, 
@@ -24,6 +25,9 @@ const CameraFeed = ({
   const [pushupCount, setPushupCount] = useState(0);
   const [postureStatus, setPostureStatus] = useState('unknown');
   const [isPoseDetectionReady, setIsPoseDetectionReady] = useState(false);
+  const [calibrationStatus, setCalibrationStatus] = useState('uncalibrated');
+  const [calibrationMessage, setCalibrationMessage] = useState('');
+  const [countdown, setCountdown] = useState(3);
 
   // Normalize exercise name
   const isPushUpsSelected = (() => {
@@ -96,6 +100,21 @@ const CameraFeed = ({
           onTimeUpdate: (sec) => {
             if (onPlankTimeUpdate) onPlankTimeUpdate(sec);
             setPoseResults(poseDetectionRef.current?.getLastResults() || null);
+          },
+          onCalibrationStatusChange: (status, message) => {
+            setCalibrationStatus(status);
+            setCalibrationMessage(message);
+            if (status === 'calibrating') {
+              let count = 3;
+              setCountdown(count);
+              const interval = setInterval(() => {
+                count--;
+                setCountdown(count);
+                if (count === 0) {
+                  clearInterval(interval);
+                }
+              }, 1000);
+            }
           }
         });
         const initialized = await poseDetectionRef.current.initialize();
@@ -268,7 +287,7 @@ const CameraFeed = ({
   }
 
   return (
-    <div className="relative w-full h-full bg-black rounded-lg overflow-hidden">
+    <div className={`relative w-full h-full bg-black ${isFullScreen ? '' : 'rounded-lg'} overflow-hidden`}>
       {/* Loading State */}
       {isLoading &&
       <div className="absolute inset-0 bg-muted rounded-lg flex items-center justify-center z-10">
@@ -399,6 +418,15 @@ const CameraFeed = ({
           </div>
         </div>
       }
+      {/* Calibration Overlay */}
+      {isActive && calibrationStatus !== 'calibrated' && (
+        <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center z-20">
+          <div className="text-white text-2xl font-bold mb-4">{calibrationMessage}</div>
+          {calibrationStatus === 'calibrating' && (
+            <div className="text-white text-9xl font-bold">{countdown}</div>
+          )}
+        </div>
+      )}
     </div>);
 
 };

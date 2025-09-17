@@ -3,9 +3,16 @@ class PoseDetectionUtils {
   constructor() {
     this.pose = null;
     this.isInitialized = false;
-    this.pushupState = 'up'; // up, down, transition
-    this.pushupCount = 0;
-    this.highKneesCount = 0;
+  // Per-exercise state to avoid cross-contamination between different exercises
+  // Structure: { <mode>: { state: 'up'|'down'|'neutral'|..., count: number, extra... } }
+  this.perModeState = {};
+  const initMode = (mode) => ({ state: 'up', count: 0 });
+  this.perModeState['pushups'] = initMode('pushups');
+  this.perModeState['squats'] = initMode('squats');
+  this.perModeState['lunges'] = initMode('lunges');
+  this.perModeState['burpees'] = initMode('burpees');
+  this.perModeState['mountainclimbers'] = { state: 'neutral', count: 0, _lastLeftKneeY: null, _lastRightKneeY: null, _climberState: 'neutral', _lastClimberTime: 0 };
+  this.perModeState['highknees'] = { state: 'down', count: 0 };
     this.postureStatus = 'unknown'; // correct, incorrect, unknown
     this.lastWarningTime = 0;
     this.videoDimensionsLogged = false;
@@ -18,9 +25,15 @@ class PoseDetectionUtils {
     this.onPostureChange = null;
     this.onFormFeedback = null;
     this.onTimeUpdate = null; // for plank seconds updates
+    this.onCalibrationStatusChange = null;
+    this.calibrationState = 'uncalibrated'; // uncalibrated, calibrating, calibrated
   }
 
   setExerciseMode(mode) {
+    // ensure perModeState exists for the selected mode
+    if (!this.perModeState[this.exerciseMode]) {
+      this.perModeState[this.exerciseMode] = { state: 'up', count: 0 };
+    }
     const normalized = String(mode || '').toLowerCase();
     if (normalized === 'plank') this.exerciseMode = 'plank';
     else if (normalized === 'squats' || normalized === 'squat') this.exerciseMode = 'squats';
@@ -29,6 +42,7 @@ class PoseDetectionUtils {
     else if (normalized.includes('mountain') || normalized.includes('climber')) this.exerciseMode = 'mountainclimbers';
     else if (normalized.includes('high') && normalized.includes('knees')) this.exerciseMode = 'highknees';
     else this.exerciseMode = 'pushups';
+    this.calibrationState = 'uncalibrated'; // Reset calibration on exercise change
   }
 
   // Initialize MediaPipe Pose
@@ -141,6 +155,9 @@ class PoseDetectionUtils {
       if (this.onPostureChange) {
         this.onPostureChange('unknown', null);
       }
+      if (this.calibrationState !== 'calibrated') {
+        this.updateCalibrationStatus(results.poseLandmarks);
+      }
       // Stop plank timer if running
       if (this.timerRunning) {
         this.accumulatedCorrectMs += Date.now() - this.startCorrectTimestampMs;
@@ -153,54 +170,97 @@ class PoseDetectionUtils {
       return;
     }
 
+    if (this.calibrationState !== 'calibrated') {
+      this.updateCalibrationStatus(results.poseLandmarks);
+      return; // Don't process exercise until calibrated
+    }
+
     const landmarks = results.poseLandmarks;
     
-    // For squats, lunges, pushups, burpees: always show correct posture to avoid confusion
-    if (this.exerciseMode === 'squats' || this.exerciseMode === 'lunges' || this.exerciseMode === 'pushups' || this.exerciseMode === 'burpees') {
-      this.postureStatus = 'correct';
-      if (this.onPostureChange) {
-        this.onPostureChange('correct', landmarks);
-      }
+    // Evaluate posture for the current exercise using the unified checker.
+    // Use a short consecutive-frame smoothing window to avoid brief spikes flipping posture state
+    const isPostureCorrectInstant = this.checkBackAlignment(landmarks);
+
+    // Initialize counters if missing
+    if (this._postureGoodCount == null) this._postureGoodCount = 0;
+    if (this._postureBadCount == null) this._postureBadCount = 0;
+
+    if (isPostureCorrectInstant) {
+      this._postureGoodCount += 1;
+      this._postureBadCount = 0;
     } else {
-      // Check posture for other exercises
-      const isPostureCorrect = this.checkBackAlignment(landmarks);
-      const newPostureStatus = isPostureCorrect ? 'correct' : 'incorrect';
-      
-      if (newPostureStatus !== this.postureStatus) {
-        this.postureStatus = newPostureStatus;
-        if (this.onPostureChange) {
-          this.onPostureChange(this.postureStatus, landmarks);
+      this._postureBadCount += 1;
+      this._postureGoodCount = 0;
+    }
+
+  const POSTURE_GOOD_FRAMES = window.MediaPipeConfig?.SQUAT_CONFIG?.POSTURE_GOOD_FRAMES ?? 3;
+  // For squats we require more consecutive bad frames before flipping to 'incorrect' to avoid
+  // false positives during normal descent. Default to 6 for squats, 4 otherwise.
+  const POSTURE_BAD_FRAMES = (this.exerciseMode === 'squats') ? (window.MediaPipeConfig?.SQUAT_CONFIG?.POSTURE_BAD_FRAMES ?? 6) : (window.MediaPipeConfig?.SQUAT_CONFIG?.POSTURE_BAD_FRAMES ?? 4);
+
+    let smoothedStatus = this.postureStatus;
+    if (this._postureGoodCount >= POSTURE_GOOD_FRAMES) {
+      smoothedStatus = 'correct';
+    } else if (this._postureBadCount >= POSTURE_BAD_FRAMES) {
+      smoothedStatus = 'incorrect';
+    }
+
+    // For squats we don't want to show poor/incorrect posture feedback — treat as correct.
+    if (this.exerciseMode === 'squats') {
+      smoothedStatus = 'correct';
+    }
+
+    if (smoothedStatus !== this.postureStatus) {
+      this.postureStatus = smoothedStatus;
+      if (this.onPostureChange) this.onPostureChange(this.postureStatus, landmarks);
+    }
+
+    // If posture is incorrect for strength/technique exercises, warn and normally skip counting.
+    // However, allow deep squat descents (hip below knee) to proceed to the squat counter so
+    // counting can occur if legs are stable. The squat counter itself still enforces stability
+    // and collapse checks.
+    const cardioExercises = ['mountainclimbers', 'highknees'];
+
+    // Compute hip/knee centers to detect a deep squat descent (hip below knee)
+    const cfg = window.MediaPipeConfig?.POSE_LANDMARKS || {};
+    const leftHip = landmarks[cfg.LEFT_HIP || 23];
+    const rightHip = landmarks[cfg.RIGHT_HIP || 24];
+    const leftKnee = landmarks[cfg.LEFT_KNEE || 25];
+    const rightKnee = landmarks[cfg.RIGHT_KNEE || 26];
+    const hipCenter = leftHip && rightHip ? { x: (leftHip.x + rightHip.x) / 2, y: (leftHip.y + rightHip.y) / 2 } : null;
+    const kneeCenter = leftKnee && rightKnee ? { x: (leftKnee.x + rightKnee.x) / 2, y: (leftKnee.y + rightKnee.y) / 2 } : null;
+    const hipBelowKnee = hipCenter && kneeCenter ? (hipCenter.y > kneeCenter.y) : false;
+
+  // Do not emit posture warnings or block counting for squats; allow squat-specific logic to handle counting.
+  if (this.postureStatus !== 'correct' && !cardioExercises.includes(this.exerciseMode) && this.exerciseMode !== 'squats') {
+      const currentTime = Date.now();
+      const cooldown = window.MediaPipeConfig?.PLANK_CONFIG?.WARNING_COOLDOWN || 2000;
+
+      if (currentTime - this.lastWarningTime > cooldown) {
+        this.playWarningSound();
+        this.lastWarningTime = currentTime;
+
+        if (this.onFormFeedback) {
+          this.onFormFeedback({
+            message: "Dangerous posture - straighten your back!",
+            type: "warning",
+            timestamp: currentTime
+          });
         }
       }
 
-      // Handle posture warnings for plank only (pushups now work like squats/lunges)
-      if (!isPostureCorrect) {
-        const currentTime = Date.now();
-        const cooldown = window.MediaPipeConfig?.PLANK_CONFIG?.WARNING_COOLDOWN || 2000;
-        
-        if (currentTime - this.lastWarningTime > cooldown) {
-          this.playWarningSound();
-          this.lastWarningTime = currentTime;
-          
-          if (this.onFormFeedback) {
-            this.onFormFeedback({
-              message: "Dangerous posture - straighten your back!",
-              type: "warning",
-              timestamp: currentTime
-            });
-          }
+      // Stop plank timer while incorrect
+      if (this.exerciseMode === 'plank' && this.timerRunning) {
+        this.accumulatedCorrectMs += currentTime - this.startCorrectTimestampMs;
+        this.timerRunning = false;
+        this.startCorrectTimestampMs = 0;
+        if (this.onTimeUpdate) {
+          this.onTimeUpdate(Math.floor(this.accumulatedCorrectMs / 1000));
         }
-        // Stop plank timer while incorrect
-        if (this.exerciseMode === 'plank' && this.timerRunning) {
-          this.accumulatedCorrectMs += currentTime - this.startCorrectTimestampMs;
-          this.timerRunning = false;
-          this.startCorrectTimestampMs = 0;
-          if (this.onTimeUpdate) {
-            this.onTimeUpdate(Math.floor(this.accumulatedCorrectMs / 1000));
-          }
-        }
-        return; // Don't count reps with bad posture for plank only
       }
+
+      // Do not proceed to rep counting when posture is incorrect for non-cardio exercises
+      return;
     }
 
     // Posture is correct
@@ -245,6 +305,83 @@ class PoseDetectionUtils {
     return angle;
   }
 
+  // Detect stable push-up start pose: torso roughly horizontal and ankles visible (proxy for being on toes)
+  isPushupStartPose(landmarks) {
+    try {
+      const cfg = window.MediaPipeConfig?.POSE_LANDMARKS || {};
+      const leftShoulder = landmarks[cfg.LEFT_SHOULDER || 11];
+      const rightShoulder = landmarks[cfg.RIGHT_SHOULDER || 12];
+      const leftHip = landmarks[cfg.LEFT_HIP || 23];
+      const rightHip = landmarks[cfg.RIGHT_HIP || 24];
+      const leftAnkle = landmarks[cfg.LEFT_ANKLE || 27];
+      const rightAnkle = landmarks[cfg.RIGHT_ANKLE || 28];
+
+      const vis = (p) => p && (p.visibility == null || p.visibility > 0.5);
+      if (!vis(leftShoulder) || !vis(rightShoulder) || !vis(leftHip) || !vis(rightHip) || !vis(leftAnkle) || !vis(rightAnkle)) {
+        return false;
+      }
+
+      const shoulderCenterY = (leftShoulder.y + rightShoulder.y) / 2;
+      const hipCenterY = (leftHip.y + rightHip.y) / 2;
+
+      // torso vertical difference small -> near horizontal
+      const torsoDy = Math.abs(shoulderCenterY - hipCenterY);
+      const THRESH = window.MediaPipeConfig?.PUSHUP_CONFIG?.START_TORSO_DY ?? 0.08;
+      if (torsoDy > THRESH) return false;
+
+      // ankles visible and reasonably below hips (on toes) as an extra proxy
+      const ankleBelowHip = ((leftAnkle.y + rightAnkle.y) / 2) > hipCenterY;
+      if (!ankleBelowHip) return false;
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Detect stable squat start pose: standing upright with hips above knees and torso approximately vertical
+  isSquatStartPose(landmarks) {
+    try {
+      const cfg = window.MediaPipeConfig?.POSE_LANDMARKS || {};
+      const leftShoulder = landmarks[cfg.LEFT_SHOULDER || 11];
+      const rightShoulder = landmarks[cfg.RIGHT_SHOULDER || 12];
+      const leftHip = landmarks[cfg.LEFT_HIP || 23];
+      const rightHip = landmarks[cfg.RIGHT_HIP || 24];
+      const leftKnee = landmarks[cfg.LEFT_KNEE || 25];
+      const rightKnee = landmarks[cfg.RIGHT_KNEE || 26];
+      const leftAnkle = landmarks[cfg.LEFT_ANKLE || 27];
+      const rightAnkle = landmarks[cfg.RIGHT_ANKLE || 28];
+
+      const vis = (p) => p && (p.visibility == null || p.visibility > 0.5);
+      // Require shoulders, hips and knees for a reliable standing start pose.
+      // Ankles are optional because many webcams/cameras crop the feet.
+      if (!vis(leftShoulder) || !vis(rightShoulder) || !vis(leftHip) || !vis(rightHip) || !vis(leftKnee) || !vis(rightKnee)) {
+        return false;
+      }
+
+      const hipY = (leftHip.y + rightHip.y) / 2;
+      const kneeY = (leftKnee.y + rightKnee.y) / 2;
+      // In normalized coordinates hip above knee when standing
+      const gap = kneeY - hipY; // positive when hip above knee
+  const GAP_MIN = window.MediaPipeConfig?.SQUAT_CONFIG?.START_HIP_KNEE_GAP ?? 0.01;
+      if (gap < GAP_MIN) return false;
+
+      // Torso should be roughly vertical when standing
+      const shoulderCenter = { x: (leftShoulder.x + rightShoulder.x) / 2, y: (leftShoulder.y + rightShoulder.y) / 2 };
+      const hipCenter = { x: (leftHip.x + rightHip.x) / 2, y: (leftHip.y + rightHip.y) / 2 };
+      const dx = shoulderCenter.x - hipCenter.x;
+      const dy = shoulderCenter.y - hipCenter.y;
+      const angDeg = Math.abs(Math.atan2(dx, -dy) * 180 / Math.PI); // similar to torso tilt in squat logic
+  const MIN_VERT = window.MediaPipeConfig?.SQUAT_CONFIG?.STANDING_TORSO_MIN_DEG ?? 60;
+  const MAX_VERT = window.MediaPipeConfig?.SQUAT_CONFIG?.STANDING_TORSO_MAX_DEG ?? 120;
+      if (angDeg < MIN_VERT || angDeg > MAX_VERT) return false;
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // Check back alignment for posture
   checkBackAlignment(landmarks) {
     try {
@@ -268,7 +405,13 @@ class PoseDetectionUtils {
           // Not enough landmarks to evaluate plank reliably
           return false;
         }
+      } else if (this.exerciseMode === 'pushups') {
+        // For push-ups we only require both shoulders and hips to be visible.
+        if (!vis(leftShoulder) || !vis(rightShoulder) || !vis(leftHip) || !vis(rightHip)) {
+          return false;
+        }
       } else {
+        // For other exercises require knees visible for stability
         if (!vis(leftShoulder) || !vis(rightShoulder) || !vis(leftHip) || !vis(rightHip) || !vis(leftKnee) || !vis(rightKnee)) {
           return false;
         }
@@ -354,27 +497,61 @@ class PoseDetectionUtils {
         }
 
       } else if (this.exerciseMode === 'squats') {
-        // Squats: ensure hip angle not collapsed and torso tilt within range
+        // Squats: accept normal descent (hip moving below knee) as a valid posture.
+        // Only flag 'BAD' when there's severe hip/back collapse (rounded back).
         const scfg = window.MediaPipeConfig?.SQUAT_CONFIG || {};
         const hipAngleLeft = this.calculateAngle(leftShoulder, leftHip, leftKnee);
         const hipAngleRight = this.calculateAngle(rightShoulder, rightHip, rightKnee);
         const hipAngle = (hipAngleLeft + hipAngleRight) / 2;
-        const hipAngleMin = scfg.HIP_ANGLE_MIN ?? 150;
+        // Configurable thresholds
+        const hipAngleMin = scfg.HIP_ANGLE_MIN ?? 120; // generous minimum for 'upright' expectation
+        const collapseThreshold = scfg.HIP_ANGLE_COLLAPSE ?? 60; // below this -> collapsed (bad)
         const dx = shoulderCenter.x - hipCenter.x;
         const dy = shoulderCenter.y - hipCenter.y;
         const torsoTiltDeg = Math.abs(Math.atan2(dx, -dy) * 180 / Math.PI);
-        const tiltMax = scfg.TORSO_TILT_MAX ?? 45;
-        isGoodPosture = (hipAngle >= hipAngleMin) && (torsoTiltDeg <= tiltMax);
+        const tiltMax = scfg.TORSO_TILT_MAX ?? 60;
+
+        // Determine hip vs knee vertical relationship (allow descent)
+        const hipBelowKnee = kneeCenter && (hipCenter.y > kneeCenter.y);
+
+        const collapseTiltMin = scfg.COLLAPSE_TILT_MIN ?? 70; // require significant forward rounding
+        if (hipAngle < collapseThreshold && torsoTiltDeg > collapseTiltMin) {
+          // Severe collapse (rounded back + low hip angle) — definitely bad
+          isGoodPosture = false;
+        } else if (hipBelowKnee) {
+          // Normal squat descent — accept as good (as long as collapse not detected)
+          isGoodPosture = true;
+        } else {
+          // Standing/upright checks: require reasonable hip angle and torso tilt
+          isGoodPosture = (hipAngle >= hipAngleMin) && (torsoTiltDeg <= tiltMax);
+        }
       } else {
-        // Push-ups: straight line check using abs(cos)
-        let cosSim = -1;
-        if (v2) {
+        // Push-ups: prefer a dedicated horizontal-body check.
+        // Two modes: side view (ankles visible) -> use straight-line similarity as before.
+        // Front/angled view (no ankle visibility) -> check shoulder-hip orientation close to horizontal
+        const cfg = window.MediaPipeConfig?.PUSHUP_CONFIG || {};
+        const SIDE_ABS_COS_MIN = cfg.SIDE_ABS_COS_MIN ?? 0.82; // slightly more lenient
+        const HORIZ_TORSO_MAX_DEG = cfg.HORIZ_TORSO_MAX_DEG ?? 35; // allow more tilt
+
+        // If ankle center available assume side/diagonal view and use cos similarity
+        if (ankleCenter && v2) {
+          let cosSim = -1;
           const mag1 = Math.hypot(v1.x, v1.y) || 1;
           const mag2 = Math.hypot(v2.x, v2.y) || 1;
           cosSim = (v1.x * v2.x + v1.y * v2.y) / (mag1 * mag2);
+          const absCos = Math.abs(Math.max(-1, Math.min(1, cosSim)));
+          isGoodPosture = absCos >= SIDE_ABS_COS_MIN;
+        } else {
+          // Fallback: check that shoulder-hip axis is near horizontal (small dy)
+          const dx = shoulderCenter.x - hipCenter.x;
+          const dy = shoulderCenter.y - hipCenter.y;
+          const angDeg = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+          // angle near 0 or near 180 -> horizontal
+          const nearHorizontal = (angDeg <= HORIZ_TORSO_MAX_DEG) || (angDeg >= (180 - HORIZ_TORSO_MAX_DEG));
+          // Also ensure it's not standing (i.e., torso nearly vertical)
+          const nearVertical = (angDeg >= 90 - 20 && angDeg <= 90 + 20);
+          isGoodPosture = nearHorizontal && !nearVertical;
         }
-        const absCos = Math.abs(Math.max(-1, Math.min(1, cosSim)));
-        isGoodPosture = v2 ? (absCos >= 0.90) : false;
       }
 
       console.log(`🏃 Posture(${this.exerciseMode}): ${isGoodPosture ? 'GOOD' : 'BAD'}`);
@@ -383,6 +560,53 @@ class PoseDetectionUtils {
     } catch (error) {
       console.error('Error checking back alignment:', error);
       return false;
+    }
+  }
+
+  updateCalibrationStatus(landmarks) {
+    const CONFIDENCE_THRESHOLD = 0.7;
+    const ZONE = { x_min: 0.1, x_max: 0.9, y_min: 0.1, y_max: 0.9 }; // Example zone
+
+    let confidence = 0;
+    let inZone = false;
+
+    if (landmarks && landmarks.length > 0) {
+      const visibleLandmarks = landmarks.filter(lm => lm.visibility && lm.visibility >= CONFIDENCE_THRESHOLD);
+      confidence = visibleLandmarks.length / landmarks.length;
+
+      const bodyCenter = {
+        x: landmarks.reduce((sum, lm) => sum + lm.x, 0) / landmarks.length,
+        y: landmarks.reduce((sum, lm) => sum + lm.y, 0) / landmarks.length,
+      };
+
+      inZone = bodyCenter.x >= ZONE.x_min && bodyCenter.x <= ZONE.x_max &&
+               bodyCenter.y >= ZONE.y_min && bodyCenter.y <= ZONE.y_max;
+    }
+
+    if (confidence >= CONFIDENCE_THRESHOLD && inZone) {
+      if (this.calibrationState !== 'calibrating') {
+        this.calibrationState = 'calibrating';
+        if (this.onCalibrationStatusChange) {
+          this.onCalibrationStatusChange('calibrating', 'User detected. Starting countdown...');
+        }
+        setTimeout(() => {
+          this.calibrationState = 'calibrated';
+          if (this.onCalibrationStatusChange) {
+            this.onCalibrationStatusChange('calibrated', 'User calibrated');
+          }
+        }, 3000); // 3-second countdown
+      }
+    } else {
+      this.calibrationState = 'uncalibrated';
+      let message = '';
+      if (confidence < CONFIDENCE_THRESHOLD) {
+        message = 'Low confidence – adjust position';
+      } else if (!inZone) {
+        message = 'Step into frame zone';
+      }
+      if (this.onCalibrationStatusChange) {
+        this.onCalibrationStatusChange('uncalibrated', message);
+      }
     }
   }
 
@@ -398,8 +622,10 @@ class PoseDetectionUtils {
       const rightShoulder = landmarks[config.RIGHT_SHOULDER || 12];
       const rightElbow = landmarks[config.RIGHT_ELBOW || 14];
       const rightWrist = landmarks[config.RIGHT_WRIST || 16];
+      const leftHip = landmarks[config.LEFT_HIP || 23];
+      const rightHip = landmarks[config.RIGHT_HIP || 24];
 
-      if (!leftShoulder || !leftElbow || !leftWrist || !rightShoulder || !rightElbow || !rightWrist) {
+      if (!leftShoulder || !leftElbow || !leftWrist || !rightShoulder || !rightElbow || !rightWrist || !leftHip || !rightHip) {
         return;
       }
 
@@ -416,25 +642,69 @@ class PoseDetectionUtils {
       const shoulderHeightThreshold = pushupConfig.SHOULDER_HEIGHT_DOWN || 0.02;
 
       // Push-up position: elbows bent OR shoulders close to ground
-      const pushupPosition = (avgElbowAngle <= downThreshold) || (avgShoulderY >= (1 - shoulderHeightThreshold));
-      
-      // Standing position: elbows straight
-      const standingPosition = avgElbowAngle >= upThreshold;
+      // Determine if user is likely standing: if shoulders are well above hips and torso vertical
+      const shoulderHipDy = Math.abs(((leftShoulder.y + rightShoulder.y) / 2) - ((leftHip.y + rightHip.y) / 2));
+      const torsoVerticalThreshold = pushupConfig.TORSO_VERTICAL_DY ?? 0.15; // if shoulders far above hips (normalized units)
+      const isLikelyStanding = shoulderHipDy < (pushupConfig.STANDING_DY_MIN ?? 0.05) ? false : ((leftShoulder.y + rightShoulder.y) / 2) < ((leftHip.y + rightHip.y) / 2) - (pushupConfig.STANDING_DY_MIN ?? 0.02);
 
-      // Simple counting: count immediately when going down (like squats and lunges)
-      if (this.pushupState === 'up') {
-        if (pushupPosition) {
-          this.pushupState = 'down';
-          this.pushupCount += 1; // Count immediately on descent
+      // Baseline shoulder level (approx when 'up' state) — store per-mode baseline
+      const pstate = this.perModeState['pushups'];
+      if (!pstate._baselineShoulderY) {
+        // initialize baseline to current shoulder Y when pose roughly horizontal
+        pstate._baselineShoulderY = avgShoulderY;
+      }
+
+      // If posture is not horizontal, don't update baseline; else slowly adapt baseline
+      if (Math.abs(((leftShoulder.y + rightShoulder.y) / 2) - ((leftHip.y + rightHip.y) / 2)) < 0.12) {
+        // adapt baseline slowly
+        pstate._baselineShoulderY = (pstate._baselineShoulderY * 0.95) + (avgShoulderY * 0.05);
+      }
+
+      // Push-up position: significant drop from baseline OR elbow angle threshold
+      const shoulderDrop = avgShoulderY - (pstate._baselineShoulderY || avgShoulderY);
+      const shoulderDropThreshold = pushupConfig.SHOULDER_DROP_THRESHOLD ?? 0.06; // normalized units
+      const pushupPosition = (avgElbowAngle <= downThreshold) || (shoulderDrop >= shoulderDropThreshold) || (avgShoulderY >= (1 - shoulderHeightThreshold));
+      
+      // Standing position: elbows straight and shoulders high (not horizontal)
+      const standingPosition = (avgElbowAngle >= upThreshold) && isLikelyStanding;
+
+      // In-position gating: require user to assume a stable push-up start pose before starting counting
+      if (!pstate._inPositionCount) pstate._inPositionCount = 0;
+      const inStart = this.isPushupStartPose(landmarks);
+      if (inStart) {
+        pstate._inPositionCount += 1;
+      } else {
+        pstate._inPositionCount = 0;
+      }
+
+      const REQUIRED_STABLE_FRAMES = window.MediaPipeConfig?.PUSHUP_CONFIG?.START_STABLE_FRAMES ?? 6; // ~6 frames
+      pstate._isInStartPose = pstate._inPositionCount >= REQUIRED_STABLE_FRAMES;
+
+      // Debounce reps: minimum ms between consecutive counts
+      const MIN_REP_MS = window.MediaPipeConfig?.PUSHUP_CONFIG?.MIN_REP_MS ?? 400;
+      if (!pstate._lastRepAt) pstate._lastRepAt = 0;
+      const now = Date.now();
+
+      // Only count if posture is correct and user is in start pose
+      if (this.postureStatus !== 'correct' || !pstate._isInStartPose) {
+        return; // do not count
+      }
+
+      if (pstate.state === 'up') {
+        if (pushupPosition && (now - pstate._lastRepAt) > MIN_REP_MS) {
+          pstate.state = 'down';
+          pstate.count += 1; // Count on descent
+          pstate._lastRepAt = now;
           this.playSuccessSound(); // Play success sound
-          if (this.onPushupCount) this.onPushupCount(this.pushupCount);
+          if (this.onPushupCount) this.onPushupCount(pstate.count);
           if (this.onFormFeedback) {
-            this.onFormFeedback({ message: `Push-up ${this.pushupCount}`, type: 'success', timestamp: Date.now() });
+            this.onFormFeedback({ message: `Push-up ${pstate.count}`, type: 'success', timestamp: now });
           }
         }
-      } else if (this.pushupState === 'down') {
-        if (standingPosition) {
-          this.pushupState = 'up'; // Reset state for next rep
+      } else if (pstate.state === 'down') {
+        // return to up when standingPosition or full extension detected
+        if (standingPosition || (!pushupPosition && avgElbowAngle >= upThreshold)) {
+          pstate.state = 'up'; // Reset state for next rep
         }
       }
     } catch (error) {
@@ -459,6 +729,51 @@ class PoseDetectionUtils {
 
       if (!leftHip || !rightHip || !leftKnee || !rightKnee || !leftAnkle || !rightAnkle || !leftShoulder || !rightShoulder) return;
 
+      // Check if user is in horizontal position (like pushup) - show warning but DO NOT count if so
+      const shoulderCenterY = (leftShoulder.y + rightShoulder.y) / 2;
+      const hipCenterY = (leftHip.y + rightHip.y) / 2;
+      const head = landmarks[cfg.NOSE || 0];
+      const torsoDy = Math.abs(shoulderCenterY - hipCenterY);
+      const HORIZONTAL_THRESHOLD = 0.08; // Same threshold as pushup detection
+      // Check if head is at same y level as hips (head down, body horizontal)
+      const headHipDy = Math.abs((head?.y ?? 0) - hipCenterY);
+      const HEAD_HIP_HORIZONTAL_THRESHOLD = 0.10; // If head and hip are close in y, likely horizontal
+      let isHorizontalLikePushup = false;
+      if (torsoDy <= HORIZONTAL_THRESHOLD && headHipDy <= HEAD_HIP_HORIZONTAL_THRESHOLD) {
+        isHorizontalLikePushup = true;
+        // Optional: show warning
+        if (this.onFormFeedback) {
+          this.onFormFeedback({ 
+            message: 'وضع الجسم أفقي، لن يتم العد إلا في وضع الاسكوات الصحيح', 
+            type: 'warning', 
+            timestamp: Date.now() 
+          });
+        }
+      }
+
+      // Check if hands are on the ground (like pushup)
+      const leftWrist = landmarks[cfg.LEFT_WRIST || 15];
+      const rightWrist = landmarks[cfg.RIGHT_WRIST || 16];
+      const leftFoot = landmarks[cfg.LEFT_ANKLE || 27];
+      const rightFoot = landmarks[cfg.RIGHT_ANKLE || 28];
+      // Consider hands on ground if both wrists are at or below the level of the ankles (with small margin)
+      const HANDS_ON_GROUND_THRESHOLD = 0.07; // allow small margin
+      let handsOnGround = false;
+      if (leftWrist && rightWrist && leftFoot && rightFoot) {
+        const avgWristY = (leftWrist.y + rightWrist.y) / 2;
+        const avgFootY = (leftFoot.y + rightFoot.y) / 2;
+        if (avgWristY >= avgFootY - HANDS_ON_GROUND_THRESHOLD) {
+          handsOnGround = true;
+          if (this.onFormFeedback) {
+            this.onFormFeedback({
+              message: 'اليدين على الأرض، لن يتم العد إلا في وضع الاسكوات الصحيح',
+              type: 'warning',
+              timestamp: Date.now()
+            });
+          }
+        }
+      }
+
       // Average sides for stability
       const hip = { x: (leftHip.x + rightHip.x) / 2, y: (leftHip.y + rightHip.y) / 2 };
       const knee = { x: (leftKnee.x + rightKnee.x) / 2, y: (leftKnee.y + rightKnee.y) / 2 };
@@ -468,16 +783,18 @@ class PoseDetectionUtils {
       // Knee angle using hip-knee-ankle
       const kneeAngleLeft = this.calculateAngle(leftHip, leftKnee, leftAnkle);
       const kneeAngleRight = this.calculateAngle(rightHip, rightKnee, rightAnkle);
-      const kneeAngle = (kneeAngleLeft + kneeAngleRight) / 2;
+      const avgKneeAngle = (kneeAngleLeft + kneeAngleRight) / 2;
 
-      // Hip angle shoulder-hip-knee to detect rounding/collapse
-      const hipAngleLeft = this.calculateAngle(leftShoulder, leftHip, leftKnee);
-      const hipAngleRight = this.calculateAngle(rightShoulder, rightHip, rightKnee);
-      const hipAngle = (hipAngleLeft + hipAngleRight) / 2;
-
-      const downThreshold = scfg.KNEE_ANGLE_DOWN ?? 80;
-      const upThreshold = scfg.KNEE_ANGLE_UP ?? 165;
-      const hipAngleMin = scfg.HIP_ANGLE_MIN ?? 150;
+      // Check leg stability - both legs should be moving together (not one leg down)
+      const leftKneeY = leftKnee.y;
+      const rightKneeY = rightKnee.y;
+      const kneeHeightDiff = Math.abs(leftKneeY - rightKneeY);
+      const LEG_STABILITY_THRESHOLD = 0.05; // Maximum difference between left and right knee heights
+      
+      const legsStable = kneeHeightDiff <= LEG_STABILITY_THRESHOLD;
+      
+      // Check if knees are bending (squatting down)
+      const kneesBending = avgKneeAngle < 120; // Knees bent when angle is less than 120 degrees
 
       // Count based on hip position (lower back points)
       const hipY = hip.y; // Y position of hips (lower = deeper)
@@ -487,21 +804,54 @@ class PoseDetectionUtils {
       const hipBelowKnee = hipY > kneeY;
       // Hip goes back up above knee level = standing
       const hipAboveKnee = hipY < kneeY;
+      
+      // State machine: count when hip goes down below knee level (use per-mode state)
+      const stateObj = this.perModeState['squats'];
 
-      // State machine: count when hip goes down below knee level
-      if (this.pushupState === 'up') {
-        if (hipBelowKnee) {
-          this.pushupState = 'down';
-          this.pushupCount += 1;
+      // Debug logging
+      console.log('🔍 Squat Debug:', {
+        legsStable,
+        kneesBending,
+        avgKneeAngle,
+        kneeHeightDiff,
+        hipBelowKnee,
+        hipAboveKnee,
+        state: stateObj.state,
+        count: stateObj.count
+      });
+
+      // Simplified squat counting: count when hips go below knees with stable legs
+      const MIN_REP_MS = window.MediaPipeConfig?.SQUAT_CONFIG?.MIN_REP_MS ?? 500;
+      if (!stateObj._lastRepAt) stateObj._lastRepAt = 0;
+      const now = Date.now();
+
+      if (stateObj.state === 'up') {
+        // Count if hips go below knees and legs are stable, and NOT in horizontal position or hands on ground
+        if (hipBelowKnee && legsStable && !isHorizontalLikePushup && !handsOnGround && (now - stateObj._lastRepAt) > MIN_REP_MS) {
+          stateObj.state = 'down';
+          stateObj.count += 1;
+          stateObj._lastRepAt = now;
+          console.log('🎯 Squat counted! Count:', stateObj.count);
           this.playSuccessSound(); // Play success sound
-          if (this.onPushupCount) this.onPushupCount(this.pushupCount);
-          if (this.onFormFeedback) {
-            this.onFormFeedback({ message: `Squat ${this.pushupCount}`, type: 'success', timestamp: Date.now() });
+          if (this.onPushupCount) this.onPushupCount(stateObj.count);
+        } else {
+          // Debug why counting didn't happen
+          if (!hipBelowKnee) {
+            console.log('❌ Not counting: Hips not below knees');
+          } else if (!legsStable) {
+            console.log('❌ Not counting: Legs not stable (one leg down)');
+          } else if (isHorizontalLikePushup) {
+            console.log('❌ Not counting: Body is horizontal like pushup');
+          } else if (handsOnGround) {
+            console.log('❌ Not counting: Hands are on the ground');
+          } else if ((now - stateObj._lastRepAt) <= MIN_REP_MS) {
+            console.log('❌ Not counting: Too soon since last rep');
           }
         }
-      } else if (this.pushupState === 'down') {
+      } else if (stateObj.state === 'down') {
         if (hipAboveKnee) {
-          this.pushupState = 'up';
+          stateObj.state = 'up';
+          console.log('⬆️ Squat state changed to UP');
         }
       }
     } catch (error) {
@@ -521,37 +871,86 @@ class PoseDetectionUtils {
       const leftAnkle = landmarks[cfg.LEFT_ANKLE || 27];
       const rightAnkle = landmarks[cfg.RIGHT_ANKLE || 28];
       if (!leftHip || !rightHip || !leftKnee || !rightKnee || !leftAnkle || !rightAnkle) return;
+      
+      // Check if hands are on the ground (like pushup) - don't count lunges if hands on ground
+      const leftWrist = landmarks[cfg.LEFT_WRIST || 15];
+      const rightWrist = landmarks[cfg.RIGHT_WRIST || 16];
+      const leftFoot = landmarks[cfg.LEFT_ANKLE || 27];
+      const rightFoot = landmarks[cfg.RIGHT_ANKLE || 28];
+      const HANDS_ON_GROUND_THRESHOLD = 0.07;
+      let handsOnGround = false;
+      if (leftWrist && rightWrist && leftFoot && rightFoot) {
+        const avgWristY = (leftWrist.y + rightWrist.y) / 2;
+        const avgFootY = (leftFoot.y + rightFoot.y) / 2;
+        if (avgWristY >= avgFootY - HANDS_ON_GROUND_THRESHOLD) {
+          handsOnGround = true;
+        }
+      }
+      
       // Average hip position
       const hip = { x: (leftHip.x + rightHip.x) / 2, y: (leftHip.y + rightHip.y) / 2 };
       // Calculate knee angles
       const leftKneeAngle = this.calculateAngle(leftHip, leftKnee, leftAnkle);
       const rightKneeAngle = this.calculateAngle(rightHip, rightKnee, rightAnkle);
-      // Determine which leg is front (more bent knee)
+      // Determine which leg is front (more bent knee) - allow both legs to be counted
       const leftKneeBent = leftKneeAngle < rightKneeAngle;
       const frontKnee = leftKneeBent ? leftKnee : rightKnee;
-      const backKnee = leftKneeBent ? rightKnee : leftAnkle;
+      const backKnee = leftKneeBent ? rightKnee : leftKnee;
       const frontKneeAngle = leftKneeBent ? leftKneeAngle : rightKneeAngle;
       const backKneeAngle = leftKneeBent ? rightKneeAngle : leftKneeAngle;
+      
+      // Also check the opposite leg position (for alternating lunges)
+      const rightKneeBent = rightKneeAngle < leftKneeAngle;
+      const altFrontKnee = rightKneeBent ? rightKnee : leftKnee;
+      const altBackKnee = rightKneeBent ? leftKnee : rightKnee;
+      const altFrontKneeAngle = rightKneeBent ? rightKneeAngle : leftKneeAngle;
+      const altBackKneeAngle = rightKneeBent ? leftKneeAngle : rightKneeAngle;
       // Hip position relative to front knee
       const hipBelowFrontKnee = hip.y > frontKnee.y;
-      // Lunge position: either knee bent enough OR hips go down (very lenient)
-      const lungePosition = ((frontKneeAngle <= 85) || (backKneeAngle <= 90) || hipBelowFrontKnee);
+      // Lunge position based on the image: one leg forward, body leaning forward, back knee close to ground
+      const KNEE_Y_DIFF_THRESHOLD = 0.06; // فرق واضح بين الركبتين (رجل للأمام) - توسيع
+      const BACK_KNEE_ANGLE_THRESHOLD = 120; // back knee bent (close to ground) - توسيع
+      const FRONT_KNEE_ANGLE_THRESHOLD = 100; // front knee bent (stable support) - توسيع
+      const HIP_FORWARD_THRESHOLD = 0.08; // hip leaning forward over front leg - توسيع
+      
+      const kneeYDiff = Math.abs(leftKnee.y - rightKnee.y);
+      const oneLegForward = kneeYDiff > KNEE_Y_DIFF_THRESHOLD;
+      
+      // Check first leg position (left leg forward)
+      const backKneeBent = backKneeAngle < BACK_KNEE_ANGLE_THRESHOLD;
+      const frontKneeBent = frontKneeAngle < FRONT_KNEE_ANGLE_THRESHOLD;
+      const frontHip = leftKneeBent ? leftHip : rightHip;
+      const frontAnkle = leftKneeBent ? leftAnkle : rightAnkle;
+      const hipForwardLean = Math.abs(frontHip.x - frontAnkle.x) < HIP_FORWARD_THRESHOLD;
+      const lungePosition1 = oneLegForward && backKneeBent && frontKneeBent && hipForwardLean;
+      
+      // Check second leg position (right leg forward)
+      const altBackKneeBent = altBackKneeAngle < BACK_KNEE_ANGLE_THRESHOLD;
+      const altFrontKneeBent = altFrontKneeAngle < FRONT_KNEE_ANGLE_THRESHOLD;
+      const altFrontHip = rightKneeBent ? rightHip : leftHip;
+      const altFrontAnkle = rightKneeBent ? rightAnkle : leftAnkle;
+      const altHipForwardLean = Math.abs(altFrontHip.x - altFrontAnkle.x) < HIP_FORWARD_THRESHOLD;
+      const lungePosition2 = oneLegForward && altBackKneeBent && altFrontKneeBent && altHipForwardLean;
+      
+      // Either leg position counts as a lunge
+      const lungePosition = lungePosition1 || lungePosition2;
       // Standing position: both knees straight
       const standingPosition = (frontKneeAngle >= 160) && (backKneeAngle >= 150);
       // Simple counting: count immediately when going down (like squats)
-      if (this.pushupState === 'up') {
-        if (lungePosition) {
-          this.pushupState = 'down';
-          this.pushupCount += 1; // Count immediately on descent
+      const lstate = this.perModeState['lunges'];
+      if (lstate.state === 'up') {
+        if (!handsOnGround && lungePosition) {
+          lstate.state = 'down';
+          lstate.count += 1; // Count immediately on descent
           this.playSuccessSound(); // Play success sound
-          if (this.onPushupCount) this.onPushupCount(this.pushupCount);
+          if (this.onPushupCount) this.onPushupCount(lstate.count);
           if (this.onFormFeedback) {
-            this.onFormFeedback({ message: `Lunge ${this.pushupCount}`, type: 'success', timestamp: Date.now() });
+            this.onFormFeedback({ message: `Lunge ${lstate.count}`, type: 'success', timestamp: Date.now() });
           }
         }
-      } else if (this.pushupState === 'down') {
+      } else if (lstate.state === 'down') {
         if (standingPosition) {
-          this.pushupState = 'up'; // Reset state for next rep
+          lstate.state = 'up'; // Reset state for next rep
         }
       }
     } catch (error) {
@@ -598,32 +997,33 @@ class PoseDetectionUtils {
                            (leftKneeMove < -KNEE_THRESHOLD && rightKneeMove > KNEE_THRESHOLD);
 
       // State machine for counting alternating leg movements
-      if (this._climberState === 'neutral') {
-        if (isAlternating && (currentTime - this._lastClimberTime > MIN_REP_TIME)) {
-          this._climberState = 'moving';
-          this._lastClimberTime = currentTime;
+      const cmode = this.perModeState['mountainclimbers'];
+      if (cmode._climberState === 'neutral') {
+        if (isAlternating && (currentTime - cmode._lastClimberTime > MIN_REP_TIME)) {
+          cmode._climberState = 'moving';
+          cmode._lastClimberTime = currentTime;
           // Count the rep
-          this.pushupCount += 1;
+          cmode.count += 1;
           this.playSuccessSound(); // Play success sound
-          if (this.onPushupCount) this.onPushupCount(this.pushupCount);
+          if (this.onPushupCount) this.onPushupCount(cmode.count);
           if (this.onFormFeedback) {
             const leg = leftKneeMove > rightKneeMove ? 'Left' : 'Right';
             this.onFormFeedback({
-              message: `${leg} knee drive - Rep ${this.pushupCount}`,
+              message: `${leg} knee drive - Rep ${cmode.count}`,
               type: 'success',
               timestamp: currentTime
             });
           }
         }
-      } else if (this._climberState === 'moving') {
+      } else if (cmode._climberState === 'moving') {
         if (!isAlternating) {
-          this._climberState = 'neutral';
+          cmode._climberState = 'neutral';
         }
       }
 
       // Update last positions
-      this._lastLeftKneeY = leftKnee.y;
-      this._lastRightKneeY = rightKnee.y;
+      cmode._lastLeftKneeY = leftKnee.y;
+      cmode._lastRightKneeY = rightKnee.y;
 
       // Form feedback for incorrect movement
       if (Math.abs(leftHip.y - rightHip.y) > 0.1) { // Hips not level
@@ -660,23 +1060,25 @@ class PoseDetectionUtils {
       const handsAboveHead = (leftHandY < headY && rightHandY < headY);
       // منطق العد
       if (!this._burpeeState) this._burpeeState = 'ready';
-      if (this._burpeeState === 'ready') {
+      if (!this.perModeState['burpees']._burpeeState) this.perModeState['burpees']._burpeeState = 'ready';
+      const bstate = this.perModeState['burpees'];
+      if (bstate._burpeeState === 'ready') {
         if (handsAboveHead) {
-          this._burpeeState = 'jumping';
-          this.pushupCount += 1;
+          bstate._burpeeState = 'jumping';
+          bstate.count += 1;
           this.playSuccessSound(); // Play success sound
-          if (this.onPushupCount) this.onPushupCount(this.pushupCount);
+          if (this.onPushupCount) this.onPushupCount(bstate.count);
           if (this.onFormFeedback) {
             this.onFormFeedback({
-              message: `Burpee ${this.pushupCount} - Hands above head!`,
+              message: `Burpee ${bstate.count} - Hands above head!`,
               type: 'success',
               timestamp: Date.now()
             });
           }
         }
-      } else if (this._burpeeState === 'jumping') {
+      } else if (bstate._burpeeState === 'jumping') {
         if (!handsAboveHead) {
-          this._burpeeState = 'ready';
+          bstate._burpeeState = 'ready';
         }
       }
     } catch (error) {
@@ -697,38 +1099,51 @@ class PoseDetectionUtils {
 
       if (!leftHip || !rightHip || !leftKnee || !rightKnee || !leftAnkle || !rightAnkle) return;
 
-      // Check if knee is above hip for high knees
-      const leftKneeUp = leftKnee.y < leftHip.y;
-      const rightKneeUp = rightKnee.y < rightHip.y;
-
-      // Define thresholds for knee height relative to hip
-      const KNEE_HIP_THRESHOLD = 0.1; // Adjust as needed
-
-      // Check if knee is significantly above hip
+      // Check if knee is at waist level or above (easier threshold)
+      const KNEE_HIP_THRESHOLD = 0.03; // Knee should be at waist level or above (easier)
       const isLeftKneeHigh = (leftHip.y - leftKnee.y) > KNEE_HIP_THRESHOLD;
       const isRightKneeHigh = (rightHip.y - rightKnee.y) > KNEE_HIP_THRESHOLD;
 
-      // State machine for counting high knees
-      if (!this._highKneesState) this._highKneesState = 'down';
+      // Check if user is doing high knees movement (either leg up)
+      const isDoingHighKnees = isLeftKneeHigh || isRightKneeHigh;
 
-      if (this._highKneesState === 'down') {
-        if (isLeftKneeHigh || isRightKneeHigh) {
-          this._highKneesState = 'up';
-          this.highKneesCount += 1; // Count each time a knee goes up
-          this.playSuccessSound(); // Play success sound
-          if (this.onPushupCount) this.onPushupCount(this.highKneesCount);
-          if (this.onFormFeedback) {
-            this.onFormFeedback({
-              message: `High Knee ${this.highKneesCount}`,
-              type: 'success',
-              timestamp: Date.now()
-            });
-          }
+      // State machine for timing high knees (per-mode)
+      const hk = this.perModeState['highknees'];
+      if (!hk._highKneesState) hk._highKneesState = 'stopped';
+      if (!hk._startTime) hk._startTime = 0;
+      if (!hk._lastUpdateTime) hk._lastUpdateTime = 0;
+
+      const now = Date.now();
+      const MIN_MOVEMENT_INTERVAL = 100; // Minimum time between movements (ms)
+
+      if (hk._highKneesState === 'stopped') {
+        // Start timing when user begins high knees movement
+        if (isDoingHighKnees) {
+          hk._highKneesState = 'active';
+          hk._startTime = now;
+          hk._lastUpdateTime = now;
+          hk.count = 0; // Reset count
+          console.log('🏃 High Knees started!');
         }
-      } else if (this._highKneesState === 'up') {
-        // Reset state when both knees are down again
-        if (!isLeftKneeHigh && !isRightKneeHigh) {
-          this._highKneesState = 'down';
+      } else if (hk._highKneesState === 'active') {
+        if (isDoingHighKnees) {
+          // Continue timing while user is doing high knees
+          hk._lastUpdateTime = now;
+          const elapsedSeconds = Math.floor((now - hk._startTime) / 1000);
+          
+          // Update count (in seconds) every second
+          if (elapsedSeconds > hk.count) {
+            hk.count = elapsedSeconds;
+            if (this.onPushupCount) this.onPushupCount(hk.count);
+            console.log(`⏱️ High Knees: ${elapsedSeconds} seconds`);
+          }
+        } else {
+          // Check if user stopped for too long
+          const timeSinceLastMovement = now - hk._lastUpdateTime;
+          if (timeSinceLastMovement > 1500) { // Stop if no movement for 1.5 seconds
+            hk._highKneesState = 'stopped';
+            console.log('⏹️ High Knees stopped!');
+          }
         }
       }
 
@@ -861,9 +1276,22 @@ class PoseDetectionUtils {
 
   // Reset counter
   resetCounter() {
-    this.pushupCount = 0;
-    this.highKneesCount = 0;
-    this.pushupState = 'up';
+    // Reset only the counters/state for the currently selected exercise
+    const mode = this.exerciseMode;
+    if (this.perModeState && this.perModeState[mode]) {
+      this.perModeState[mode].count = 0;
+      this.perModeState[mode].state = 'up';
+      // reset mode-specific extras
+      if (mode === 'mountainclimbers') {
+        this.perModeState[mode]._lastLeftKneeY = null;
+        this.perModeState[mode]._lastRightKneeY = null;
+        this.perModeState[mode]._climberState = 'neutral';
+        this.perModeState[mode]._lastClimberTime = 0;
+      }
+      if (mode === 'burpees') {
+        this.perModeState[mode]._burpeeState = 'ready';
+      }
+    }
     this.postureStatus = 'unknown';
     // Reset plank timing
     this.accumulatedCorrectMs = 0;
@@ -873,9 +1301,11 @@ class PoseDetectionUtils {
 
   // Get current stats
   getStats() {
+    const mode = this.exerciseMode;
+    const stateObj = this.perModeState && this.perModeState[mode] ? this.perModeState[mode] : { count: 0, state: 'up' };
     return {
-      count: this.exerciseMode === 'highknees' ? this.highKneesCount : this.pushupCount,
-      state: this.pushupState,
+      count: stateObj.count || 0,
+      state: stateObj.state || 'up',
       posture: this.postureStatus,
       timeSec: Math.floor((this.accumulatedCorrectMs + (this.timerRunning ? (Date.now() - this.startCorrectTimestampMs) : 0)) / 1000)
     };
@@ -887,11 +1317,12 @@ class PoseDetectionUtils {
   }
 
   // Set callback functions
-  setCallbacks({ onPushupCount, onPostureChange, onFormFeedback, onTimeUpdate }) {
+  setCallbacks({ onPushupCount, onPostureChange, onFormFeedback, onTimeUpdate, onCalibrationStatusChange }) {
     this.onPushupCount = onPushupCount;
     this.onPostureChange = onPostureChange;
     this.onFormFeedback = onFormFeedback;
     this.onTimeUpdate = onTimeUpdate;
+    this.onCalibrationStatusChange = onCalibrationStatusChange;
   }
 
   // Cleanup

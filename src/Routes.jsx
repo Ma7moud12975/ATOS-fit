@@ -16,9 +16,9 @@ import RegisterScreen from './pages/register-screen';
 import UserProfile from './pages/user-profile';
 import OnboardingScreen from './pages/onboarding';
 import ProtectedRoute from './components/ui/ProtectedRoute';
-import NotificationsPage from './pages/notifications';
 import SchedulePage from './pages/schedule';
 import ExerciseLibrary from './pages/exercise-library';
+import AchievementsPage from './pages/achievements';
 
 const Routes = () => {
   return (
@@ -39,9 +39,10 @@ const Routes = () => {
             <Route path="/register-screen" element={<RegisterScreen />} />
             <Route path="/onboarding" element={<ProtectedRoute><OnboardingScreen /></ProtectedRoute>} />
             <Route path="/user-profile" element={<UserProfile />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
+            
             <Route path="/schedule" element={<SchedulePage />} />
             <Route path="/exercise-library" element={<ExerciseLibrary />} />
+            <Route path="/achievements" element={<AchievementsPage />} />
             <Route path="*" element={<NotFound />} />
           </RouterRoutes>
         </ErrorBoundary>

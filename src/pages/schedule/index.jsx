@@ -5,6 +5,7 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import AppHeader from '../../components/ui/AppHeader';
 import SidebarNavigation from '../../components/ui/SidebarNavigation';
+import AppointmentCard from './components/AppointmentCard';
 
 const SchedulePage = () => {
   const navigate = useNavigate();
@@ -18,7 +19,9 @@ const SchedulePage = () => {
     time: '',
     duration: '30',
     type: 'workout',
-    notes: ''
+    notes: '',
+    workoutName: '',
+    reps: '',
   });
 
   // Load appointments from localStorage
@@ -82,7 +85,9 @@ const SchedulePage = () => {
       time: '',
       duration: '30',
       type: 'workout',
-      notes: ''
+      notes: '',
+      workoutName: '',
+      reps: '',
     });
     setShowAddForm(false);
   };
@@ -216,6 +221,18 @@ const SchedulePage = () => {
                   value={formData.time}
                   onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                 />
+                <Input
+                  label="Workout Name"
+                  placeholder="e.g., Push-ups"
+                  value={formData.workoutName}
+                  onChange={(e) => setFormData({ ...formData, workoutName: e.target.value })}
+                />
+                <Input
+                  label="Reps"
+                  placeholder="e.g., 12"
+                  value={formData.reps}
+                  onChange={(e) => setFormData({ ...formData, reps: e.target.value })}
+                />
                 <div>
                   <label className="block text-sm font-medium text-card-foreground mb-2">Duration (minutes)</label>
                   <select
@@ -278,54 +295,12 @@ const SchedulePage = () => {
             {upcomingAppointments.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {upcomingAppointments.map((appointment) => (
-                  <div
+                  <AppointmentCard
                     key={appointment.id}
-                    className="bg-card border border-border rounded-lg p-6 hover:shadow-elevation-2 transition-all duration-200"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`w-12 h-12 ${getAppointmentColor(appointment.type)} rounded-full flex items-center justify-center`}>
-                        <Icon name={getAppointmentIcon(appointment.type)} size={20} color="white" />
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleCompleteAppointment(appointment.id)}
-                          iconName="Check"
-                          className="text-success"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteAppointment(appointment.id)}
-                          iconName="Trash2"
-                          className="text-destructive"
-                        />
-                      </div>
-                    </div>
-                    
-                    <h3 className="font-semibold text-card-foreground mb-2">{appointment.title}</h3>
-                    <div className="space-y-2 text-sm text-muted-foreground">
-                      <div className="flex items-center space-x-2">
-                        <Icon name="Calendar" size={14} />
-                        <span>{new Date(appointment.date).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Icon name="Clock" size={14} />
-                        <span>{appointment.time} ({appointment.duration} min)</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Icon name="Tag" size={14} />
-                        <span className="capitalize">{appointment.type}</span>
-                      </div>
-                    </div>
-                    
-                    {appointment.notes && (
-                      <div className="mt-4 p-3 bg-muted rounded-lg">
-                        <p className="text-sm text-muted-foreground">{appointment.notes}</p>
-                      </div>
-                    )}
-                  </div>
+                    appointment={appointment}
+                    onComplete={handleCompleteAppointment}
+                    onDelete={handleDeleteAppointment}
+                  />
                 ))}
               </div>
             ) : (
@@ -352,42 +327,12 @@ const SchedulePage = () => {
               <h2 className="text-2xl font-bold text-foreground mb-4">Completed Appointments</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {completedAppointments.slice(0, 6).map((appointment) => (
-                  <div
+                  <AppointmentCard
                     key={appointment.id}
-                    className="bg-card border border-border rounded-lg p-6 opacity-75"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`w-12 h-12 ${getAppointmentColor(appointment.type)} rounded-full flex items-center justify-center`}>
-                        <Icon name={getAppointmentIcon(appointment.type)} size={20} color="white" />
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Icon name="CheckCircle" size={16} className="text-success" />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteAppointment(appointment.id)}
-                          iconName="Trash2"
-                          className="text-destructive"
-                        />
-                      </div>
-                    </div>
-                    
-                    <h3 className="font-semibold text-card-foreground mb-2">{appointment.title}</h3>
-                    <div className="space-y-2 text-sm text-muted-foreground">
-                      <div className="flex items-center space-x-2">
-                        <Icon name="Calendar" size={14} />
-                        <span>{new Date(appointment.date).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Icon name="Clock" size={14} />
-                        <span>{appointment.time} ({appointment.duration} min)</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Icon name="Tag" size={14} />
-                        <span className="capitalize">{appointment.type}</span>
-                      </div>
-                    </div>
-                  </div>
+                    appointment={appointment}
+                    onComplete={handleCompleteAppointment}
+                    onDelete={handleDeleteAppointment}
+                  />
                 ))}
               </div>
             </div>

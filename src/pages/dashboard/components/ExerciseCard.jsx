@@ -33,7 +33,7 @@ const ExerciseCard = ({ exercise }) => {
     'Jumping Jacks': 'https://i.pinimg.com/originals/b4/b5/b9/b4b5b94c119dde698d138b8fe0b8d521.gif',
     'High Knees': 'https://i.pinimg.com/originals/95/db/ae/95dbae82f51c67fc0f5aa30a57da663c.gif',
     'Plank': 'https://i.pinimg.com/736x/83/84/65/83846529c8c33a1d03b493c82bb23570.jpg',
-    'Side Plank': 'https://i.pinimg.com/originals/4b/bb/42/4bbb42ef233861f68ca244692493cb3d.gif',
+    'Side Plank': 'https://i.pinimg.com/736x/bd/cf/9a/bdcf9a908f66c3f28a47adc08a6c8448.jpg',
     'Wall Sit': 'https://i.pinimg.com/originals/50/bb/fa/50bbfa9d11ce94feff442ad0c1a3e250.gif'
   };
   // Normalize lookup: lowercase and strip non-alphanumeric so "Push-ups", "Push Ups" both match

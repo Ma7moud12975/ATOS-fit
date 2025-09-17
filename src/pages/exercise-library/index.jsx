@@ -5,6 +5,7 @@ import SidebarNavigation from '../../components/ui/SidebarNavigation';
 import ExerciseCard from '../dashboard/components/ExerciseCard';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
+import PlanningSection from './components/PlanningSection';
 
 const ExerciseLibrary = () => {
   const navigate = useNavigate();
@@ -217,6 +218,8 @@ const ExerciseLibrary = () => {
               Back to Dashboard
             </Button>
           </div>
+
+          <PlanningSection />
 
           {/* Search and Filter */}
           <div className="bg-card border border-border rounded-lg p-6 mb-6">

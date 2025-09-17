@@ -36,17 +36,19 @@ const SidebarNavigation = ({
       icon: 'MessageCircle',
       tooltip: 'AI coaching and nutrition analysis'
     },
-    {
-      label: 'Notifications',
-      path: '/notifications',
-      icon: 'Bell',
-      tooltip: 'View and manage notifications'
-    },
+    
     {
       label: 'Profile',
       path: '/user-profile',
       icon: 'User',
       tooltip: 'Personal metrics and achievements'
+    }
+    ,
+    {
+      label: 'Achievements',
+      path: '/achievements',
+      icon: 'Trophy',
+      tooltip: 'View all your earned achievements and progress'
     }
   ];
 
@@ -156,20 +158,7 @@ const SidebarNavigation = ({
 
           {/* Footer */}
           <div className="p-4 border-t border-border">
-            <div className="bg-muted rounded-lg p-4">
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="w-8 h-8 bg-success rounded-full flex items-center justify-center">
-                  <Icon name="Trophy" size={16} color="white" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-card-foreground">Weekly Goal</p>
-                  <p className="text-xs text-muted-foreground">4 of 5 workouts</p>
-                </div>
-              </div>
-              <div className="w-full bg-border rounded-full h-2">
-                <div className="bg-success h-2 rounded-full" style={{ width: '80%' }}></div>
-              </div>
-            </div>
+            
           </div>
         </div>
       </aside>
