@@ -7,7 +7,7 @@ import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
 import PlanningSection from './components/PlanningSection';
 
-const ExerciseLibrary = () => {
+const Exercises = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('light');
@@ -204,7 +204,7 @@ const ExerciseLibrary = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Exercise Library</h1>
+                            <h1 className="text-3xl font-bold text-foreground">Exercises</h1>
               <p className="text-muted-foreground mt-1">
                 Choose from our collection of home-friendly exercises
               </p>
@@ -315,4 +315,4 @@ const ExerciseLibrary = () => {
   );
 };
 
-export default ExerciseLibrary;
+export default Exercises;

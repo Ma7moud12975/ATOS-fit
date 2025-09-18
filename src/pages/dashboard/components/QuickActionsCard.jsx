@@ -9,9 +9,9 @@ const QuickActionsCard = () => {
   const quickActions = [
     {
       id: 1,
-      title: 'Exercise Library',
+      title: 'Exercises',
       description: 'Browse our exercise collection',
-      icon: 'BookOpen',
+      icon: 'Dumbbell',
       color: 'bg-primary/10 text-primary',
       action: () => navigate('/exercise-library')
     },

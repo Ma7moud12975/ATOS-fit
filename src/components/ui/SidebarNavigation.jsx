@@ -19,9 +19,9 @@ const SidebarNavigation = ({
       tooltip: 'Workout overview and quick start'
     },
     {
-      label: 'Exercise Library',
+      label: 'Exercises',
       path: '/exercise-library',
-      icon: 'BookOpen',
+      icon: 'Dumbbell',
       tooltip: 'Browse our collection of exercises'
     },
     {
