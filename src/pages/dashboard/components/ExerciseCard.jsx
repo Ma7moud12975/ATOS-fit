@@ -1,11 +1,31 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import Input from '../../../components/ui/Input';
 
 const ExerciseCard = ({ exercise }) => {
   const navigate = useNavigate();
-  // (removed interactive inputs for library cards)
+  const isTimeBased = useMemo(() => {
+    const timeNames = new Set([
+  'Sit Ups',
+      'Jumping Jacks',
+      'High Knees',
+      'Plank',
+      'Side Plank',
+      'Wall Sit'
+    ]);
+    return timeNames.has(exercise?.name) || typeof exercise?.reps === 'string';
+  }, [exercise]);
+
+  const [formState, setFormState] = useState({
+    sets: exercise?.sets || 3,
+    reps: typeof exercise?.reps === 'number' ? exercise?.reps : '',
+    durationSeconds: typeof exercise?.reps === 'string' ? parseInt(String(exercise?.reps).replace(/\D/g, ''), 10) || 30 : 30,
+    notes: ''
+  });
+
+  const updateField = (field, value) => setFormState(prev => ({ ...prev, [field]: value }));
 
   const handleStartWorkout = () => {
     navigate('/exercise-workout-screen', { state: { selectedExercise: exercise } });

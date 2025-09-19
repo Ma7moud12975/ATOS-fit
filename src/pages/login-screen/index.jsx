@@ -43,7 +43,6 @@ const LoginScreen = () => {
       root.classList.remove('dark');
     };
   }, []);
-
   
 };
 

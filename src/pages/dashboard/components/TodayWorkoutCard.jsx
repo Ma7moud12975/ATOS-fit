@@ -164,7 +164,7 @@ const TodayWorkoutCard = ({ workoutData, onCustomize }) => {
             { id: 2, name: 'Squats', category: 'Lower Body', difficulty: 'Beginner', sets: 3, reps: 20, duration: '4-6 min' },
             { id: 3, name: 'Lunges', category: 'Lower Body', difficulty: 'Intermediate', sets: 3, reps: 12, duration: '5-7 min' },
             { id: 4, name: 'Burpees', category: 'Full Body', difficulty: 'Advanced', sets: 3, reps: 10, duration: '6-8 min' },
-            { id: 5, name: 'Mountain Climbers', category: 'Cardio', difficulty: 'Intermediate', sets: 3, reps: '20s', duration: '3-5 min' },
+            { id: 5, name: 'Sit Ups', category: 'Core', difficulty: 'Intermediate', sets: 3, reps: '15', duration: '3-5 min' },
             { id: 6, name: 'Jumping Jacks', category: 'Cardio', difficulty: 'Beginner', sets: 3, reps: '30s', duration: '2-4 min' },
             { id: 7, name: 'High Knees', category: 'Cardio', difficulty: 'Beginner', sets: 3, reps: '25s', duration: '2-3 min' },
             { id: 8, name: 'Plank', category: 'Core', difficulty: 'Intermediate', sets: 3, reps: '30s', duration: '1-3 min' },

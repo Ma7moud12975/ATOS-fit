@@ -5,9 +5,8 @@ import SidebarNavigation from '../../components/ui/SidebarNavigation';
 import ExerciseCard from '../dashboard/components/ExerciseCard';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
-import PlanningSection from './components/PlanningSection';
 
-const Exercises = () => {
+const ExerciseLibrary = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('light');
@@ -62,7 +61,7 @@ const Exercises = () => {
     },
     {
       id: 5,
-      name: "Mountain Climbers",
+  name: "Sit Ups",
       targetMuscles: "Core, Cardio, Arms",
       difficulty: "Intermediate",
       duration: 8,
@@ -204,7 +203,7 @@ const Exercises = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-                            <h1 className="text-3xl font-bold text-foreground">Exercises</h1>
+              <h1 className="text-3xl font-bold text-foreground">Exercise Library</h1>
               <p className="text-muted-foreground mt-1">
                 Choose from our collection of home-friendly exercises
               </p>
@@ -218,8 +217,6 @@ const Exercises = () => {
               Back to Dashboard
             </Button>
           </div>
-
-          <PlanningSection />
 
           {/* Search and Filter */}
           <div className="bg-card border border-border rounded-lg p-6 mb-6">
@@ -315,4 +312,4 @@ const Exercises = () => {
   );
 };
 
-export default Exercises;
+export default ExerciseLibrary;

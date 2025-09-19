@@ -10,13 +10,14 @@ const PER_REP_BASE = {
   squats: 0.32,
   lunges: 0.4,
   burpees: 1.0,
-  mountainclimbers: 0.35,
+  situps: 0.25,
   jumpingjacks: 0.2
 };
 
 // Approximate kcal per minute for isometric/time-based exercises (plank) at 70kg
 const PER_MIN_BASE = {
   plank: 4.5, // kcal per minute
+  sideplank: 4.0, // kcal per minute (slightly less than regular plank)
   // fallback cardio-ish rate
   defaultTime: 6.0
 };
