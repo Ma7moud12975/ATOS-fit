@@ -11,9 +11,10 @@
 
 > A real-time fitness tracking web application that uses TensorFlow.js and pose detection to monitor exercise form, count repetitions, and provide feedback—all through your webcam!
 > 
-<img width="1894" height="1079" alt="image" src="https://github.com/user-attachments/assets/204c4908-7c1c-4c65-a577-6641fa1649c1" />
-<img width="1876" height="1079" alt="image" src="https://github.com/user-attachments/assets/0dc53445-eecb-41b8-be9f-f817c46359b1" />
-<img width="1896" height="1079" alt="image" src="https://github.com/user-attachments/assets/f5ab2794-93fc-43ed-8307-6c66f0ba998b" />
+<img width="1894" height="1079" alt="Screenshot 2025-09-12 155454" src="https://github.com/user-attachments/assets/24268d17-7c1b-4af6-a050-a61cff7ab415" />
+<img width="1876" height="1079" alt="Screenshot 2025-09-12 155527" src="https://github.com/user-attachments/assets/9c110a76-f73c-438d-8d42-b19bf052ede8" />
+<img width="1893" height="1079" alt="Screenshot 2025-09-17 125816" src="https://github.com/user-attachments/assets/77cc2ea8-006e-49a3-ad4e-4a01bbbe2ce0" />
+<img width="1891" height="1079" alt="Screenshot 2025-09-17 130240" src="https://github.com/user-attachments/assets/5298cd5b-931d-4251-91d2-a8ee85614c54" />
 
 ---
 
