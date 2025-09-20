@@ -3,28 +3,28 @@ class PoseDetectionUtils {
   constructor() {
     this.pose = null;
     this.isInitialized = false;
-  // Per-exercise state to avoid cross-contamination between different exercises
-  // Structure: { <mode>: { state: 'up'|'down'|'neutral'|..., count: number, extra... } }
-  this.perModeState = {};
-  const initMode = (mode) => ({ state: 'up', count: 0 });
-  this.perModeState['pushups'] = initMode('pushups');
-  this.perModeState['squats'] = initMode('squats');
-  this.perModeState['lunges'] = initMode('lunges');
-  this.perModeState['burpees'] = initMode('burpees');
-  // Keep existing exercises from HEAD and add new exercises from new-exercise branch
-  this.perModeState['situps'] = { state: 'neutral', count: 0, _lastTorsoAngle: null, _situpState: 'neutral', _lastSitupTime: 0 };
-  this.perModeState['highknees'] = { state: 'down', count: 0 };
-  this.perModeState['jumpingjacks'] = { state: 'down', count: 0 };
-  this.perModeState['sideplank'] = { state: 'neutral', count: 0, _stableCount: 0, _lastHipY: null, _lastShoulderY: null, _lastAnkleY: null, _lastTimestamp: 0 };
-  this.perModeState['plank'] = { state: 'neutral', count: 0, _stableCount: 0, _lastHipY: null, _lastShoulderY: null, _lastAnkleY: null, _lastTimestamp: 0 };
-  // New exercises from new-exercise branch
-  this.perModeState['widepushups'] = initMode('widepushups');
-  this.perModeState['narrowpushups'] = initMode('narrowpushups');
-  this.perModeState['diamondpushups'] = initMode('diamondpushups');
-  this.perModeState['kneepushups'] = initMode('kneepushups');
-  this.perModeState['straightarmplank'] = { state: 'neutral', count: 0 };
-  this.perModeState['reversestraightarmplank'] = { state: 'neutral', count: 0 };
-  this.perModeState['kneeplank'] = { state: 'neutral', count: 0 };
+    // Per-exercise state to avoid cross-contamination between different exercises
+    // Structure: { <mode>: { state: 'up'|'down'|'neutral'|..., count: number, extra... } }
+    this.perModeState = {};
+    const initMode = (mode) => ({ state: 'up', count: 0 });
+    this.perModeState['pushups'] = initMode('pushups');
+    this.perModeState['squats'] = initMode('squats');
+    this.perModeState['lunges'] = initMode('lunges');
+    this.perModeState['burpees'] = initMode('burpees');
+    // Keep existing exercises from HEAD and add new exercises from new-exercise branch
+    this.perModeState['situps'] = { state: 'neutral', count: 0, _lastTorsoAngle: null, _situpState: 'neutral', _lastSitupTime: 0 };
+    this.perModeState['highknees'] = { state: 'down', count: 0 };
+    this.perModeState['jumpingjacks'] = { state: 'down', count: 0 };
+    this.perModeState['sideplank'] = { state: 'neutral', count: 0, _stableCount: 0, _lastHipY: null, _lastShoulderY: null, _lastAnkleY: null, _lastTimestamp: 0 };
+    this.perModeState['plank'] = { state: 'neutral', count: 0, _stableCount: 0, _lastHipY: null, _lastShoulderY: null, _lastAnkleY: null, _lastTimestamp: 0 };
+    // New exercises from new-exercise branch
+    this.perModeState['widepushups'] = initMode('widepushups');
+    this.perModeState['narrowpushups'] = initMode('narrowpushups');
+    this.perModeState['diamondpushups'] = initMode('diamondpushups');
+    this.perModeState['kneepushups'] = initMode('kneepushups');
+    this.perModeState['straightarmplank'] = { state: 'neutral', count: 0 };
+    this.perModeState['reversestraightarmplank'] = { state: 'neutral', count: 0 };
+    this.perModeState['kneeplank'] = { state: 'neutral', count: 0 };
     this.postureStatus = 'unknown'; // correct, incorrect, unknown
     this.lastWarningTime = 0;
     this.videoDimensionsLogged = false;
@@ -45,7 +45,7 @@ class PoseDetectionUtils {
   async initialize() {
     try {
       console.log('🚀 Initializing MediaPipe Pose...');
-      
+
       // Wait for MediaPipe to load if not ready
       if (!window.Pose) {
         console.warn('MediaPipe Pose not loaded yet, waiting...');
@@ -58,13 +58,13 @@ class PoseDetectionUtils {
             console.log(`Still waiting for MediaPipe... (${attempts * 200}ms)`);
           }
         }
-        
+
         if (!window.Pose) {
           console.error('MediaPipe Pose failed to load after waiting');
           return false;
         }
       }
-      
+
       console.log('✅ MediaPipe Pose found in window object');
 
       this.pose = new window.Pose({
@@ -84,7 +84,7 @@ class PoseDetectionUtils {
 
       this.pose.setOptions(config);
       this.pose.onResults(this.onResults.bind(this));
-      
+
       this.isInitialized = true;
       console.log('MediaPipe Pose initialized successfully');
       return true;
@@ -118,10 +118,10 @@ class PoseDetectionUtils {
       const leftHip = landmarks[config.LEFT_HIP || 23];
       const rightHip = landmarks[config.RIGHT_HIP || 24];
 
-    const leftKnee = landmarks[config.LEFT_KNEE || 25];
-  const rightKnee = landmarks[config.RIGHT_KNEE || 26];
-    const leftAnkle = landmarks[config.LEFT_ANKLE || 27];
-    const rightAnkle = landmarks[config.RIGHT_ANKLE || 28];
+      const leftKnee = landmarks[config.LEFT_KNEE || 25];
+      const rightKnee = landmarks[config.RIGHT_KNEE || 26];
+      const leftAnkle = landmarks[config.LEFT_ANKLE || 27];
+      const rightAnkle = landmarks[config.RIGHT_ANKLE || 28];
 
       if (!leftShoulder || !leftElbow || !leftWrist || !rightShoulder || !rightElbow || !rightWrist || !leftHip || !rightHip) {
         return;
@@ -162,7 +162,7 @@ class PoseDetectionUtils {
       const shoulderDrop = avgShoulderY - (pstate._baselineShoulderY || avgShoulderY);
       const shoulderDropThreshold = pushupConfig.SHOULDER_DROP_THRESHOLD ?? 0.06; // normalized units
       const pushupPosition = (avgElbowAngle <= downThreshold) || (shoulderDrop >= shoulderDropThreshold) || (avgShoulderY >= (1 - shoulderHeightThreshold));
-      
+
       // Standing position: elbows straight and shoulders high (not horizontal)
       const standingPosition = (avgElbowAngle >= upThreshold) && isLikelyStanding;
 
@@ -179,20 +179,20 @@ class PoseDetectionUtils {
       }
 
       const REQUIRED_STABLE_FRAMES = window.MediaPipeConfig?.PUSHUP_CONFIG?.START_STABLE_FRAMES ?? 6; // ~6 frames
-  // Detect knees-on-ground (relative vertical delta between knee and hip)
-  const KNEE_ON_GROUND_DY = window.MediaPipeConfig?.PUSHUP_CONFIG?.KNEE_ON_GROUND_DY ?? 0.05;
-  const FOOT_RAISED_DY = window.MediaPipeConfig?.PUSHUP_CONFIG?.FOOT_RAISED_DY ?? 0.03;
-  const leftKneeOnGround = leftKnee && leftHip && ((leftKnee.y - leftHip.y) > KNEE_ON_GROUND_DY);
-  const rightKneeOnGround = rightKnee && rightHip && ((rightKnee.y - rightHip.y) > KNEE_ON_GROUND_DY);
-  // Ankle higher than knee indicates foot is raised (y axis increases downward in normalized coords)
-  const leftFootRaised = leftAnkle && leftKnee && ((leftKnee.y - leftAnkle.y) > FOOT_RAISED_DY);
-  const rightFootRaised = rightAnkle && rightKnee && ((rightKnee.y - rightAnkle.y) > FOOT_RAISED_DY);
-  // Accept knee-on-ground if either both knees down or at least one knee down (even if other foot raised)
-  const kneesOnGround = (leftKneeOnGround && rightKneeOnGround) || leftKneeOnGround || rightKneeOnGround || ((leftKneeOnGround || rightKneeOnGround) && (leftFootRaised || rightFootRaised));
+      // Detect knees-on-ground (relative vertical delta between knee and hip)
+      const KNEE_ON_GROUND_DY = window.MediaPipeConfig?.PUSHUP_CONFIG?.KNEE_ON_GROUND_DY ?? 0.05;
+      const FOOT_RAISED_DY = window.MediaPipeConfig?.PUSHUP_CONFIG?.FOOT_RAISED_DY ?? 0.03;
+      const leftKneeOnGround = leftKnee && leftHip && ((leftKnee.y - leftHip.y) > KNEE_ON_GROUND_DY);
+      const rightKneeOnGround = rightKnee && rightHip && ((rightKnee.y - rightHip.y) > KNEE_ON_GROUND_DY);
+      // Ankle higher than knee indicates foot is raised (y axis increases downward in normalized coords)
+      const leftFootRaised = leftAnkle && leftKnee && ((leftKnee.y - leftAnkle.y) > FOOT_RAISED_DY);
+      const rightFootRaised = rightAnkle && rightKnee && ((rightKnee.y - rightAnkle.y) > FOOT_RAISED_DY);
+      // Accept knee-on-ground if either both knees down or at least one knee down (even if other foot raised)
+      const kneesOnGround = (leftKneeOnGround && rightKneeOnGround) || leftKneeOnGround || rightKneeOnGround || ((leftKneeOnGround || rightKneeOnGround) && (leftFootRaised || rightFootRaised));
 
-  // If knees are on ground and elbows are near extension, allow start-pose
-  const elbowNearExtended = avgElbowAngle >= (upThreshold - (pushupConfig?.KNEE_START_ELBOW_SLACK ?? 10));
-  pstate._isInStartPose = pstate._inPositionCount >= REQUIRED_STABLE_FRAMES || (kneesOnGround && elbowNearExtended);
+      // If knees are on ground and elbows are near extension, allow start-pose
+      const elbowNearExtended = avgElbowAngle >= (upThreshold - (pushupConfig?.KNEE_START_ELBOW_SLACK ?? 10));
+      pstate._isInStartPose = pstate._inPositionCount >= REQUIRED_STABLE_FRAMES || (kneesOnGround && elbowNearExtended);
 
       // Debounce reps: minimum ms between consecutive counts
       const MIN_REP_MS = window.MediaPipeConfig?.PUSHUP_CONFIG?.MIN_REP_MS ?? 400;
@@ -239,7 +239,7 @@ class PoseDetectionUtils {
       if (Math.random() < 0.05) {
         console.log('📹 Processing frame...');
       }
-      
+
       // Check if video dimensions are reasonable
       if (videoElement.videoWidth === 0 || videoElement.videoHeight === 0) {
         if (Math.random() < 0.1) {
@@ -247,13 +247,13 @@ class PoseDetectionUtils {
         }
         return;
       }
-      
+
       // Log video dimensions only once per session
       if (!this.videoDimensionsLogged) {
         console.log(`📏 Video dimensions: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
         this.videoDimensionsLogged = true;
       }
-      
+
       // Allow larger videos but with a reasonable limit
       const maxWidth = 1920;
       const maxHeight = 1080;
@@ -261,7 +261,7 @@ class PoseDetectionUtils {
         console.log('⚠️ Video too large (>1920x1080), skipping frame');
         return;
       }
-      
+
       await this.pose.send({ image: videoElement });
     } catch (error) {
       if (error.message?.includes('memory access out of bounds')) {
@@ -275,10 +275,10 @@ class PoseDetectionUtils {
   // Handle pose detection results
   onResults(results) {
     console.log('🎯 onResults called!', results.poseLandmarks ? `Found ${results.poseLandmarks.length} landmarks` : 'No landmarks');
-    
+
     // Store results for drawing
     this.lastResults = results;
-    
+
     if (!results.poseLandmarks) {
       this.postureStatus = 'unknown';
       if (this.onPostureChange) {
@@ -297,7 +297,7 @@ class PoseDetectionUtils {
     }
 
     const landmarks = results.poseLandmarks;
-    
+
     // Evaluate posture for the current exercise using the unified checker.
     // Use a short consecutive-frame smoothing window to avoid brief spikes flipping posture state
     const isPostureCorrectInstant = this.checkBackAlignment(landmarks);
@@ -314,10 +314,10 @@ class PoseDetectionUtils {
       this._postureGoodCount = 0;
     }
 
-  const POSTURE_GOOD_FRAMES = window.MediaPipeConfig?.SQUAT_CONFIG?.POSTURE_GOOD_FRAMES ?? 3;
-  // For squats we require more consecutive bad frames before flipping to 'incorrect' to avoid
-  // false positives during normal descent. Default to 6 for squats, 4 otherwise.
-  const POSTURE_BAD_FRAMES = (this.exerciseMode === 'squats') ? (window.MediaPipeConfig?.SQUAT_CONFIG?.POSTURE_BAD_FRAMES ?? 6) : (window.MediaPipeConfig?.SQUAT_CONFIG?.POSTURE_BAD_FRAMES ?? 4);
+    const POSTURE_GOOD_FRAMES = window.MediaPipeConfig?.SQUAT_CONFIG?.POSTURE_GOOD_FRAMES ?? 3;
+    // For squats we require more consecutive bad frames before flipping to 'incorrect' to avoid
+    // false positives during normal descent. Default to 6 for squats, 4 otherwise.
+    const POSTURE_BAD_FRAMES = (this.exerciseMode === 'squats') ? (window.MediaPipeConfig?.SQUAT_CONFIG?.POSTURE_BAD_FRAMES ?? 6) : (window.MediaPipeConfig?.SQUAT_CONFIG?.POSTURE_BAD_FRAMES ?? 4);
 
     let smoothedStatus = this.postureStatus;
     if (this._postureGoodCount >= POSTURE_GOOD_FRAMES) {
@@ -352,9 +352,9 @@ class PoseDetectionUtils {
     const kneeCenter = leftKnee && rightKnee ? { x: (leftKnee.x + rightKnee.x) / 2, y: (leftKnee.y + rightKnee.y) / 2 } : null;
     const hipBelowKnee = hipCenter && kneeCenter ? (hipCenter.y > kneeCenter.y) : false;
 
-  // Do not emit posture warnings or block counting for squats; allow squat-specific logic to handle counting.
-  // Skip posture warnings and counting block for Sit-Ups only (allow counting even if back not perfectly straight)
-  if (this.postureStatus !== 'correct' && !cardioExercises.includes(this.exerciseMode) && this.exerciseMode !== 'squats' && this.exerciseMode !== 'situps') {
+    // Do not emit posture warnings or block counting for squats; allow squat-specific logic to handle counting.
+    // Skip posture warnings and counting block for Sit-Ups only (allow counting even if back not perfectly straight)
+    if (this.postureStatus !== 'correct' && !cardioExercises.includes(this.exerciseMode) && this.exerciseMode !== 'squats' && this.exerciseMode !== 'situps') {
       const currentTime = Date.now();
       const cooldown = window.MediaPipeConfig?.PLANK_CONFIG?.WARNING_COOLDOWN || 2000;
 
@@ -372,7 +372,7 @@ class PoseDetectionUtils {
       }
 
       // Stop plank timer while incorrect (include reverse plank)
-  if ((this.exerciseMode === 'plank' || this.exerciseMode === 'sideplank') && this.timerRunning) {
+      if ((this.exerciseMode === 'plank' || this.exerciseMode === 'sideplank') && this.timerRunning) {
         this.accumulatedCorrectMs += currentTime - this.startCorrectTimestampMs;
         this.timerRunning = false;
         this.startCorrectTimestampMs = 0;
@@ -386,7 +386,7 @@ class PoseDetectionUtils {
     }
 
     // Posture is correct
-  if (this.exerciseMode === 'plank' || this.exerciseMode === 'sideplank') {
+    if (this.exerciseMode === 'plank' || this.exerciseMode === 'sideplank') {
       // For plank we require a stricter horizontal+stability check before counting time.
       const now = Date.now();
       const plankOk = this.isPlankStrictAndStable(landmarks, now);
@@ -415,45 +415,45 @@ class PoseDetectionUtils {
     }
 
     // Count reps depending on mode
-      if (this.exerciseMode === 'squats') {
-        this.updateSquatCounter(landmarks);
-      } else if (this.exerciseMode === 'lunges') {
-        this.updateLungesCounter(landmarks);
-      } else if (this.exerciseMode === 'burpees') {
-        this.updateBurpeesCounter(landmarks);
-      } else if (this.exerciseMode === 'mountainclimbers') {
-        // legacy mode - map to situps behavior
-        this.updateSitUpsCounter(landmarks);
-      } else if (this.exerciseMode === 'situps') {
-        console.log('🟢 onResults: situps mode active — calling updateSitUpsCounter');
-        this.updateSitUpsCounter(landmarks);
-      } else if (this.exerciseMode === 'highknees') {
-        this.updateHighKneesCounter(landmarks);
-      } else if (this.exerciseMode === 'jumpingjacks') {
+    if (this.exerciseMode === 'squats') {
+      this.updateSquatCounter(landmarks);
+    } else if (this.exerciseMode === 'lunges') {
+      this.updateLungesCounter(landmarks);
+    } else if (this.exerciseMode === 'burpees') {
+      this.updateBurpeesCounter(landmarks);
+    } else if (this.exerciseMode === 'mountainclimbers') {
+      // legacy mode - map to situps behavior
+      this.updateSitUpsCounter(landmarks);
+    } else if (this.exerciseMode === 'situps') {
+      console.log('🟢 onResults: situps mode active — calling updateSitUpsCounter');
+      this.updateSitUpsCounter(landmarks);
+    } else if (this.exerciseMode === 'highknees') {
+      this.updateHighKneesCounter(landmarks);
+    } else if (this.exerciseMode === 'jumpingjacks') {
       console.debug('onResults: jumpingjacks mode - calling updateJumpingJacksCounter');
       this.updateJumpingJacksCounter(landmarks);
-      } else if (this.exerciseMode === 'sideplank') {
-        this.updateSidePlankCounter(landmarks);
-      } else if (this.exerciseMode === 'straightarmplank') {
-        // Straight Arm Plank behaves like Side Plank for posture/time logic but uses its own handler
-        this.updateStraightArmPlankCounter(landmarks);
-      } else if (this.exerciseMode === 'reversestraightarmplank') {
-        // Reverse Straight Arm Plank is identical in logic to straight arm plank but separate mode/name
-        this.updateReverseStraightArmPlankCounter(landmarks);
-      } else if (this.exerciseMode === 'kneeplank') {
-        // Knee Plank: time-based like straight arm plank but with its own mode
-        this.updateKneePlankCounter(landmarks);
-      } else if (this.exerciseMode === 'widepushups') {
-        this.updateWidePushupCounter(landmarks);
-      } else if (this.exerciseMode === 'narrowpushups') {
-        this.updateNarrowPushupCounter(landmarks);
-      } else if (this.exerciseMode === 'diamondpushups') {
-        this.updateDiamondPushupCounter(landmarks);
-      } else if (this.exerciseMode === 'kneepushups') {
-        this.updateKneePushupCounter(landmarks);
-      } else {
-        this.updatePushupCounter(landmarks);
-      }
+    } else if (this.exerciseMode === 'sideplank') {
+      this.updateSidePlankCounter(landmarks);
+    } else if (this.exerciseMode === 'straightarmplank') {
+      // Straight Arm Plank behaves like Side Plank for posture/time logic but uses its own handler
+      this.updateStraightArmPlankCounter(landmarks);
+    } else if (this.exerciseMode === 'reversestraightarmplank') {
+      // Reverse Straight Arm Plank is identical in logic to straight arm plank but separate mode/name
+      this.updateReverseStraightArmPlankCounter(landmarks);
+    } else if (this.exerciseMode === 'kneeplank') {
+      // Knee Plank: time-based like straight arm plank but with its own mode
+      this.updateKneePlankCounter(landmarks);
+    } else if (this.exerciseMode === 'widepushups') {
+      this.updateWidePushupCounter(landmarks);
+    } else if (this.exerciseMode === 'narrowpushups') {
+      this.updateNarrowPushupCounter(landmarks);
+    } else if (this.exerciseMode === 'diamondpushups') {
+      this.updateDiamondPushupCounter(landmarks);
+    } else if (this.exerciseMode === 'kneepushups') {
+      this.updateKneePushupCounter(landmarks);
+    } else {
+      this.updatePushupCounter(landmarks);
+    }
   }
 
   // Allow external code to change exercise mode safely
@@ -530,7 +530,7 @@ class PoseDetectionUtils {
       const shoulderDrop = avgShoulderY - (pstate._baselineShoulderY || avgShoulderY);
       const shoulderDropThreshold = pushupConfig.SHOULDER_DROP_THRESHOLD ?? 0.06; // normalized units
       const pushupPosition = (avgElbowAngle <= downThreshold) || (shoulderDrop >= shoulderDropThreshold) || (avgShoulderY >= (1 - shoulderHeightThreshold));
-      
+
       // Standing position: elbows straight and shoulders high (not horizontal)
       const standingPosition = (avgElbowAngle >= upThreshold) && isLikelyStanding;
 
@@ -580,14 +580,14 @@ class PoseDetectionUtils {
 
   // Calculate angle between three points
   calculateAngle(point1, point2, point3) {
-    const radians = Math.atan2(point3.y - point2.y, point3.x - point2.x) - 
-                   Math.atan2(point1.y - point2.y, point1.x - point2.x);
+    const radians = Math.atan2(point3.y - point2.y, point3.x - point2.x) -
+      Math.atan2(point1.y - point2.y, point1.x - point2.x);
     let angle = Math.abs(radians * 180.0 / Math.PI);
-    
+
     if (angle > 180.0) {
       angle = 360 - angle;
     }
-    
+
     return angle;
   }
 
@@ -617,7 +617,7 @@ class PoseDetectionUtils {
 
       // Compute torso horizontal orientation (prefer side-view angle when available)
       let horizontalOk = false;
-  const MIN_SIDE_ANGLE = cfg.MIN_SIDE_ANGLE ?? 155; // degrees
+      const MIN_SIDE_ANGLE = cfg.MIN_SIDE_ANGLE ?? 155; // degrees
       if (vis(leftShoulder) && vis(leftHip) && vis(leftAnkle)) {
         const sideAngle = this.calculateAngle(leftShoulder, leftHip, leftAnkle);
         horizontalOk = sideAngle >= MIN_SIDE_ANGLE;
@@ -626,27 +626,27 @@ class PoseDetectionUtils {
         horizontalOk = sideAngle >= MIN_SIDE_ANGLE;
       } else {
         // front-facing fallback: shoulder-hip axis near horizontal
-  const shoulderCenter = { x: (leftShoulder.x + rightShoulder.x) / 2, y: (leftShoulder.y + rightShoulder.y) / 2 };
-  const hipCenter = { x: (leftHip.x + rightHip.x) / 2, y: (leftHip.y + rightHip.y) / 2 };
-  const dx = shoulderCenter.x - hipCenter.x;
-  const dy = shoulderCenter.y - hipCenter.y;
-  const orientDeg = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
-  // Allow slightly more tolerance for imperfect camera angles / small movements
-  const HORIZ_MAX = cfg.HORIZ_MAX_DEG ?? 30;
-  horizontalOk = (orientDeg <= HORIZ_MAX) || (orientDeg >= (180 - HORIZ_MAX));
+        const shoulderCenter = { x: (leftShoulder.x + rightShoulder.x) / 2, y: (leftShoulder.y + rightShoulder.y) / 2 };
+        const hipCenter = { x: (leftHip.x + rightHip.x) / 2, y: (leftHip.y + rightHip.y) / 2 };
+        const dx = shoulderCenter.x - hipCenter.x;
+        const dy = shoulderCenter.y - hipCenter.y;
+        const orientDeg = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+        // Allow slightly more tolerance for imperfect camera angles / small movements
+        const HORIZ_MAX = cfg.HORIZ_MAX_DEG ?? 30;
+        horizontalOk = (orientDeg <= HORIZ_MAX) || (orientDeg >= (180 - HORIZ_MAX));
       }
 
       if (!horizontalOk) return false;
 
       // Stability: ensure minimal movement in key points across consecutive frames
-  // Use per-mode state so sideplank and plank maintain independent stability counters
-  const state = this.perModeState[this.exerciseMode] || this.perModeState['plank'];
+      // Use per-mode state so sideplank and plank maintain independent stability counters
+      const state = this.perModeState[this.exerciseMode] || this.perModeState['plank'];
       const hipY = (leftHip.y + rightHip.y) / 2;
       const shoulderY = (leftShoulder.y + rightShoulder.y) / 2;
       const ankleY = (leftAnkle && rightAnkle) ? ((leftAnkle.y + rightAnkle.y) / 2) : null;
 
-  // Allow more movement per second (user may sway slightly) — increase default tolerance
-  const maxDeltaPerSec = cfg.MAX_DELTA_PER_SEC ?? 0.25; // normalized units per second
+      // Allow more movement per second (user may sway slightly) — increase default tolerance
+      const maxDeltaPerSec = cfg.MAX_DELTA_PER_SEC ?? 0.25; // normalized units per second
       const now = nowMs || Date.now();
       const dt = Math.max(1, now - (state._lastTimestamp || now));
 
@@ -673,8 +673,8 @@ class PoseDetectionUtils {
       if (ankleY != null) state._lastAnkleY = ankleY;
       state._lastTimestamp = now;
 
-  // Require fewer consecutive 'stable' frames so small adjustments don't block counting
-  const REQUIRED_STABLE_FRAMES = cfg.REQUIRED_STABLE_FRAMES ?? 4;
+      // Require fewer consecutive 'stable' frames so small adjustments don't block counting
+      const REQUIRED_STABLE_FRAMES = cfg.REQUIRED_STABLE_FRAMES ?? 4;
       const stableEnough = state._stableCount >= REQUIRED_STABLE_FRAMES;
 
       // Additionally enforce that user is not upright (filter out standing or knee-supported poses)
@@ -751,7 +751,7 @@ class PoseDetectionUtils {
       const kneeY = (leftKnee.y + rightKnee.y) / 2;
       // In normalized coordinates hip above knee when standing
       const gap = kneeY - hipY; // positive when hip above knee
-  const GAP_MIN = window.MediaPipeConfig?.SQUAT_CONFIG?.START_HIP_KNEE_GAP ?? 0.01;
+      const GAP_MIN = window.MediaPipeConfig?.SQUAT_CONFIG?.START_HIP_KNEE_GAP ?? 0.01;
       if (gap < GAP_MIN) return false;
 
       // Torso should be roughly vertical when standing
@@ -760,8 +760,8 @@ class PoseDetectionUtils {
       const dx = shoulderCenter.x - hipCenter.x;
       const dy = shoulderCenter.y - hipCenter.y;
       const angDeg = Math.abs(Math.atan2(dx, -dy) * 180 / Math.PI); // similar to torso tilt in squat logic
-  const MIN_VERT = window.MediaPipeConfig?.SQUAT_CONFIG?.STANDING_TORSO_MIN_DEG ?? 60;
-  const MAX_VERT = window.MediaPipeConfig?.SQUAT_CONFIG?.STANDING_TORSO_MAX_DEG ?? 120;
+      const MIN_VERT = window.MediaPipeConfig?.SQUAT_CONFIG?.STANDING_TORSO_MIN_DEG ?? 60;
+      const MAX_VERT = window.MediaPipeConfig?.SQUAT_CONFIG?.STANDING_TORSO_MAX_DEG ?? 120;
       if (angDeg < MIN_VERT || angDeg > MAX_VERT) return false;
 
       return true;
@@ -774,7 +774,7 @@ class PoseDetectionUtils {
   checkBackAlignment(landmarks) {
     try {
       const config = window.MediaPipeConfig?.POSE_LANDMARKS || {};
-      
+
       const leftShoulder = landmarks[config.LEFT_SHOULDER || 11];
       const rightShoulder = landmarks[config.RIGHT_SHOULDER || 12];
       const leftHip = landmarks[config.LEFT_HIP || 23];
@@ -810,12 +810,12 @@ class PoseDetectionUtils {
         x: (leftShoulder.x + rightShoulder.x) / 2,
         y: (leftShoulder.y + rightShoulder.y) / 2
       };
-      
+
       const hipCenter = {
         x: (leftHip.x + rightHip.x) / 2,
         y: (leftHip.y + rightHip.y) / 2
       };
-      
+
       const kneeCenter = {
         x: (leftKnee.x + rightKnee.x) / 2,
         y: (leftKnee.y + rightKnee.y) / 2
@@ -943,7 +943,7 @@ class PoseDetectionUtils {
       }
 
       console.log(`🏃 Posture(${this.exerciseMode}): ${isGoodPosture ? 'GOOD' : 'BAD'}`);
-      
+
       return isGoodPosture;
     } catch (error) {
       console.error('Error checking back alignment:', error);
@@ -956,7 +956,7 @@ class PoseDetectionUtils {
     try {
       const config = window.MediaPipeConfig?.POSE_LANDMARKS || {};
       const pushupConfig = window.MediaPipeConfig?.PUSHUP_CONFIG || {};
-      
+
       const leftShoulder = landmarks[config.LEFT_SHOULDER || 11];
       const leftElbow = landmarks[config.LEFT_ELBOW || 13];
       const leftWrist = landmarks[config.LEFT_WRIST || 15];
@@ -1005,7 +1005,7 @@ class PoseDetectionUtils {
       const shoulderDrop = avgShoulderY - (pstate._baselineShoulderY || avgShoulderY);
       const shoulderDropThreshold = pushupConfig.SHOULDER_DROP_THRESHOLD ?? 0.06; // normalized units
       const pushupPosition = (avgElbowAngle <= downThreshold) || (shoulderDrop >= shoulderDropThreshold) || (avgShoulderY >= (1 - shoulderHeightThreshold));
-      
+
       // Standing position: elbows straight and shoulders high (not horizontal)
       const standingPosition = (avgElbowAngle >= upThreshold) && isLikelyStanding;
 
@@ -1106,7 +1106,7 @@ class PoseDetectionUtils {
       const shoulderDrop = avgShoulderY - (pstate._baselineShoulderY || avgShoulderY);
       const shoulderDropThreshold = pushupConfig.SHOULDER_DROP_THRESHOLD ?? 0.06; // normalized units
       const pushupPosition = (avgElbowAngle <= downThreshold) || (shoulderDrop >= shoulderDropThreshold) || (avgShoulderY >= (1 - shoulderHeightThreshold));
-      
+
       // Standing position: elbows straight and shoulders high (not horizontal)
       const standingPosition = (avgElbowAngle >= upThreshold) && isLikelyStanding;
 
@@ -1207,7 +1207,7 @@ class PoseDetectionUtils {
       const shoulderDrop = avgShoulderY - (pstate._baselineShoulderY || avgShoulderY);
       const shoulderDropThreshold = pushupConfig.SHOULDER_DROP_THRESHOLD ?? 0.06; // normalized units
       const pushupPosition = (avgElbowAngle <= downThreshold) || (shoulderDrop >= shoulderDropThreshold) || (avgShoulderY >= (1 - shoulderHeightThreshold));
-      
+
       // Standing position: elbows straight and shoulders high (not horizontal)
       const standingPosition = (avgElbowAngle >= upThreshold) && isLikelyStanding;
 
@@ -1286,10 +1286,10 @@ class PoseDetectionUtils {
         isHorizontalLikePushup = true;
         // Optional: show warning
         if (this.onFormFeedback) {
-          this.onFormFeedback({ 
-            message: 'وضع الجسم أفقي، لن يتم العد إلا في وضع الاسكوات الصحيح', 
-            type: 'warning', 
-            timestamp: Date.now() 
+          this.onFormFeedback({
+            message: 'وضع الجسم أفقي، لن يتم العد إلا في وضع الاسكوات الصحيح',
+            type: 'warning',
+            timestamp: Date.now()
           });
         }
       }
@@ -1333,21 +1333,21 @@ class PoseDetectionUtils {
       const rightKneeY = rightKnee.y;
       const kneeHeightDiff = Math.abs(leftKneeY - rightKneeY);
       const LEG_STABILITY_THRESHOLD = 0.05; // Maximum difference between left and right knee heights
-      
+
       const legsStable = kneeHeightDiff <= LEG_STABILITY_THRESHOLD;
-      
+
       // Check if knees are bending (squatting down)
       const kneesBending = avgKneeAngle < 120; // Knees bent when angle is less than 120 degrees
 
       // Count based on hip position (lower back points)
       const hipY = hip.y; // Y position of hips (lower = deeper)
       const kneeY = knee.y; // Y position of knees
-      
+
       // Hip goes below knee level = deep squat
       const hipBelowKnee = hipY > kneeY;
       // Hip goes back up above knee level = standing
       const hipAboveKnee = hipY < kneeY;
-      
+
       // State machine: count when hip goes down below knee level (use per-mode state)
       const stateObj = this.perModeState['squats'];
 
@@ -1414,7 +1414,7 @@ class PoseDetectionUtils {
       const leftAnkle = landmarks[cfg.LEFT_ANKLE || 27];
       const rightAnkle = landmarks[cfg.RIGHT_ANKLE || 28];
       if (!leftHip || !rightHip || !leftKnee || !rightKnee || !leftAnkle || !rightAnkle) return;
-      
+
       // Check if hands are on the ground (like pushup) - don't count lunges if hands on ground
       const leftWrist = landmarks[cfg.LEFT_WRIST || 15];
       const rightWrist = landmarks[cfg.RIGHT_WRIST || 16];
@@ -1429,7 +1429,7 @@ class PoseDetectionUtils {
           handsOnGround = true;
         }
       }
-      
+
       // Average hip position
       const hip = { x: (leftHip.x + rightHip.x) / 2, y: (leftHip.y + rightHip.y) / 2 };
       // Calculate knee angles
@@ -1441,7 +1441,7 @@ class PoseDetectionUtils {
       const backKnee = leftKneeBent ? rightKnee : leftKnee;
       const frontKneeAngle = leftKneeBent ? leftKneeAngle : rightKneeAngle;
       const backKneeAngle = leftKneeBent ? rightKneeAngle : leftKneeAngle;
-      
+
       // Also check the opposite leg position (for alternating lunges)
       const rightKneeBent = rightKneeAngle < leftKneeAngle;
       const altFrontKnee = rightKneeBent ? rightKnee : leftKnee;
@@ -1455,10 +1455,10 @@ class PoseDetectionUtils {
       const BACK_KNEE_ANGLE_THRESHOLD = 120; // back knee bent (close to ground) - توسيع
       const FRONT_KNEE_ANGLE_THRESHOLD = 100; // front knee bent (stable support) - توسيع
       const HIP_FORWARD_THRESHOLD = 0.08; // hip leaning forward over front leg - توسيع
-      
+
       const kneeYDiff = Math.abs(leftKnee.y - rightKnee.y);
       const oneLegForward = kneeYDiff > KNEE_Y_DIFF_THRESHOLD;
-      
+
       // Check first leg position (left leg forward)
       const backKneeBent = backKneeAngle < BACK_KNEE_ANGLE_THRESHOLD;
       const frontKneeBent = frontKneeAngle < FRONT_KNEE_ANGLE_THRESHOLD;
@@ -1466,7 +1466,7 @@ class PoseDetectionUtils {
       const frontAnkle = leftKneeBent ? leftAnkle : rightAnkle;
       const hipForwardLean = Math.abs(frontHip.x - frontAnkle.x) < HIP_FORWARD_THRESHOLD;
       const lungePosition1 = oneLegForward && backKneeBent && frontKneeBent && hipForwardLean;
-      
+
       // Check second leg position (right leg forward)
       const altBackKneeBent = altBackKneeAngle < BACK_KNEE_ANGLE_THRESHOLD;
       const altFrontKneeBent = altFrontKneeAngle < FRONT_KNEE_ANGLE_THRESHOLD;
@@ -1474,7 +1474,7 @@ class PoseDetectionUtils {
       const altFrontAnkle = rightKneeBent ? rightAnkle : leftAnkle;
       const altHipForwardLean = Math.abs(altFrontHip.x - altFrontAnkle.x) < HIP_FORWARD_THRESHOLD;
       const lungePosition2 = oneLegForward && altBackKneeBent && altFrontKneeBent && altHipForwardLean;
-      
+
       // Either leg position counts as a lunge
       const lungePosition = lungePosition1 || lungePosition2;
       // Standing position: both knees straight
@@ -1506,7 +1506,7 @@ class PoseDetectionUtils {
   updateMountainClimbersCounter(landmarks) {
     try {
       const config = window.MediaPipeConfig?.POSE_LANDMARKS || {};
-      
+
       // Get key body points
       const leftHip = landmarks[config.LEFT_HIP || 23];
       const rightHip = landmarks[config.RIGHT_HIP || 24];
@@ -1526,7 +1526,7 @@ class PoseDetectionUtils {
       if (!this._lastRightKneeY) this._lastRightKneeY = rightKnee.y;
       if (!this._climberState) this._climberState = 'neutral';
       if (!this._lastClimberTime) this._lastClimberTime = Date.now();
-      
+
       const KNEE_THRESHOLD = 0.05; // How far the knee needs to move
       const MIN_REP_TIME = 250; // Minimum time between reps (ms)
       const currentTime = Date.now();
@@ -1537,7 +1537,7 @@ class PoseDetectionUtils {
 
       // Check for significant knee movements in opposite directions
       const isAlternating = (leftKneeMove > KNEE_THRESHOLD && rightKneeMove < -KNEE_THRESHOLD) ||
-                           (leftKneeMove < -KNEE_THRESHOLD && rightKneeMove > KNEE_THRESHOLD);
+        (leftKneeMove < -KNEE_THRESHOLD && rightKneeMove > KNEE_THRESHOLD);
 
       // State machine for counting alternating leg movements
       const cmode = this.perModeState['mountainclimbers'];
@@ -1615,10 +1615,10 @@ class PoseDetectionUtils {
         isHorizontalLikePushup = true;
         // Optional: show warning
         if (this.onFormFeedback) {
-          this.onFormFeedback({ 
-            message: 'وضع الجسم أفقي، لن يتم العد إلا في وضع الاسكوات الصحيح', 
-            type: 'warning', 
-            timestamp: Date.now() 
+          this.onFormFeedback({
+            message: 'وضع الجسم أفقي، لن يتم العد إلا في وضع الاسكوات الصحيح',
+            type: 'warning',
+            timestamp: Date.now()
           });
         }
       }
@@ -1662,21 +1662,21 @@ class PoseDetectionUtils {
       const rightKneeY = rightKnee.y;
       const kneeHeightDiff = Math.abs(leftKneeY - rightKneeY);
       const LEG_STABILITY_THRESHOLD = 0.05; // Maximum difference between left and right knee heights
-      
+
       const legsStable = kneeHeightDiff <= LEG_STABILITY_THRESHOLD;
-      
+
       // Check if knees are bending (squatting down)
       const kneesBending = avgKneeAngle < 120; // Knees bent when angle is less than 120 degrees
 
       // Count based on hip position (lower back points)
       const hipY = hip.y; // Y position of hips (lower = deeper)
       const kneeY = knee.y; // Y position of knees
-      
+
       // Hip goes below knee level = deep squat
       const hipBelowKnee = hipY > kneeY;
       // Hip goes back up above knee level = standing
       const hipAboveKnee = hipY < kneeY;
-      
+
       // State machine: count when hip goes down below knee level (use per-mode state)
       const stateObj = this.perModeState['situps'];
 
@@ -1776,126 +1776,126 @@ class PoseDetectionUtils {
     }
   }
 
-// اضف هذه الدالة داخل نفس الكلاس/الـ object اللي فيه الدوال الأخرى
-updateHighKneesCounter(landmarks) {
-  try {
-    const cfg = window.MediaPipeConfig?.POSE_LANDMARKS || {};
-    const hkCfg = window.MediaPipeConfig?.HIGHKNEES_CONFIG || {};
+  // اضف هذه الدالة داخل نفس الكلاس/الـ object اللي فيه الدوال الأخرى
+  updateHighKneesCounter(landmarks) {
+    try {
+      const cfg = window.MediaPipeConfig?.POSE_LANDMARKS || {};
+      const hkCfg = window.MediaPipeConfig?.HIGHKNEES_CONFIG || {};
 
-    // Thresholds
-    const KNEE_ABOVE_HIP_NORM = hkCfg.KNEE_ABOVE_HIP_NORM ?? 0.08;
-    const KNEE_FLEXION_UP_MAX = hkCfg.KNEE_FLEXION_UP_MAX ?? 120;
-    const KNEE_FLEXION_DOWN_MIN = hkCfg.KNEE_FLEXION_DOWN_MIN ?? 150;
-    const MIN_REP_MS = hkCfg.MIN_REP_MS ?? 300;
+      // Thresholds
+      const KNEE_ABOVE_HIP_NORM = hkCfg.KNEE_ABOVE_HIP_NORM ?? 0.08;
+      const KNEE_FLEXION_UP_MAX = hkCfg.KNEE_FLEXION_UP_MAX ?? 120;
+      const KNEE_FLEXION_DOWN_MIN = hkCfg.KNEE_FLEXION_DOWN_MIN ?? 150;
+      const MIN_REP_MS = hkCfg.MIN_REP_MS ?? 300;
 
-    // landmarks
-    const leftHip = landmarks[cfg.LEFT_HIP || 23];
-    const rightHip = landmarks[cfg.RIGHT_HIP || 24];
-    const leftKnee = landmarks[cfg.LEFT_KNEE || 25];
-    const rightKnee = landmarks[cfg.RIGHT_KNEE || 26];
-    const leftAnkle = landmarks[cfg.LEFT_ANKLE || 27];
-    const rightAnkle = landmarks[cfg.RIGHT_ANKLE || 28];
-    const leftShoulder = landmarks[cfg.LEFT_SHOULDER || 11];
-    const rightShoulder = landmarks[cfg.RIGHT_SHOULDER || 12];
+      // landmarks
+      const leftHip = landmarks[cfg.LEFT_HIP || 23];
+      const rightHip = landmarks[cfg.RIGHT_HIP || 24];
+      const leftKnee = landmarks[cfg.LEFT_KNEE || 25];
+      const rightKnee = landmarks[cfg.RIGHT_KNEE || 26];
+      const leftAnkle = landmarks[cfg.LEFT_ANKLE || 27];
+      const rightAnkle = landmarks[cfg.RIGHT_ANKLE || 28];
+      const leftShoulder = landmarks[cfg.LEFT_SHOULDER || 11];
+      const rightShoulder = landmarks[cfg.RIGHT_SHOULDER || 12];
 
-    if (!leftHip || !rightHip || !leftKnee || !rightKnee || !leftAnkle || !rightAnkle || !leftShoulder || !rightShoulder) {
-      return;
-    }
+      if (!leftHip || !rightHip || !leftKnee || !rightKnee || !leftAnkle || !rightAnkle || !leftShoulder || !rightShoulder) {
+        return;
+      }
 
-    // Normalizers
-    const torsoHeight = Math.abs(((leftShoulder.y + rightShoulder.y) / 2) - ((leftHip.y + rightHip.y) / 2)) || 0.0001;
+      // Normalizers
+      const torsoHeight = Math.abs(((leftShoulder.y + rightShoulder.y) / 2) - ((leftHip.y + rightHip.y) / 2)) || 0.0001;
 
-    // normalized height + knee angle
-    let leftNorm = (leftHip.y - leftKnee.y) / torsoHeight;
-    let rightNorm = (rightHip.y - rightKnee.y) / torsoHeight;
-    const leftKneeAngle = this.calculateAngle(leftHip, leftKnee, leftAnkle);
-    const rightKneeAngle = this.calculateAngle(rightHip, rightKnee, rightAnkle);
+      // normalized height + knee angle
+      let leftNorm = (leftHip.y - leftKnee.y) / torsoHeight;
+      let rightNorm = (rightHip.y - rightKnee.y) / torsoHeight;
+      const leftKneeAngle = this.calculateAngle(leftHip, leftKnee, leftAnkle);
+      const rightKneeAngle = this.calculateAngle(rightHip, rightKnee, rightAnkle);
 
-    // smoothing
-    this.hkHistory = this.hkHistory || { left: [], right: [] };
-    this.hkHistory.left.push(leftNorm);
-    this.hkHistory.right.push(rightNorm);
-    if (this.hkHistory.left.length > 3) this.hkHistory.left.shift();
-    if (this.hkHistory.right.length > 3) this.hkHistory.right.shift();
+      // smoothing
+      this.hkHistory = this.hkHistory || { left: [], right: [] };
+      this.hkHistory.left.push(leftNorm);
+      this.hkHistory.right.push(rightNorm);
+      if (this.hkHistory.left.length > 3) this.hkHistory.left.shift();
+      if (this.hkHistory.right.length > 3) this.hkHistory.right.shift();
 
-    leftNorm = this.hkHistory.left.reduce((a, b) => a + b, 0) / this.hkHistory.left.length;
-    rightNorm = this.hkHistory.right.reduce((a, b) => a + b, 0) / this.hkHistory.right.length;
+      leftNorm = this.hkHistory.left.reduce((a, b) => a + b, 0) / this.hkHistory.left.length;
+      rightNorm = this.hkHistory.right.reduce((a, b) => a + b, 0) / this.hkHistory.right.length;
 
-    // state machine
-    if (!this.perModeState['highknees']) {
-      this.perModeState['highknees'] = {
-        left: { state: 'down' },
-        right: { state: 'down' },
-        cycle: { lastLeg: null, _lastRepAt: 0 },
-        total: 0
-      };
-    }
-    const hkState = this.perModeState['highknees'];
-    const now = Date.now();
+      // state machine
+      if (!this.perModeState['highknees']) {
+        this.perModeState['highknees'] = {
+          left: { state: 'down' },
+          right: { state: 'down' },
+          cycle: { lastLeg: null, _lastRepAt: 0 },
+          total: 0
+        };
+      }
+      const hkState = this.perModeState['highknees'];
+      const now = Date.now();
 
-    // Left leg
-    if (hkState.left.state === 'down') {
-      if (leftNorm >= KNEE_ABOVE_HIP_NORM && leftKneeAngle <= KNEE_FLEXION_UP_MAX) {
-        hkState.left.state = 'up';
+      // Left leg
+      if (hkState.left.state === 'down') {
+        if (leftNorm >= KNEE_ABOVE_HIP_NORM && leftKneeAngle <= KNEE_FLEXION_UP_MAX) {
+          hkState.left.state = 'up';
 
-        if (hkState.cycle.lastLeg === 'right' && (now - hkState.cycle._lastRepAt) > MIN_REP_MS) {
-          hkState.total++;
-          hkState.cycle._lastRepAt = now;
-          hkState.cycle.lastLeg = null;
-          this.playSuccessSound && this.playSuccessSound();
-          if (this.onPushupCount) this.onPushupCount(hkState.total);
-          if (this.onFormFeedback) this.onFormFeedback({ message: `High Knees Rep ${hkState.total}`, type: 'success', timestamp: now });
-        } else {
-          hkState.cycle.lastLeg = 'left';
+          if (hkState.cycle.lastLeg === 'right' && (now - hkState.cycle._lastRepAt) > MIN_REP_MS) {
+            hkState.total++;
+            hkState.cycle._lastRepAt = now;
+            hkState.cycle.lastLeg = null;
+            this.playSuccessSound && this.playSuccessSound();
+            if (this.onPushupCount) this.onPushupCount(hkState.total);
+            if (this.onFormFeedback) this.onFormFeedback({ message: `High Knees Rep ${hkState.total}`, type: 'success', timestamp: now });
+          } else {
+            hkState.cycle.lastLeg = 'left';
+          }
+        }
+      } else if (hkState.left.state === 'up') {
+        if (leftNorm < (KNEE_ABOVE_HIP_NORM * 0.6) || leftKneeAngle >= KNEE_FLEXION_DOWN_MIN) {
+          hkState.left.state = 'down';
         }
       }
-    } else if (hkState.left.state === 'up') {
-      if (leftNorm < (KNEE_ABOVE_HIP_NORM * 0.6) || leftKneeAngle >= KNEE_FLEXION_DOWN_MIN) {
-        hkState.left.state = 'down';
-      }
-    }
 
-    // Right leg
-    if (hkState.right.state === 'down') {
-      if (rightNorm >= KNEE_ABOVE_HIP_NORM && rightKneeAngle <= KNEE_FLEXION_UP_MAX) {
-        hkState.right.state = 'up';
+      // Right leg
+      if (hkState.right.state === 'down') {
+        if (rightNorm >= KNEE_ABOVE_HIP_NORM && rightKneeAngle <= KNEE_FLEXION_UP_MAX) {
+          hkState.right.state = 'up';
 
-        if (hkState.cycle.lastLeg === 'left' && (now - hkState.cycle._lastRepAt) > MIN_REP_MS) {
-          hkState.total++;
-          hkState.cycle._lastRepAt = now;
-          hkState.cycle.lastLeg = null;
-          this.playSuccessSound && this.playSuccessSound();
-          if (this.onPushupCount) this.onPushupCount(hkState.total);
-          if (this.onFormFeedback) this.onFormFeedback({ message: `High Knees Rep ${hkState.total}`, type: 'success', timestamp: now });
-        } else {
-          hkState.cycle.lastLeg = 'right';
+          if (hkState.cycle.lastLeg === 'left' && (now - hkState.cycle._lastRepAt) > MIN_REP_MS) {
+            hkState.total++;
+            hkState.cycle._lastRepAt = now;
+            hkState.cycle.lastLeg = null;
+            this.playSuccessSound && this.playSuccessSound();
+            if (this.onPushupCount) this.onPushupCount(hkState.total);
+            if (this.onFormFeedback) this.onFormFeedback({ message: `High Knees Rep ${hkState.total}`, type: 'success', timestamp: now });
+          } else {
+            hkState.cycle.lastLeg = 'right';
+          }
+        }
+      } else if (hkState.right.state === 'up') {
+        if (rightNorm < (KNEE_ABOVE_HIP_NORM * 0.6) || rightKneeAngle >= KNEE_FLEXION_DOWN_MIN) {
+          hkState.right.state = 'down';
         }
       }
-    } else if (hkState.right.state === 'up') {
-      if (rightNorm < (KNEE_ABOVE_HIP_NORM * 0.6) || rightKneeAngle >= KNEE_FLEXION_DOWN_MIN) {
-        hkState.right.state = 'down';
+
+      // Debug
+      if ((this.perModeState.debugEvery || 0) % 20 === 0) {
+        console.log("🔎 HighKnees Debug", {
+          leftNorm: leftNorm.toFixed(3),
+          rightNorm: rightNorm.toFixed(3),
+          leftKneeAngle: Math.round(leftKneeAngle),
+          rightKneeAngle: Math.round(rightKneeAngle),
+          stateLeft: hkState.left.state,
+          stateRight: hkState.right.state,
+          lastLeg: hkState.cycle.lastLeg,
+          total: hkState.total
+        });
       }
-    }
+      this.perModeState.debugEvery = (this.perModeState.debugEvery || 0) + 1;
 
-    // Debug
-    if ((this.perModeState.debugEvery || 0) % 20 === 0) {
-      console.log("🔎 HighKnees Debug", {
-        leftNorm: leftNorm.toFixed(3),
-        rightNorm: rightNorm.toFixed(3),
-        leftKneeAngle: Math.round(leftKneeAngle),
-        rightKneeAngle: Math.round(rightKneeAngle),
-        stateLeft: hkState.left.state,
-        stateRight: hkState.right.state,
-        lastLeg: hkState.cycle.lastLeg,
-        total: hkState.total
-      });
+    } catch (err) {
+      console.error("❌ Error in updateHighKneesCounter:", err);
     }
-    this.perModeState.debugEvery = (this.perModeState.debugEvery || 0) + 1;
-
-  } catch (err) {
-    console.error("❌ Error in updateHighKneesCounter:", err);
   }
-}
 
 
   // Update jumping jacks counter
@@ -1935,62 +1935,62 @@ updateHighKneesCounter(landmarks) {
       const rightKneeFlexion = this.calculateAngle(rightHip, rightKnee, rightAnkle);
 
       // Stricter thresholds and robust UP->DOWN detection to match pose breakdown
-  const SHOULDER_ABDUCTION_DOWN = jjConfig.SHOULDER_ABDUCTION_DOWN || 40;
-  // slightly relaxed peak requirement for rotation tolerance
-  const SHOULDER_ABDUCTION_UP = jjConfig.SHOULDER_ABDUCTION_UP || 145;
-  const HIP_ABDUCTION_DOWN = jjConfig.HIP_ABDUCTION_DOWN || 12;
-  const HIP_ABDUCTION_UP = jjConfig.HIP_ABDUCTION_UP || 32;
+      const SHOULDER_ABDUCTION_DOWN = jjConfig.SHOULDER_ABDUCTION_DOWN || 40;
+      // slightly relaxed peak requirement for rotation tolerance
+      const SHOULDER_ABDUCTION_UP = jjConfig.SHOULDER_ABDUCTION_UP || 145;
+      const HIP_ABDUCTION_DOWN = jjConfig.HIP_ABDUCTION_DOWN || 12;
+      const HIP_ABDUCTION_UP = jjConfig.HIP_ABDUCTION_UP || 32;
 
       // Timing and smoothing
-  const MIN_REP_MS = jjConfig.MIN_REP_MS || 800; // increase debounce to avoid double counts
-  const UP_FRAMES = jjConfig.UP_FRAMES || 2;
-  const DOWN_FRAMES = jjConfig.DOWN_FRAMES || 3; // require more stable down confirmation
+      const MIN_REP_MS = jjConfig.MIN_REP_MS || 800; // increase debounce to avoid double counts
+      const UP_FRAMES = jjConfig.UP_FRAMES || 2;
+      const DOWN_FRAMES = jjConfig.DOWN_FRAMES || 3; // require more stable down confirmation
       const ANKLE_SCALE = jjConfig.ANKLE_SCALE || 1.1;
       const MIN_UP_MS = jjConfig.MIN_UP_MS || 200; // require the peak (UP) to last at least this ms
 
       const jjState = this.perModeState['jumpingjacks'];
-  if (!jjState._logEvery) jjState._logEvery = 0;
+      if (!jjState._logEvery) jjState._logEvery = 0;
       if (!jjState._lastRepAt) jjState._lastRepAt = 0;
       if (!jjState._upCount) jjState._upCount = 0;
       if (!jjState._downCount) jjState._downCount = 0;
       if (!jjState._baselineAnkleDist) jjState._baselineAnkleDist = null;
       if (!jjState._upSince) jjState._upSince = 0;
-  // short running history to smooth noisy angle/distance jumps (rotation tolerant)
-  if (!jjState._history) jjState._history = [];
-  const HISTORY_MAX = jjConfig.HISTORY_MAX || 5;
+      // short running history to smooth noisy angle/distance jumps (rotation tolerant)
+      if (!jjState._history) jjState._history = [];
+      const HISTORY_MAX = jjConfig.HISTORY_MAX || 5;
       const now = Date.now();
 
       const vis = (p) => p && (p.visibility == null || p.visibility > 0.5);
 
-  // Angle and position measures (frame values)
-  const avgShoulderAbduction = (leftShoulderAbduction + rightShoulderAbduction) / 2;
-  const avgHipAbduction = (leftHipAbduction + rightHipAbduction) / 2;
-  const avgWristY = (leftWrist.y + rightWrist.y) / 2;
-  const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
-  const ankleDistance = Math.abs(leftAnkle.x - rightAnkle.x);
-  const hipDistance = Math.abs(leftHip.x - rightHip.x);
+      // Angle and position measures (frame values)
+      const avgShoulderAbduction = (leftShoulderAbduction + rightShoulderAbduction) / 2;
+      const avgHipAbduction = (leftHipAbduction + rightHipAbduction) / 2;
+      const avgWristY = (leftWrist.y + rightWrist.y) / 2;
+      const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
+      const ankleDistance = Math.abs(leftAnkle.x - rightAnkle.x);
+      const hipDistance = Math.abs(leftHip.x - rightHip.x);
 
-  // Normalizers to make detection robust to camera tilt/zoom
-  // Use shoulder span (x-distance) and torso height (shoulder y to hip y) as stable measures
-  const shoulderSpan = Math.abs(leftShoulder.x - rightShoulder.x) || 0.0001;
-  const torsoHeight = Math.abs(((leftShoulder.y + rightShoulder.y) / 2) - ((leftHip.y + rightHip.y) / 2)) || 0.0001;
-  // normalized ankle distance relative to shoulder span (accounts for zoom/tilt)
-  const normalizedAnkleDistance = ankleDistance / shoulderSpan;
-  const normalizedHipDistance = hipDistance / shoulderSpan;
-  // normalized vertical wrist offset relative to torso height
-  const wristAboveShoulderNorm = ((avgShoulderY - avgWristY) / torsoHeight) || 0;
+      // Normalizers to make detection robust to camera tilt/zoom
+      // Use shoulder span (x-distance) and torso height (shoulder y to hip y) as stable measures
+      const shoulderSpan = Math.abs(leftShoulder.x - rightShoulder.x) || 0.0001;
+      const torsoHeight = Math.abs(((leftShoulder.y + rightShoulder.y) / 2) - ((leftHip.y + rightHip.y) / 2)) || 0.0001;
+      // normalized ankle distance relative to shoulder span (accounts for zoom/tilt)
+      const normalizedAnkleDistance = ankleDistance / shoulderSpan;
+      const normalizedHipDistance = hipDistance / shoulderSpan;
+      // normalized vertical wrist offset relative to torso height
+      const wristAboveShoulderNorm = ((avgShoulderY - avgWristY) / torsoHeight) || 0;
 
-  // Push latest measures into history and compute smoothed values
-  jjState._history.push({ sa: avgShoulderAbduction, ha: avgHipAbduction, nad: normalizedAnkleDistance, nhd: normalizedHipDistance, wan: wristAboveShoulderNorm });
-  if (jjState._history.length > HISTORY_MAX) jjState._history.shift();
-  const smooth = { sa: 0, ha: 0, nad: 0, nhd: 0, wan: 0 };
-  jjState._history.forEach(h => { smooth.sa += h.sa; smooth.ha += h.ha; smooth.nad += h.nad; smooth.nhd += h.nhd; smooth.wan += h.wan; });
-  const hf = jjState._history.length || 1;
-  const smoothedShoulderAbduction = smooth.sa / hf;
-  const smoothedHipAbduction = smooth.ha / hf;
-  const smoothedNormalizedAnkleDistance = smooth.nad / hf;
-  const smoothedNormalizedHipDistance = smooth.nhd / hf;
-  const smoothedWristAboveShoulder = smooth.wan / hf;
+      // Push latest measures into history and compute smoothed values
+      jjState._history.push({ sa: avgShoulderAbduction, ha: avgHipAbduction, nad: normalizedAnkleDistance, nhd: normalizedHipDistance, wan: wristAboveShoulderNorm });
+      if (jjState._history.length > HISTORY_MAX) jjState._history.shift();
+      const smooth = { sa: 0, ha: 0, nad: 0, nhd: 0, wan: 0 };
+      jjState._history.forEach(h => { smooth.sa += h.sa; smooth.ha += h.ha; smooth.nad += h.nad; smooth.nhd += h.nhd; smooth.wan += h.wan; });
+      const hf = jjState._history.length || 1;
+      const smoothedShoulderAbduction = smooth.sa / hf;
+      const smoothedHipAbduction = smooth.ha / hf;
+      const smoothedNormalizedAnkleDistance = smooth.nad / hf;
+      const smoothedNormalizedHipDistance = smooth.nhd / hf;
+      const smoothedWristAboveShoulder = smooth.wan / hf;
 
       // Initialize baseline ankle distance when in DOWN and we have a stable reading
       if (jjState.state === 'down' && (jjState._baselineAnkleDist == null) && ankleDistance > 0 && hipDistance > 0) {
@@ -1998,22 +1998,22 @@ updateHighKneesCounter(landmarks) {
       }
 
       // Precise checks for peak/UP position
-  // rotation/tilt tolerant checks
-  const wristsAboveHead = vis(leftWrist) && vis(rightWrist) && (wristAboveShoulderNorm > 0.18); // wrists sufficiently above shoulders relative to torso height
-  const anklesWider = normalizedAnkleDistance > Math.max((jjState._baselineAnkleDist ? (jjState._baselineAnkleDist / shoulderSpan) : normalizedHipDistance) * ANKLE_SCALE, normalizedHipDistance * ANKLE_SCALE);
+      // rotation/tilt tolerant checks
+      const wristsAboveHead = vis(leftWrist) && vis(rightWrist) && (wristAboveShoulderNorm > 0.18); // wrists sufficiently above shoulders relative to torso height
+      const anklesWider = normalizedAnkleDistance > Math.max((jjState._baselineAnkleDist ? (jjState._baselineAnkleDist / shoulderSpan) : normalizedHipDistance) * ANKLE_SCALE, normalizedHipDistance * ANKLE_SCALE);
       const shouldersAngleUp = smoothedShoulderAbduction > SHOULDER_ABDUCTION_UP;
       const hipsAngleApart = smoothedHipAbduction > HIP_ABDUCTION_UP;
 
       // Consider UP if peak is well-formed: wrists above head and ankles wider OR strong angle indicators
-  // use smoothed/wrist-normalized checks for robustness to tilt
-  const wristsAboveHeadSm = vis(leftWrist) && vis(rightWrist) && (smoothedWristAboveShoulder > 0.16);
-  const anklesWiderSm = smoothedNormalizedAnkleDistance > Math.max((jjState._baselineAnkleDist ? (jjState._baselineAnkleDist / shoulderSpan) : smoothedNormalizedHipDistance) * ANKLE_SCALE, smoothedNormalizedHipDistance * ANKLE_SCALE);
-  const isUpPeak = (wristsAboveHeadSm && anklesWiderSm) || (shouldersAngleUp && hipsAngleApart) || (wristsAboveHeadSm && hipsAngleApart) || (shouldersAngleUp && anklesWiderSm);
+      // use smoothed/wrist-normalized checks for robustness to tilt
+      const wristsAboveHeadSm = vis(leftWrist) && vis(rightWrist) && (smoothedWristAboveShoulder > 0.16);
+      const anklesWiderSm = smoothedNormalizedAnkleDistance > Math.max((jjState._baselineAnkleDist ? (jjState._baselineAnkleDist / shoulderSpan) : smoothedNormalizedHipDistance) * ANKLE_SCALE, smoothedNormalizedHipDistance * ANKLE_SCALE);
+      const isUpPeak = (wristsAboveHeadSm && anklesWiderSm) || (shouldersAngleUp && hipsAngleApart) || (wristsAboveHeadSm && hipsAngleApart) || (shouldersAngleUp && anklesWiderSm);
 
       // Consider DOWN if arms low and ankles near baseline
-  const armsLow = avgShoulderAbduction < SHOULDER_ABDUCTION_DOWN;
-  const anklesNarrow = smoothedNormalizedAnkleDistance < (((jjState._baselineAnkleDist || hipDistance) / shoulderSpan) * (ANKLE_SCALE - 0.05));
-  const isDownPose = (armsLow && anklesNarrow) || (smoothedShoulderAbduction < SHOULDER_ABDUCTION_DOWN && smoothedHipAbduction < HIP_ABDUCTION_DOWN);
+      const armsLow = avgShoulderAbduction < SHOULDER_ABDUCTION_DOWN;
+      const anklesNarrow = smoothedNormalizedAnkleDistance < (((jjState._baselineAnkleDist || hipDistance) / shoulderSpan) * (ANKLE_SCALE - 0.05));
+      const isDownPose = (armsLow && anklesNarrow) || (smoothedShoulderAbduction < SHOULDER_ABDUCTION_DOWN && smoothedHipAbduction < HIP_ABDUCTION_DOWN);
 
       // Debug info occasionally
       if ((jjState._debugCounter || 0) % 30 === 0) {
@@ -2122,12 +2122,12 @@ updateHighKneesCounter(landmarks) {
 
       // Check visibility of key landmarks
       const vis = (p) => p && (p.visibility == null || p.visibility > 0.5);
-      
+
       // Determine which side is the support side (left or right)
       // We'll check both sides and use the one with better visibility
       const leftSideVisible = vis(leftShoulder) && vis(leftElbow) && vis(leftHip) && vis(leftKnee) && vis(leftAnkle);
       const rightSideVisible = vis(rightShoulder) && vis(rightElbow) && vis(rightHip) && vis(rightKnee) && vis(rightAnkle);
-      
+
       if (!leftSideVisible && !rightSideVisible) {
         return; // Not enough landmarks visible
       }
@@ -2143,7 +2143,7 @@ updateHighKneesCounter(landmarks) {
       const supportEar = isLeftSide ? leftEar : rightEar;
 
       // Calculate key angles for side plank validation
-      
+
       // 1. Shoulder Support Angle (shoulder-elbow-wrist) - should be ~90°
       const shoulderSupportAngle = this.calculateAngle(supportShoulder, supportElbow, supportWrist);
       const SHOULDER_ANGLE_MIN = spConfig.SHOULDER_ANGLE_MIN || 80;
@@ -2160,7 +2160,7 @@ updateHighKneesCounter(landmarks) {
       const shoulderAnkleMidY = (supportShoulder.y + supportAnkle.y) / 2;
       const hipSagThreshold = spConfig.HIP_SAG_THRESHOLD || 0.05; // normalized units
       const hipSag = supportHip.y > (shoulderAnkleMidY + hipSagThreshold);
-      
+
       // 4. Check for hip hike (hip rises above shoulder-ankle line)
       const hipHikeThreshold = spConfig.HIP_HIKE_THRESHOLD || 0.05; // normalized units
       const hipHike = supportHip.y < (shoulderAnkleMidY - hipHikeThreshold);
@@ -2183,13 +2183,13 @@ updateHighKneesCounter(landmarks) {
       }
 
       // Overall posture assessment
-      const isGoodPosture = shoulderAngleGood && 
-                           torsoAngleGood && 
-                           !hipSag && 
-                           !hipHike && 
-                           elbowAligned && 
-                           feetStacked && 
-                           headNeckGood;
+      const isGoodPosture = shoulderAngleGood &&
+        torsoAngleGood &&
+        !hipSag &&
+        !hipHike &&
+        elbowAligned &&
+        feetStacked &&
+        headNeckGood;
 
       // Debug logging
       console.log('🔍 Side Plank Debug:', {
@@ -2255,7 +2255,7 @@ updateHighKneesCounter(landmarks) {
       if (!isGoodPosture && this.onFormFeedback) {
         const currentTime = Date.now();
         const cooldown = spConfig.WARNING_COOLDOWN || 2000;
-        
+
         if (currentTime - this.lastWarningTime > cooldown) {
           let feedbackMessage = '';
           if (hipSag) {
@@ -2313,12 +2313,12 @@ updateHighKneesCounter(landmarks) {
 
       // Check visibility of key landmarks
       const vis = (p) => p && (p.visibility == null || p.visibility > 0.5);
-      
+
       // Determine which side is the support side (left or right)
       // We'll check both sides and use the one with better visibility
       const leftSideVisible = vis(leftShoulder) && vis(leftElbow) && vis(leftHip) && vis(leftKnee) && vis(leftAnkle);
       const rightSideVisible = vis(rightShoulder) && vis(rightElbow) && vis(rightHip) && vis(rightKnee) && vis(rightAnkle);
-      
+
       if (!leftSideVisible && !rightSideVisible) {
         return; // Not enough landmarks visible
       }
@@ -2334,7 +2334,7 @@ updateHighKneesCounter(landmarks) {
       const supportEar = isLeftSide ? leftEar : rightEar;
 
       // Calculate key angles for side plank validation
-      
+
       // 1. Shoulder Support Angle (shoulder-elbow-wrist) - should be ~90°
       const shoulderSupportAngle = this.calculateAngle(supportShoulder, supportElbow, supportWrist);
       const SHOULDER_ANGLE_MIN = spConfig.SHOULDER_ANGLE_MIN || 80;
@@ -2351,7 +2351,7 @@ updateHighKneesCounter(landmarks) {
       const shoulderAnkleMidY = (supportShoulder.y + supportAnkle.y) / 2;
       const hipSagThreshold = spConfig.HIP_SAG_THRESHOLD || 0.05; // normalized units
       const hipSag = supportHip.y > (shoulderAnkleMidY + hipSagThreshold);
-      
+
       // 4. Check for hip hike (hip rises above shoulder-ankle line)
       const hipHikeThreshold = spConfig.HIP_HIKE_THRESHOLD || 0.05; // normalized units
       const hipHike = supportHip.y < (shoulderAnkleMidY - hipHikeThreshold);
@@ -2374,13 +2374,13 @@ updateHighKneesCounter(landmarks) {
       }
 
       // Overall posture assessment
-      const isGoodPosture = shoulderAngleGood && 
-                           torsoAngleGood && 
-                           !hipSag && 
-                           !hipHike && 
-                           elbowAligned && 
-                           feetStacked && 
-                           headNeckGood;
+      const isGoodPosture = shoulderAngleGood &&
+        torsoAngleGood &&
+        !hipSag &&
+        !hipHike &&
+        elbowAligned &&
+        feetStacked &&
+        headNeckGood;
 
       // Debug logging
       console.log('🔍 Straight Arm Plank Debug:', {
@@ -2446,7 +2446,7 @@ updateHighKneesCounter(landmarks) {
       if (!isGoodPosture && this.onFormFeedback) {
         const currentTime = Date.now();
         const cooldown = spConfig.WARNING_COOLDOWN || 2000;
-        
+
         if (currentTime - this.lastWarningTime > cooldown) {
           let feedbackMessage = '';
           if (hipSag) {
@@ -2504,12 +2504,12 @@ updateHighKneesCounter(landmarks) {
 
       // Check visibility of key landmarks
       const vis = (p) => p && (p.visibility == null || p.visibility > 0.5);
-      
+
       // Determine which side is the support side (left or right)
       // We'll check both sides and use the one with better visibility
       const leftSideVisible = vis(leftShoulder) && vis(leftElbow) && vis(leftHip) && vis(leftKnee) && vis(leftAnkle);
       const rightSideVisible = vis(rightShoulder) && vis(rightElbow) && vis(rightHip) && vis(rightKnee) && vis(rightAnkle);
-      
+
       if (!leftSideVisible && !rightSideVisible) {
         return; // Not enough landmarks visible
       }
@@ -2525,7 +2525,7 @@ updateHighKneesCounter(landmarks) {
       const supportEar = isLeftSide ? leftEar : rightEar;
 
       // Calculate key angles for side plank validation
-      
+
       // 1. Shoulder Support Angle (shoulder-elbow-wrist) - should be ~90°
       const shoulderSupportAngle = this.calculateAngle(supportShoulder, supportElbow, supportWrist);
       const SHOULDER_ANGLE_MIN = spConfig.SHOULDER_ANGLE_MIN || 80;
@@ -2542,7 +2542,7 @@ updateHighKneesCounter(landmarks) {
       const shoulderAnkleMidY = (supportShoulder.y + supportAnkle.y) / 2;
       const hipSagThreshold = spConfig.HIP_SAG_THRESHOLD || 0.05; // normalized units
       const hipSag = supportHip.y > (shoulderAnkleMidY + hipSagThreshold);
-      
+
       // 4. Check for hip hike (hip rises above shoulder-ankle line)
       const hipHikeThreshold = spConfig.HIP_HIKE_THRESHOLD || 0.05; // normalized units
       const hipHike = supportHip.y < (shoulderAnkleMidY - hipHikeThreshold);
@@ -2565,13 +2565,13 @@ updateHighKneesCounter(landmarks) {
       }
 
       // Overall posture assessment
-      const isGoodPosture = shoulderAngleGood && 
-                           torsoAngleGood && 
-                           !hipSag && 
-                           !hipHike && 
-                           elbowAligned && 
-                           feetStacked && 
-                           headNeckGood;
+      const isGoodPosture = shoulderAngleGood &&
+        torsoAngleGood &&
+        !hipSag &&
+        !hipHike &&
+        elbowAligned &&
+        feetStacked &&
+        headNeckGood;
 
       // Debug logging
       console.log('🔍 Reverse Straight Arm Plank Debug:', {
@@ -2637,7 +2637,7 @@ updateHighKneesCounter(landmarks) {
       if (!isGoodPosture && this.onFormFeedback) {
         const currentTime = Date.now();
         const cooldown = spConfig.WARNING_COOLDOWN || 2000;
-        
+
         if (currentTime - this.lastWarningTime > cooldown) {
           let feedbackMessage = '';
           if (hipSag) {
@@ -2695,11 +2695,11 @@ updateHighKneesCounter(landmarks) {
 
       // Check visibility of key landmarks
       const vis = (p) => p && (p.visibility == null || p.visibility > 0.5);
-      
+
       // Determine which side is the support side (left or right)
       const leftSideVisible = vis(leftShoulder) && vis(leftElbow) && vis(leftHip) && vis(leftKnee);
       const rightSideVisible = vis(rightShoulder) && vis(rightElbow) && vis(rightHip) && vis(rightKnee);
-      
+
       if (!leftSideVisible && !rightSideVisible) {
         return; // Not enough landmarks visible
       }
@@ -2822,17 +2822,17 @@ updateHighKneesCounter(landmarks) {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      
+
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
       oscillator.type = 'sine';
-      
+
       gainNode.gain.setValueAtTime(0, audioContext.currentTime);
       gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-      
+
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.5);
     } catch (error) {
@@ -2870,12 +2870,12 @@ updateHighKneesCounter(landmarks) {
     // Draw landmarks
     const landmarks = results.poseLandmarks;
     let drawnLandmarks = 0;
-    
+
     landmarks.forEach((landmark, index) => {
       if (landmark.visibility && landmark.visibility > 0.5) {
         const x = landmark.x * canvasWidth;
         const y = landmark.y * canvasHeight;
-        
+
         canvasCtx.beginPath();
         canvasCtx.arc(x, y, 6, 0, 2 * Math.PI); // Bigger circles
         canvasCtx.fillStyle = landmark.visibility > 0.7 ? '#10B981' : '#F59E0B';
@@ -2948,8 +2948,8 @@ updateHighKneesCounter(landmarks) {
       const startPoint = landmarks[startIdx];
       const endPoint = landmarks[endIdx];
 
-      if (startPoint && endPoint && 
-          startPoint.visibility > 0.5 && endPoint.visibility > 0.5) {
+      if (startPoint && endPoint &&
+        startPoint.visibility > 0.5 && endPoint.visibility > 0.5) {
         canvasCtx.beginPath();
         canvasCtx.moveTo(startPoint.x * canvasWidth, startPoint.y * canvasHeight);
         canvasCtx.lineTo(endPoint.x * canvasWidth, endPoint.y * canvasHeight);
@@ -2959,7 +2959,7 @@ updateHighKneesCounter(landmarks) {
         drawnConnections++;
       }
     });
-    
+
     // Only log occasionally
     if (Math.random() < 0.02) {
       console.log('✅ Drawing completed!', drawnConnections, 'connections');
@@ -3015,7 +3015,7 @@ updateHighKneesCounter(landmarks) {
         this.perModeState[mode].state = 'neutral';
         this.perModeState[mode].count = 0;
       }
-      
+
       if (mode === 'plank') {
         // Reset plank stability/timing helpers
         this.perModeState[mode]._stableCount = 0;
