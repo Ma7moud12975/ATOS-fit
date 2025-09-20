@@ -1,4 +1,13 @@
-<<<<<<< HEAD
+<<<<<<< merged ui + basic-exercise 
+Straight Arm plank
+Straight Arm reverse plank 
+Knee plank
+Wide push ups
+Narrow push ups
+Diamond push ups 
+Knee push ups
+(jumping jacks is not working)
+
 # ATOS Fit: AI-Powered Fitness Coach
 
 <div align="center">
