@@ -1,4 +1,13 @@
-<<<<<<< HEAD
+<<<<<<< merged ui + Basic-exercise 
+*Push-ups*
+*Squats* 
+*Lunges* 
+*Plank*
+*High Knees*       
+*Burpees*        
+*Jumping Jacks*    
+*Side Plank* 
+
 # ATOS Fit: AI-Powered Fitness Coach
 
 <div align="center">
