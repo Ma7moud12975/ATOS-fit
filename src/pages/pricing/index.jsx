@@ -93,9 +93,9 @@ const PricingPage = () => {
     { key: 'prioritySupport', label: '24/7 Priority Support', icon: 'Headphones' }
   ];
 
-  const handleGetStarted = (planName) => {
-    // During beta, all plans are free
-    navigate('/register-screen');
+  const handleGetStarted = () => {
+    // During beta, all plans are free - route to login page
+    navigate('/login-screen');
   };
 
   return (
@@ -298,7 +298,7 @@ const PricingPage = () => {
                 </div>
 
                 <button
-                  onClick={() => handleGetStarted(plan.name)}
+                  onClick={handleGetStarted}
                   className={`w-full py-4 rounded-2xl font-semibold transition-all duration-300 ${
                     plan.popular
                       ? 'bg-[#FF8A00] hover:bg-[#E67B00] text-black hover:shadow-[0px_4px_15px_rgba(255,138,0,0.2)]'
