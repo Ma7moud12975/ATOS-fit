@@ -70,16 +70,21 @@ window.MediaPipeConfig = {
   // Jumping Jacks-specific settings
   JUMPINGJACKS_CONFIG: {
     // Shoulder abduction angles (shoulder-elbow-wrist) - arms overhead
-    SHOULDER_ABDUCTION_DOWN: 60,    // degrees: arms down (more lenient)
-    SHOULDER_ABDUCTION_UP: 120,     // degrees: arms overhead (more lenient)
+    SHOULDER_ABDUCTION_DOWN: 40,    // degrees: arms down (stricter)
+    SHOULDER_ABDUCTION_UP: 145,     // degrees: arms overhead (more lenient for rotation)
     
     // Hip abduction angles (hip-knee-ankle) - legs apart
-    HIP_ABDUCTION_DOWN: 25,          // degrees: legs together (more lenient)
-    HIP_ABDUCTION_UP: 30,            // degrees: legs apart (more lenient)
+    HIP_ABDUCTION_DOWN: 12,          // degrees: legs together (stricter)
+    HIP_ABDUCTION_UP: 32,            // degrees: legs apart (slightly more lenient)
     
     // Timing and debouncing
-    MIN_REP_MS: 1000,               // minimum milliseconds between reps (increased for stability)
-    WARNING_COOLDOWN: 2000           // milliseconds between warnings
+    MIN_REP_MS: 800,                // minimum milliseconds between reps
+    MIN_UP_MS: 200,                 // minimum time UP position must be held
+    UP_FRAMES: 2,                   // frames required to confirm UP state
+    DOWN_FRAMES: 3,                 // frames required to confirm DOWN state
+    ANKLE_SCALE: 1.1,               // scaling factor for ankle distance
+    HISTORY_MAX: 5,                 // maximum frames for smoothing
+    WARNING_COOLDOWN: 2000          // milliseconds between warnings
   },
   
   // Side Plank-specific settings

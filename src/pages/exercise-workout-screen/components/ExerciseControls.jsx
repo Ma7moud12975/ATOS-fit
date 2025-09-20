@@ -40,7 +40,7 @@ const ExerciseControls = ({
     { id: 7, name: "High Knees", category: "Cardio", difficulty: "Beginner", duration: "2-3 min" },
     { id: 8, name: "Plank", category: "Core", difficulty: "Intermediate", duration: "1-3 min" },
   { id: 9, name: "Side Plank", category: "Core", difficulty: "Intermediate", duration: "2-4 min" },
-  { id: 10, name: "Reverse Plank", category: "Core", difficulty: "Intermediate", duration: "1-3 min" },
+
     { id: 16, name: "Wall Sit", category: "Lower Body", difficulty: "Beginner", duration: "1-2 min" }
   ];
 

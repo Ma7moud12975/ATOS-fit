@@ -38,22 +38,11 @@ const ExerciseLibrary = () => {
       description: "Wider hand placement variations of push-ups emphasizing outer chest and shoulder engagement."
     },
     {
-      id: 15,
-      name: "Reverse Plank",
-      category: "Core",
-      difficulty: "Intermediate",
-      duration: "1-3 min",
-      caloriesBurn: 40,
-      sets: 3,
-      reps: "30s",
-      description: "Isometric exercise targeting the posterior chain, enhancing core stability and strength."
-    },
-    {
       id: 16,
       name: "Straight Arm Plank",
-      category: "Core",
+      targetMuscles: "Core, Shoulders",
       difficulty: "Intermediate",
-      duration: "1-3 min",
+      duration: 8,
       caloriesBurn: 35,
       sets: 3,
       reps: "30s",
@@ -62,9 +51,9 @@ const ExerciseLibrary = () => {
     {
       id: 17,
       name: "Reverse Straight Arm Plank",
-      category: "Core",
+      targetMuscles: "Core, Posterior Chain",
       difficulty: "Intermediate",
-      duration: "1-3 min",
+      duration: 8,
       caloriesBurn: 35,
       sets: 3,
       reps: "30s",
@@ -73,9 +62,9 @@ const ExerciseLibrary = () => {
     {
       id: 18,
       name: "Knee Plank",
-      category: "Core",
+      targetMuscles: "Core, Shoulders",
       difficulty: "Beginner",
-      duration: "30s-1 min",
+      duration: 6,
       caloriesBurn: 20,
       sets: 3,
       reps: "20s",

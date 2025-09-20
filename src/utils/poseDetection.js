@@ -1923,30 +1923,32 @@ class PoseDetectionUtils {
       }
 
       // Calculate shoulder abduction angles (shoulder-elbow-wrist) - arms overhead
-      const leftShoulderAbduction = this.calculateAngle(leftElbow, leftShoulder, leftWrist);
-      const rightShoulderAbduction = this.calculateAngle(rightElbow, rightShoulder, rightWrist);
+      // For jumping jacks, we want the angle at the shoulder joint
+      const leftShoulderAbduction = this.calculateAngle(leftWrist, leftShoulder, leftElbow);
+      const rightShoulderAbduction = this.calculateAngle(rightWrist, rightShoulder, rightElbow);
 
       // Calculate hip abduction angles (hip-knee-ankle) - legs apart
-      const leftHipAbduction = this.calculateAngle(leftKnee, leftHip, leftAnkle);
-      const rightHipAbduction = this.calculateAngle(rightKnee, rightHip, rightAnkle);
+      // For jumping jacks, we want the angle at the hip joint
+      const leftHipAbduction = this.calculateAngle(leftAnkle, leftHip, leftKnee);
+      const rightHipAbduction = this.calculateAngle(rightAnkle, rightHip, rightKnee);
 
       // Calculate knee flexion angles (hip-knee-ankle)
       const leftKneeFlexion = this.calculateAngle(leftHip, leftKnee, leftAnkle);
       const rightKneeFlexion = this.calculateAngle(rightHip, rightKnee, rightAnkle);
 
-      // Stricter thresholds and robust UP->DOWN detection to match pose breakdown
+      // Thresholds from configuration
       const SHOULDER_ABDUCTION_DOWN = jjConfig.SHOULDER_ABDUCTION_DOWN || 40;
-      // slightly relaxed peak requirement for rotation tolerance
       const SHOULDER_ABDUCTION_UP = jjConfig.SHOULDER_ABDUCTION_UP || 145;
       const HIP_ABDUCTION_DOWN = jjConfig.HIP_ABDUCTION_DOWN || 12;
       const HIP_ABDUCTION_UP = jjConfig.HIP_ABDUCTION_UP || 32;
 
-      // Timing and smoothing
-      const MIN_REP_MS = jjConfig.MIN_REP_MS || 800; // increase debounce to avoid double counts
+      // Timing and smoothing parameters from configuration
+      const MIN_REP_MS = jjConfig.MIN_REP_MS || 800;
       const UP_FRAMES = jjConfig.UP_FRAMES || 2;
-      const DOWN_FRAMES = jjConfig.DOWN_FRAMES || 3; // require more stable down confirmation
+      const DOWN_FRAMES = jjConfig.DOWN_FRAMES || 3;
       const ANKLE_SCALE = jjConfig.ANKLE_SCALE || 1.1;
-      const MIN_UP_MS = jjConfig.MIN_UP_MS || 200; // require the peak (UP) to last at least this ms
+      const MIN_UP_MS = jjConfig.MIN_UP_MS || 200;
+      const HISTORY_MAX = jjConfig.HISTORY_MAX || 5;
 
       const jjState = this.perModeState['jumpingjacks'];
       if (!jjState._logEvery) jjState._logEvery = 0;
@@ -1955,9 +1957,8 @@ class PoseDetectionUtils {
       if (!jjState._downCount) jjState._downCount = 0;
       if (!jjState._baselineAnkleDist) jjState._baselineAnkleDist = null;
       if (!jjState._upSince) jjState._upSince = 0;
-      // short running history to smooth noisy angle/distance jumps (rotation tolerant)
+      // Short running history to smooth noisy angle/distance jumps (rotation tolerant)
       if (!jjState._history) jjState._history = [];
-      const HISTORY_MAX = jjConfig.HISTORY_MAX || 5;
       const now = Date.now();
 
       const vis = (p) => p && (p.visibility == null || p.visibility > 0.5);
@@ -1997,23 +1998,24 @@ class PoseDetectionUtils {
         jjState._baselineAnkleDist = Math.max(hipDistance, ankleDistance * 0.9);
       }
 
-      // Precise checks for peak/UP position
-      // rotation/tilt tolerant checks
-      const wristsAboveHead = vis(leftWrist) && vis(rightWrist) && (wristAboveShoulderNorm > 0.18); // wrists sufficiently above shoulders relative to torso height
+      // Precise checks for peak/UP position (rotation/tilt tolerant)
+      const wristsAboveHead = vis(leftWrist) && vis(rightWrist) && (wristAboveShoulderNorm > 0.15);
       const anklesWider = normalizedAnkleDistance > Math.max((jjState._baselineAnkleDist ? (jjState._baselineAnkleDist / shoulderSpan) : normalizedHipDistance) * ANKLE_SCALE, normalizedHipDistance * ANKLE_SCALE);
       const shouldersAngleUp = smoothedShoulderAbduction > SHOULDER_ABDUCTION_UP;
       const hipsAngleApart = smoothedHipAbduction > HIP_ABDUCTION_UP;
 
-      // Consider UP if peak is well-formed: wrists above head and ankles wider OR strong angle indicators
-      // use smoothed/wrist-normalized checks for robustness to tilt
-      const wristsAboveHeadSm = vis(leftWrist) && vis(rightWrist) && (smoothedWristAboveShoulder > 0.16);
+      // Use smoothed values for robustness
+      const wristsAboveHeadSm = vis(leftWrist) && vis(rightWrist) && (smoothedWristAboveShoulder > 0.12);
       const anklesWiderSm = smoothedNormalizedAnkleDistance > Math.max((jjState._baselineAnkleDist ? (jjState._baselineAnkleDist / shoulderSpan) : smoothedNormalizedHipDistance) * ANKLE_SCALE, smoothedNormalizedHipDistance * ANKLE_SCALE);
-      const isUpPeak = (wristsAboveHeadSm && anklesWiderSm) || (shouldersAngleUp && hipsAngleApart) || (wristsAboveHeadSm && hipsAngleApart) || (shouldersAngleUp && anklesWiderSm);
 
-      // Consider DOWN if arms low and ankles near baseline
-      const armsLow = avgShoulderAbduction < SHOULDER_ABDUCTION_DOWN;
-      const anklesNarrow = smoothedNormalizedAnkleDistance < (((jjState._baselineAnkleDist || hipDistance) / shoulderSpan) * (ANKLE_SCALE - 0.05));
-      const isDownPose = (armsLow && anklesNarrow) || (smoothedShoulderAbduction < SHOULDER_ABDUCTION_DOWN && smoothedHipAbduction < HIP_ABDUCTION_DOWN);
+      // UP position: arms overhead AND legs apart (both conditions must be met)
+      const isUpPeak = (wristsAboveHeadSm && anklesWiderSm) || (shouldersAngleUp && hipsAngleApart);
+
+      // DOWN position: arms at sides AND legs together (both conditions must be met)
+      const armsLow = smoothedShoulderAbduction < SHOULDER_ABDUCTION_DOWN;
+      const anklesNarrow = smoothedNormalizedAnkleDistance < (((jjState._baselineAnkleDist || hipDistance) / shoulderSpan) * 0.95);
+      const hipsNarrow = smoothedHipAbduction < HIP_ABDUCTION_DOWN;
+      const isDownPose = armsLow && (anklesNarrow || hipsNarrow);
 
       // Debug info occasionally
       if ((jjState._debugCounter || 0) % 30 === 0) {

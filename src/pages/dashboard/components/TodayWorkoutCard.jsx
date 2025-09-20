@@ -21,7 +21,7 @@ const TodayWorkoutCard = ({ workoutData, onCustomize }) => {
   { name: "Knee Push Ups", sets: 3, reps: 12, completed: false },
       { name: "Squats", sets: 3, reps: 20, completed: false },
       { name: "Plank", sets: 3, duration: "30s", completed: false },
-      { name: "Reverse Plank", sets: 3, duration: "30s", completed: false },
+
       { name: "Lunges", sets: 3, reps: 12, completed: false }
     ],
     estimatedDuration: 25,
@@ -176,7 +176,7 @@ const TodayWorkoutCard = ({ workoutData, onCustomize }) => {
             { id: 9, name: 'Plank', category: 'Core', difficulty: 'Intermediate', sets: 3, reps: '30s', duration: '1-3 min' },
             { id: 10, name: 'Side Plank', category: 'Core', difficulty: 'Intermediate', sets: 3, reps: '20s', duration: '2-4 min' },
             { id: 11, name: 'Wall Sit', category: 'Lower Body', difficulty: 'Beginner', sets: 3, reps: '30s', duration: '1-2 min' },
-            { id: 12, name: 'Reverse Plank', category: 'Core', difficulty: 'Intermediate', sets: 3, reps: '30s', duration: '1-3 min' },
+
             { id: 13, name: 'Wall Sit', category: 'Lower Body', difficulty: 'Beginner', sets: 3, reps: '30s', duration: '1-2 min' },
             { id: 14, name: 'Wide Push Ups', category: 'Upper Body', difficulty: 'Intermediate', sets: 3, reps: 12, duration: '3-5 min' },
             { id: 15, name: 'Narrow Push Ups', category: 'Upper Body', difficulty: 'Intermediate', sets: 3, reps: 12, duration: '3-5 min' },
