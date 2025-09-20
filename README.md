@@ -1,4 +1,4 @@
-<<<<<<< merged ui + basic-exercise 
+<<<<<<< merged ui + basic-exercise + new-exercise
 
 Straight Arm plank
 
