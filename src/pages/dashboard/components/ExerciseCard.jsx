@@ -8,7 +8,7 @@ const ExerciseCard = ({ exercise }) => {
   const navigate = useNavigate();
   const isTimeBased = useMemo(() => {
     const timeNames = new Set([
-  'Sit Ups',
+      'Mountain Climbers',
       'Jumping Jacks',
       'High Knees',
       'Plank',

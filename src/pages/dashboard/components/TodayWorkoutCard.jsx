@@ -14,9 +14,14 @@ const TodayWorkoutCard = ({ workoutData, onCustomize }) => {
     name: "Full Body Strength",
     scheduledTime: "6:00 PM",
     exercises: [
-      { name: "Push-ups", sets: 3, reps: 15, completed: false },
+  { name: "Push-ups", sets: 3, reps: 15, completed: false },
+  { name: "Wide Push Ups", sets: 3, reps: 12, completed: false },
+  { name: "Narrow Push Ups", sets: 3, reps: 12, completed: false },
+  { name: "Diamond Push Ups", sets: 3, reps: 10, completed: false },
+  { name: "Knee Push Ups", sets: 3, reps: 12, completed: false },
       { name: "Squats", sets: 3, reps: 20, completed: false },
       { name: "Plank", sets: 3, duration: "30s", completed: false },
+      { name: "Reverse Plank", sets: 3, duration: "30s", completed: false },
       { name: "Lunges", sets: 3, reps: 12, completed: false }
     ],
     estimatedDuration: 25,
@@ -165,11 +170,18 @@ const TodayWorkoutCard = ({ workoutData, onCustomize }) => {
             { id: 3, name: 'Lunges', category: 'Lower Body', difficulty: 'Intermediate', sets: 3, reps: 12, duration: '5-7 min' },
             { id: 4, name: 'Burpees', category: 'Full Body', difficulty: 'Advanced', sets: 3, reps: 10, duration: '6-8 min' },
             { id: 5, name: 'Sit Ups', category: 'Core', difficulty: 'Intermediate', sets: 3, reps: '15', duration: '3-5 min' },
-            { id: 6, name: 'Jumping Jacks', category: 'Cardio', difficulty: 'Beginner', sets: 3, reps: '30s', duration: '2-4 min' },
-            { id: 7, name: 'High Knees', category: 'Cardio', difficulty: 'Beginner', sets: 3, reps: '25s', duration: '2-3 min' },
-            { id: 8, name: 'Plank', category: 'Core', difficulty: 'Intermediate', sets: 3, reps: '30s', duration: '1-3 min' },
-            { id: 9, name: 'Side Plank', category: 'Core', difficulty: 'Intermediate', sets: 3, reps: '20s', duration: '2-4 min' },
-            { id: 10, name: 'Wall Sit', category: 'Lower Body', difficulty: 'Beginner', sets: 3, reps: '30s', duration: '1-2 min' }
+            { id: 6, name: 'Mountain Climbers', category: 'Cardio', difficulty: 'Intermediate', sets: 3, reps: '20s', duration: '3-5 min' },
+            { id: 7, name: 'Jumping Jacks', category: 'Cardio', difficulty: 'Beginner', sets: 3, reps: '30s', duration: '2-4 min' },
+            { id: 8, name: 'High Knees', category: 'Cardio', difficulty: 'Beginner', sets: 3, reps: '25s', duration: '2-3 min' },
+            { id: 9, name: 'Plank', category: 'Core', difficulty: 'Intermediate', sets: 3, reps: '30s', duration: '1-3 min' },
+            { id: 10, name: 'Side Plank', category: 'Core', difficulty: 'Intermediate', sets: 3, reps: '20s', duration: '2-4 min' },
+            { id: 11, name: 'Wall Sit', category: 'Lower Body', difficulty: 'Beginner', sets: 3, reps: '30s', duration: '1-2 min' },
+            { id: 12, name: 'Reverse Plank', category: 'Core', difficulty: 'Intermediate', sets: 3, reps: '30s', duration: '1-3 min' },
+            { id: 13, name: 'Wall Sit', category: 'Lower Body', difficulty: 'Beginner', sets: 3, reps: '30s', duration: '1-2 min' },
+            { id: 14, name: 'Wide Push Ups', category: 'Upper Body', difficulty: 'Intermediate', sets: 3, reps: 12, duration: '3-5 min' },
+            { id: 15, name: 'Narrow Push Ups', category: 'Upper Body', difficulty: 'Intermediate', sets: 3, reps: 12, duration: '3-5 min' },
+            { id: 16, name: 'Diamond Push Ups', category: 'Upper Body', difficulty: 'Advanced', sets: 3, reps: 10, duration: '3-5 min' },
+            { id: 17, name: 'Knee Push Ups', category: 'Upper Body', difficulty: 'Beginner', sets: 3, reps: 12, duration: '3-5 min' }
           ]}
           onSave={handleSavePlan}
           onCancel={handleCancelCustomize}

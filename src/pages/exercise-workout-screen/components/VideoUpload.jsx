@@ -31,8 +31,9 @@ const VideoUpload = ({ onVideoAnalysis, isAnalyzing = false, selectedExercise })
       case 'lunges': return 'Lunges';
       case 'plank': return 'Plank';
       case 'burpees': return 'Burpees';
-  case 'situps': return 'Sit Ups';
-        case 'highknees': return 'High Knees';
+      case 'situps': return 'Sit Ups';
+      case 'highknees': return 'High Knees';
+      case 'mountainclimbers': return 'Mountain Climbers';
       case 'jumpingjacks': return 'Jumping Jacks';
       case 'sideplank': return 'Side Plank';
       default: return 'Push-ups';
@@ -75,15 +76,20 @@ const VideoUpload = ({ onVideoAnalysis, isAnalyzing = false, selectedExercise })
       
       // Set exercise mode
       const normalized = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
-      let mode = 'pushups';
-      if (normalized.includes('plank')) mode = 'plank';
+  let mode = 'pushups';
+  // Reverse plank removed -> map to standard plank
+  if (normalized.includes('plank')) mode = 'plank';
       else if (normalized.includes('squat')) mode = 'squats';
       else if (normalized.includes('lunge')) mode = 'lunges';
       else if (normalized.includes('burpee')) mode = 'burpees';
-  else if (normalized.includes('sit') || normalized.includes('situp') || normalized.includes('sit-ups') ) mode = 'situps';
-  else if (normalized.includes('high') && normalized.includes('knee')) mode = 'highknees';
+  else if (normalized.includes('mountain') || normalized.includes('climber')) mode = 'situps';
+  else if (normalized.includes('sit') || normalized.includes('crunch')) mode = 'situps';
   else if (normalized.includes('jumping') && normalized.includes('jack')) mode = 'jumpingjacks';
   else if (normalized.includes('side') && normalized.includes('plank')) mode = 'sideplank';
+  else if (normalized.includes('wide') && normalized.includes('push')) mode = 'widepushups';
+  else if (normalized.includes('narrow') && normalized.includes('push')) mode = 'narrowpushups';
+  else if (normalized.includes('diamond') && normalized.includes('push')) mode = 'diamondpushups';
+  else if (normalized.includes('knee') && normalized.includes('push')) mode = 'kneepushups';
       poseDetectionRef.current.setExerciseMode(mode);
 
       // Set up callbacks

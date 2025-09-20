@@ -50,6 +50,10 @@ const ExerciseWorkoutScreen = () => {
   // Mock exercises data
   const exercises = [
     { id: 1, name: "Push-Ups", category: "Upper Body", difficulty: "Beginner", duration: "3-5 min" },
+  { id: 6, name: "Wide Push Ups", category: "Upper Body", difficulty: "Intermediate", duration: "3-5 min" },
+  { id: 12, name: "Narrow Push Ups", category: "Upper Body", difficulty: "Intermediate", duration: "3-5 min" },
+  { id: 13, name: "Diamond Push Ups", category: "Upper Body", difficulty: "Advanced", duration: "3-5 min" },
+  { id: 14, name: "Knee Push Ups", category: "Upper Body", difficulty: "Beginner", duration: "3-5 min" },
     { id: 2, name: "Squats", category: "Lower Body", difficulty: "Beginner", duration: "4-6 min" },
     { id: 3, name: "Lunges", category: "Lower Body", difficulty: "Intermediate", duration: "5-7 min" },
     { id: 4, name: "Burpees", category: "Full Body", difficulty: "Advanced", duration: "6-8 min" },

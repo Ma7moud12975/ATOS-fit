@@ -155,6 +155,7 @@ const Dashboard = () => {
             scheduledTime: "6:00 PM",
             exercises: [
               { name: "Push-ups", sets: 3, reps: 15, completed: true },
+              { name: "Wide Push Ups", sets: 3, reps: 12, completed: false },
               { name: "Squats", sets: 3, reps: 20, completed: true },
               { name: "Plank", sets: 3, duration: "30s", completed: false },
               { name: "Lunges", sets: 3, reps: 12, completed: false },

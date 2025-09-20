@@ -27,6 +27,94 @@ const ExerciseLibrary = () => {
       description: "Classic upper body exercise targeting chest, shoulders, and triceps with core engagement."
     },
     {
+      id: 11,
+      name: "Wide Push Ups",
+      targetMuscles: "Chest (outer), Shoulders, Triceps",
+      difficulty: "Intermediate",
+      duration: 8,
+      caloriesBurn: 50,
+      sets: 3,
+      reps: 12,
+      description: "Wider hand placement variations of push-ups emphasizing outer chest and shoulder engagement."
+    },
+    {
+      id: 15,
+      name: "Reverse Plank",
+      category: "Core",
+      difficulty: "Intermediate",
+      duration: "1-3 min",
+      caloriesBurn: 40,
+      sets: 3,
+      reps: "30s",
+      description: "Isometric exercise targeting the posterior chain, enhancing core stability and strength."
+    },
+    {
+      id: 16,
+      name: "Straight Arm Plank",
+      category: "Core",
+      difficulty: "Intermediate",
+      duration: "1-3 min",
+      caloriesBurn: 35,
+      sets: 3,
+      reps: "30s",
+      description: "Isometric plank variation performed on straight arms, targeting core and shoulders."
+    },
+    {
+      id: 17,
+      name: "Reverse Straight Arm Plank",
+      category: "Core",
+      difficulty: "Intermediate",
+      duration: "1-3 min",
+      caloriesBurn: 35,
+      sets: 3,
+      reps: "30s",
+      description: "Isometric plank variation performed on straight arms facing upwards, targeting core and posterior chain."
+    },
+    {
+      id: 18,
+      name: "Knee Plank",
+      category: "Core",
+      difficulty: "Beginner",
+      duration: "30s-1 min",
+      caloriesBurn: 20,
+      sets: 3,
+      reps: "20s",
+      description: "Modified plank performed with knees on the ground to reduce load while focusing on core engagement."
+    },
+    {
+      id: 12,
+      name: "Narrow Push Ups",
+      targetMuscles: "Chest (inner), Triceps, Core",
+      difficulty: "Intermediate",
+      duration: 8,
+      caloriesBurn: 50,
+      sets: 3,
+      reps: 12,
+      description: "Close-hand push-up variation focusing on triceps and inner chest activation."
+    },
+    {
+      id: 13,
+      name: "Diamond Push Ups",
+      targetMuscles: "Triceps, Chest, Core",
+      difficulty: "Advanced",
+      duration: 8,
+      caloriesBurn: 55,
+      sets: 3,
+      reps: 10,
+      description: "Hands form a diamond under chest to emphasize triceps and inner chest engagement."
+    },
+    {
+      id: 14,
+      name: "Knee Push Ups",
+      targetMuscles: "Chest, Arms, Core",
+      difficulty: "Beginner",
+      duration: 6,
+      caloriesBurn: 30,
+      sets: 3,
+      reps: 12,
+      description: "Modified push-up performed from the knees to reduce load and focus on form."
+    },
+    {
       id: 2,
       name: "Squats",
       targetMuscles: "Legs, Glutes, Core",
@@ -61,8 +149,8 @@ const ExerciseLibrary = () => {
     },
     {
       id: 5,
-  name: "Sit Ups",
-      targetMuscles: "Core, Cardio, Arms",
+      name: "Sit-Ups",
+      targetMuscles: "Core, Abs",
       difficulty: "Intermediate",
       duration: 8,
       caloriesBurn: 80,

@@ -28,25 +28,30 @@ const ExerciseControls = ({
 
   const exercises = [
     { id: 1, name: "Push-Ups", category: "Upper Body", difficulty: "Beginner", duration: "3-5 min" },
+  { id: 11, name: "Wide Push Ups", category: "Upper Body", difficulty: "Intermediate", duration: "3-5 min" },
+  { id: 12, name: "Narrow Push Ups", category: "Upper Body", difficulty: "Intermediate", duration: "3-5 min" },
+  { id: 13, name: "Diamond Push Ups", category: "Upper Body", difficulty: "Advanced", duration: "3-5 min" },
+  { id: 14, name: "Knee Push Ups", category: "Upper Body", difficulty: "Beginner", duration: "3-5 min" },
     { id: 2, name: "Squats", category: "Lower Body", difficulty: "Beginner", duration: "4-6 min" },
     { id: 3, name: "Lunges", category: "Lower Body", difficulty: "Intermediate", duration: "5-7 min" },
     { id: 4, name: "Burpees", category: "Full Body", difficulty: "Advanced", duration: "6-8 min" },
-  { id: 5, name: "Sit Ups", category: "Core", difficulty: "Intermediate", duration: "3-5 min" },
+    { id: 5, name: "Sit-Ups", category: "Core", difficulty: "Intermediate", duration: "3-5 min" },
     { id: 6, name: "Jumping Jacks", category: "Cardio", difficulty: "Beginner", duration: "2-4 min" },
     { id: 7, name: "High Knees", category: "Cardio", difficulty: "Beginner", duration: "2-3 min" },
     { id: 8, name: "Plank", category: "Core", difficulty: "Intermediate", duration: "1-3 min" },
-    { id: 9, name: "Side Plank", category: "Core", difficulty: "Intermediate", duration: "2-4 min" },
-    { id: 10, name: "Wall Sit", category: "Lower Body", difficulty: "Beginner", duration: "1-2 min" }
+  { id: 9, name: "Side Plank", category: "Core", difficulty: "Intermediate", duration: "2-4 min" },
+  { id: 10, name: "Reverse Plank", category: "Core", difficulty: "Intermediate", duration: "1-3 min" },
+    { id: 16, name: "Wall Sit", category: "Lower Body", difficulty: "Beginner", duration: "1-2 min" }
   ];
 
   const currentExercise = selectedExercise || exercises?.[0];
 
   const isTimeBased = useMemo(() => {
     const timeBased = new Set([
-      'Plank',
-      'Side Plank',
-      'Wall Sit',
-  'Sit Ups',
+  'Plank',
+  'Side Plank',
+  'Wall Sit',
+  'Sit-Ups',
       'Jumping Jacks',
       'High Knees'
     ]);
