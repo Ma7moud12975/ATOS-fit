@@ -14,7 +14,6 @@ import { evaluateAchievements } from '../../utils/achievements';
 const ExerciseWorkoutScreen = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isFullScreen, setIsFullScreen] = useState(false);
   
   // Check authentication on component mount
   useEffect(() => {
@@ -24,18 +23,6 @@ const ExerciseWorkoutScreen = () => {
       return;
     }
   }, [navigate]);
-
-  useEffect(() => {
-    const handleFullScreenChange = () => {
-      setIsFullScreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener('fullscreenchange', handleFullScreenChange);
-
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullScreenChange);
-    };
-  }, []);
   
   // Error handling state
   const [hasError, setHasError] = useState(false);
@@ -63,9 +50,17 @@ const ExerciseWorkoutScreen = () => {
   // Mock exercises data
   const exercises = [
     { id: 1, name: "Push-Ups", category: "Upper Body", difficulty: "Beginner", duration: "3-5 min" },
+  { id: 6, name: "Wide Push Ups", category: "Upper Body", difficulty: "Intermediate", duration: "3-5 min" },
+  { id: 12, name: "Narrow Push Ups", category: "Upper Body", difficulty: "Intermediate", duration: "3-5 min" },
+  { id: 13, name: "Diamond Push Ups", category: "Upper Body", difficulty: "Advanced", duration: "3-5 min" },
+  { id: 14, name: "Knee Push Ups", category: "Upper Body", difficulty: "Beginner", duration: "3-5 min" },
     { id: 2, name: "Squats", category: "Lower Body", difficulty: "Beginner", duration: "4-6 min" },
     { id: 3, name: "Lunges", category: "Lower Body", difficulty: "Intermediate", duration: "5-7 min" },
-    { id: 4, name: "Burpees", category: "Full Body", difficulty: "Advanced", duration: "6-8 min" }
+    { id: 4, name: "Burpees", category: "Full Body", difficulty: "Advanced", duration: "6-8 min" },
+    { id: 5, name: "Side Plank", category: "Core", difficulty: "Intermediate", duration: "2-4 min" },
+    { id: 8, name: "Sit-Ups", category: "Core", difficulty: "Beginner", duration: "3-5 min" },
+    { id: 7, name: "Reverse Plank", category: "Core", difficulty: "Intermediate", duration: "2-4 min" },
+    { id: 9, name: "Jumping Jacks", category: "Full Body", difficulty: "Beginner", duration: "3-5 min" }
   ];
 
   // Timer effect for active workout
@@ -74,7 +69,8 @@ const ExerciseWorkoutScreen = () => {
     // Determine which exercise to evaluate for plank: prefer selectedExercise, fall back to first static exercise
     const effectiveExerciseName = String((selectedExercise || exercises?.[0])?.name || '').toLowerCase();
     const isPlankExercise = effectiveExerciseName.includes('plank');
-    const shouldIncrementTimer = isWorkoutActive && !isPaused && (!isPlankExercise || postureStatus === 'correct');
+    // For plank exercises we rely on pose-detection's onTimeUpdate callback which sets workoutTime directly.
+    const shouldIncrementTimer = isWorkoutActive && !isPaused && !isPlankExercise;
 
     if (shouldIncrementTimer) {
       interval = setInterval(() => {
@@ -114,7 +110,7 @@ const ExerciseWorkoutScreen = () => {
   useEffect(() => {
     if (isWorkoutActive && !isPaused) {
       const name = (currentExercise?.name || '').toLowerCase();
-      if (name.includes('push') || name.includes('squat') || name.includes('lunge') || name.includes('burpee')) {
+      if (name.includes('push') || name.includes('squat') || name.includes('lunge') || name.includes('burpee') || name.includes('jumping')) {
         // For Push-Ups, Squats, Lunges, Burpees: use AI detection count provided by CameraFeed
         setCurrentRep(aiPushupCount);
         setRepsCompleted(aiPushupCount);
@@ -248,6 +244,11 @@ const ExerciseWorkoutScreen = () => {
     console.log('AI Push-up count:', count);
   };
 
+  const handlePlankTimeUpdate = (seconds) => {
+    // Replace workoutTime with the accumulated correct-seconds reported by pose detection
+    setWorkoutTime(seconds);
+  };
+
   const handlePostureChange = (status, landmarks) => {
     setPostureStatus(status);
     console.log('Posture status:', status);
@@ -357,7 +358,7 @@ const ExerciseWorkoutScreen = () => {
     const isPlankExercise = String(name).toLowerCase().includes('plank');
 
     // For rep-based exercises we map aiPushupCount -> reps
-    if (isWorkoutActive && !isPaused && (name.toLowerCase().includes('push') || name.toLowerCase().includes('squat') || name.toLowerCase().includes('lunge') || name.toLowerCase().includes('burpee') || name.toLowerCase().includes('mountain')) ) {
+    if (isWorkoutActive && !isPaused && (name.toLowerCase().includes('push') || name.toLowerCase().includes('squat') || name.toLowerCase().includes('lunge') || name.toLowerCase().includes('burpee') || name.toLowerCase().includes('mountain') || name.toLowerCase().includes('jumping')) ) {
       // Update or create session item for this exercise
       setSessionItems(prev => {
         const copy = [...prev];
@@ -452,23 +453,11 @@ const ExerciseWorkoutScreen = () => {
     );
   }
 
-  const toggleFullScreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch((err) => {
-        console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-      });
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
-    }
-  };
-
   try {
     return (
-      <div className={`min-h-screen bg-background ${isFullScreen ? 'fullscreen' : ''}`}>
+      <div className="min-h-screen bg-background">
       {/* Header with Breadcrumb */}
-      <div className={`bg-card border-b border-border ${isFullScreen ? 'hidden' : ''}`}>
+      <div className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -494,9 +483,6 @@ const ExerciseWorkoutScreen = () => {
             </div>
             
             <div className="flex items-center space-x-3">
-               <Button variant="ghost" size="icon" onClick={toggleFullScreen}>
-                <Icon name={isFullScreen ? "Minimize" : "Maximize"} size={18} />
-              </Button>
               <Button variant="ghost" size="icon">
                 <Icon name="Settings" size={18} />
               </Button>
@@ -508,9 +494,9 @@ const ExerciseWorkoutScreen = () => {
         </div>
       </div>
       {/* Main Content */}
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 ${isFullScreen ? 'h-full' : ''}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Tab Navigation */}
-        <div className={`flex items-center justify-center mb-6 ${isFullScreen ? 'hidden' : ''}`}>
+        <div className="flex items-center justify-center mb-6">
           <div className="bg-muted rounded-lg p-1 flex">
             <button
               onClick={() => setActiveTab('live')}
@@ -535,19 +521,19 @@ const ExerciseWorkoutScreen = () => {
 
         {activeTab === 'live' ? (
           /* Live Workout Layout */
-          (<div className={`grid lg:grid-cols-3 gap-6 ${isFullScreen ? 'h-full' : ''}`}>
+          (<div className="grid lg:grid-cols-3 gap-6">
             {/* Camera Feed - Takes 2 columns on desktop */}
-            <div className={`lg:col-span-2 space-y-6 ${isFullScreen ? 'h-full w-full fixed inset-0 z-50' : ''}`}>
-              <div className={`aspect-video bg-black rounded-lg overflow-hidden ${isFullScreen ? 'h-full w-full' : ''}`}>
+            <div className="lg:col-span-2 space-y-6">
+              <div className="aspect-video bg-black rounded-lg overflow-hidden">
                 <CameraFeed
                   isActive={isCameraActive}
-                  isFullScreen={isFullScreen}
                   onToggleCamera={handleCameraToggle}
                   showPoseOverlay={showPoseOverlay}
                   setShowPoseOverlay={setShowPoseOverlay}
                   onFormFeedback={handleFormFeedback}
                   onPushupCount={handlePushupCount}
                   onPostureChange={handlePostureChange}
+                  onPlankTimeUpdate={handlePlankTimeUpdate}
                   selectedExercise={currentExercise}
                 />
               </div>
@@ -565,7 +551,7 @@ const ExerciseWorkoutScreen = () => {
               </div>
             </div>
             {/* Controls Sidebar */}
-            <div className={`space-y-6 ${isFullScreen ? 'hidden' : ''}`}>
+            <div className="space-y-6">
               <ExerciseControls
                 selectedExercise={currentExercise}
                 onExerciseChange={handleExerciseChange}

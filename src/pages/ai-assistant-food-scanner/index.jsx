@@ -184,6 +184,10 @@ Mountain Climbers
 Primary Muscles: Core, Shoulders, Hip Flexors, Triceps. A cardiovascular and core exercise.
 Form Guidance: Start in a high plank position. Drive one knee towards your chest, then quickly switch to the other leg in a continuous running motion.
 Common Mistakes: Hips rising too high, not keeping the core engaged, bouncing up and down instead of driving knees forward.
+Sit Ups
+Primary Muscles: Rectus Abdominis, Hip Flexors, Obliques. A core-strengthening exercise.
+Form Guidance: Lie on your back with knees bent and feet flat on the floor. Cross your arms over your chest or place hands lightly behind your ears. Engage your core and lift your torso towards your knees by curling through the spine, then lower back down with control.
+Common Mistakes: Pulling on the neck with hands, using momentum to swing up, lifting the feet off the floor, and not lowering with control.
 Burpees
 Primary Muscles: Full body compound exercise engaging Chest, Shoulders, Triceps, Quads, Glutes, Hamstrings, and Core.
 Form Guidance: From standing, drop into a squat, place hands on the floor, kick your feet back into a plank, perform a push-up, jump your feet back to the squat position, and explosively jump up with arms overhead.
@@ -491,16 +495,6 @@ User message: ${message}`
                       onClick={() => navigate('/exercise-workout-screen')}
                     >
                       Start Workout
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      iconName="Camera"
-                      iconPosition="left"
-                      className="w-full justify-start"
-                      onClick={() => setActiveTab('scanner')}
-                    >
-                      Scan Food
                     </Button>
                     <Button
                       variant="outline"

@@ -43,7 +43,25 @@ const LoginScreen = () => {
       root.classList.remove('dark');
     };
   }, []);
-
+  return (
+    <AuthenticationLayout>
+      <div className="w-full max-w-md mx-auto p-6 bg-card rounded-xl shadow-lg">
+        <h2 className="text-2xl font-bold mb-6 text-center">Sign in to ATOS fit</h2>
+        {/* Restore the login form */}
+        <React.Suspense fallback={<div>Loading...</div>}>
+          {/** Dynamically import LoginForm to avoid breaking changes if not present **/}
+          {(() => {
+            try {
+              const LoginForm = require('./components/LoginForm').default;
+              return <LoginForm />;
+            } catch (e) {
+              return <InternetIdentityLogin />;
+            }
+          })()}
+        </React.Suspense>
+      </div>
+    </AuthenticationLayout>
+  );
   
 };
 

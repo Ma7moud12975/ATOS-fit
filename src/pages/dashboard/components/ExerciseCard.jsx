@@ -1,11 +1,31 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import Input from '../../../components/ui/Input';
 
 const ExerciseCard = ({ exercise }) => {
   const navigate = useNavigate();
-  // (removed interactive inputs for library cards)
+  const isTimeBased = useMemo(() => {
+    const timeNames = new Set([
+      'Mountain Climbers',
+      'Jumping Jacks',
+      'High Knees',
+      'Plank',
+      'Side Plank',
+      'Wall Sit'
+    ]);
+    return timeNames.has(exercise?.name) || typeof exercise?.reps === 'string';
+  }, [exercise]);
+
+  const [formState, setFormState] = useState({
+    sets: exercise?.sets || 3,
+    reps: typeof exercise?.reps === 'number' ? exercise?.reps : '',
+    durationSeconds: typeof exercise?.reps === 'string' ? parseInt(String(exercise?.reps).replace(/\D/g, ''), 10) || 30 : 30,
+    notes: ''
+  });
+
+  const updateField = (field, value) => setFormState(prev => ({ ...prev, [field]: value }));
 
   const handleStartWorkout = () => {
     navigate('/exercise-workout-screen', { state: { selectedExercise: exercise } });
@@ -34,7 +54,17 @@ const ExerciseCard = ({ exercise }) => {
     'High Knees': 'https://i.pinimg.com/originals/95/db/ae/95dbae82f51c67fc0f5aa30a57da663c.gif',
     'Plank': 'https://i.pinimg.com/736x/83/84/65/83846529c8c33a1d03b493c82bb23570.jpg',
     'Side Plank': 'https://i.pinimg.com/736x/bd/cf/9a/bdcf9a908f66c3f28a47adc08a6c8448.jpg',
-    'Wall Sit': 'https://i.pinimg.com/originals/50/bb/fa/50bbfa9d11ce94feff442ad0c1a3e250.gif'
+    'Wall Sit': 'https://i.pinimg.com/originals/50/bb/fa/50bbfa9d11ce94feff442ad0c1a3e250.gif',
+    'Knee Plank': 'https://i.pinimg.com/originals/8d/51/1e/8d511edb34e36c468aef1027f7642621.gif',
+    'Knee Push Ups': 'https://i.pinimg.com/originals/f6/20/c9/f620c92cf9f2631338f51f711669d320.gif',
+    'Sit Ups': 'https://i.pinimg.com/originals/53/05/a5/5305a5d4e53c24604ccdc1c1ba564561.gif',
+    'Reverse Straight Arm Plank': 'https://i.pinimg.com/736x/37/ca/7e/37ca7ebf394ecc3df96f3c2c700f9738.jpg',
+    'Straight Arm Plank': 'https://i.pinimg.com/736x/d2/42/af/d242af1590d71c24ab930d6588f710d3.jpg',
+    'Reverse Plank': 'https://i.pinimg.com/736x/f4/1e/0f/f41e0f356b1cd9202ad0dda957cee97a.jpg',
+    'Wide Push Ups': 'https://i.pinimg.com/originals/47/0d/31/470d318a551421e46c3891fb1f04dd50.gif',
+    'Narrow Push Ups': 'https://i.pinimg.com/originals/47/0d/31/470d318a551421e46c3891fb1f04dd50.gif',
+    'Diamond Push Ups': 'https://i.pinimg.com/originals/47/0d/31/470d318a551421e46c3891fb1f04dd50.gif',
+
   };
   // Normalize lookup: lowercase and strip non-alphanumeric so "Push-ups", "Push Ups" both match
   const normalize = (s) => (s || '').toString().toLowerCase().replace(/[^a-z0-9]/g, '');

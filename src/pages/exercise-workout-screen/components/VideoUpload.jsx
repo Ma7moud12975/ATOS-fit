@@ -31,7 +31,11 @@ const VideoUpload = ({ onVideoAnalysis, isAnalyzing = false, selectedExercise })
       case 'lunges': return 'Lunges';
       case 'plank': return 'Plank';
       case 'burpees': return 'Burpees';
+      case 'situps': return 'Sit Ups';
+      case 'highknees': return 'High Knees';
       case 'mountainclimbers': return 'Mountain Climbers';
+      case 'jumpingjacks': return 'Jumping Jacks';
+      case 'sideplank': return 'Side Plank';
       default: return 'Push-ups';
     }
   };
@@ -72,12 +76,20 @@ const VideoUpload = ({ onVideoAnalysis, isAnalyzing = false, selectedExercise })
       
       // Set exercise mode
       const normalized = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
-      let mode = 'pushups';
-      if (normalized.includes('plank')) mode = 'plank';
+  let mode = 'pushups';
+  // Reverse plank removed -> map to standard plank
+  if (normalized.includes('plank')) mode = 'plank';
       else if (normalized.includes('squat')) mode = 'squats';
       else if (normalized.includes('lunge')) mode = 'lunges';
       else if (normalized.includes('burpee')) mode = 'burpees';
-      else if (normalized.includes('mountain') || normalized.includes('climber')) mode = 'mountainclimbers';
+  else if (normalized.includes('mountain') || normalized.includes('climber')) mode = 'situps';
+  else if (normalized.includes('sit') || normalized.includes('crunch')) mode = 'situps';
+  else if (normalized.includes('jumping') && normalized.includes('jack')) mode = 'jumpingjacks';
+  else if (normalized.includes('side') && normalized.includes('plank')) mode = 'sideplank';
+  else if (normalized.includes('wide') && normalized.includes('push')) mode = 'widepushups';
+  else if (normalized.includes('narrow') && normalized.includes('push')) mode = 'narrowpushups';
+  else if (normalized.includes('diamond') && normalized.includes('push')) mode = 'diamondpushups';
+  else if (normalized.includes('knee') && normalized.includes('push')) mode = 'kneepushups';
       poseDetectionRef.current.setExerciseMode(mode);
 
       // Set up callbacks
@@ -435,7 +447,7 @@ const VideoUpload = ({ onVideoAnalysis, isAnalyzing = false, selectedExercise })
               {isVideoPlaying && (
                  <div className="absolute top-4 left-4 bg-black/70 rounded-lg p-3 text-white">
                   <div className="text-center mb-2">
-                                         <div className="text-2xl font-bold text-green-400">{(poseDetectionRef.current?.exerciseMode === 'plank') ? plankSeconds : pushupCount}</div>
+                                         <div className="text-2xl font-bold text-green-400">{(poseDetectionRef.current?.exerciseMode === 'plank' || poseDetectionRef.current?.exerciseMode === 'sideplank') ? plankSeconds : pushupCount}</div>
                     <div class="text-xs text-gray-300">{selectedExercise?.name || 'Exercise'}</div>
                   </div>
                   <div className={`text-xs px-2 py-1 rounded text-center ${
@@ -450,11 +462,15 @@ const VideoUpload = ({ onVideoAnalysis, isAnalyzing = false, selectedExercise })
                 </div>
               )}
               
-              {/* Posture Warning - Only for Plank */}
-              {postureStatus === 'incorrect' && isVideoPlaying && poseDetectionRef.current?.exerciseMode === 'plank' && (
+              {/* Posture Warning - Only for Plank and Side Plank */}
+              {postureStatus === 'incorrect' && isVideoPlaying && (poseDetectionRef.current?.exerciseMode === 'plank' || poseDetectionRef.current?.exerciseMode === 'sideplank') && (
                 <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-red-600/90 text-white px-6 py-3 rounded-lg text-center animate-pulse">
                   <div className="font-bold text-lg">⚠️ DANGEROUS POSTURE!</div>
-                  <div className="text-sm">Straighten your back</div>
+                  <div className="text-sm">
+                    {poseDetectionRef.current?.exerciseMode === 'plank' ? 'Straighten your back' : 
+                     poseDetectionRef.current?.exerciseMode === 'sideplank' ? 'Fix your side plank form' : 
+                     'Fix your posture'}
+                  </div>
                 </div>
               )}
               

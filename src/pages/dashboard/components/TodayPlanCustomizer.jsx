@@ -10,7 +10,7 @@ const TodayPlanCustomizer = ({ exercises = [], onSave, onCancel }) => {
   }, [exercises]);
 
   const isTimeBased = (name, reps) => {
-    const timeNames = new Set(['Plank', 'Side Plank', 'Wall Sit', 'Mountain Climbers', 'Jumping Jacks', 'High Knees']);
+  const timeNames = new Set(['Plank', 'Side Plank', 'Wall Sit', 'Sit Ups', 'Jumping Jacks', 'High Knees']);
     if (typeof reps === 'string') return true;
     return Array.from(timeNames).some(n => String(name || '').toLowerCase().includes(n.toLowerCase()));
   };
