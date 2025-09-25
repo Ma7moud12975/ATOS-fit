@@ -5,9 +5,8 @@ import SidebarNavigation from '../../components/ui/SidebarNavigation';
 import ExerciseCard from '../dashboard/components/ExerciseCard';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
-import PlanningSection from './components/PlanningSection';
 
-const Exercises = () => {
+const ExerciseLibrary = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('light');
@@ -26,6 +25,83 @@ const Exercises = () => {
       sets: 3,
       reps: 15,
       description: "Classic upper body exercise targeting chest, shoulders, and triceps with core engagement."
+    },
+    {
+      id: 11,
+      name: "Wide Push Ups",
+      targetMuscles: "Chest (outer), Shoulders, Triceps",
+      difficulty: "Intermediate",
+      duration: 8,
+      caloriesBurn: 50,
+      sets: 3,
+      reps: 12,
+      description: "Wider hand placement variations of push-ups emphasizing outer chest and shoulder engagement."
+    },
+    {
+      id: 16,
+      name: "Straight Arm Plank",
+      targetMuscles: "Core, Shoulders",
+      difficulty: "Intermediate",
+      duration: 8,
+      caloriesBurn: 35,
+      sets: 3,
+      reps: "30s",
+      description: "Isometric plank variation performed on straight arms, targeting core and shoulders."
+    },
+    {
+      id: 17,
+      name: "Reverse Straight Arm Plank",
+      targetMuscles: "Core, Posterior Chain",
+      difficulty: "Intermediate",
+      duration: 8,
+      caloriesBurn: 35,
+      sets: 3,
+      reps: "30s",
+      description: "Isometric plank variation performed on straight arms facing upwards, targeting core and posterior chain."
+    },
+    {
+      id: 18,
+      name: "Knee Plank",
+      targetMuscles: "Core, Shoulders",
+      difficulty: "Beginner",
+      duration: 6,
+      caloriesBurn: 20,
+      sets: 3,
+      reps: "20s",
+      description: "Modified plank performed with knees on the ground to reduce load while focusing on core engagement."
+    },
+    {
+      id: 12,
+      name: "Narrow Push Ups",
+      targetMuscles: "Chest (inner), Triceps, Core",
+      difficulty: "Intermediate",
+      duration: 8,
+      caloriesBurn: 50,
+      sets: 3,
+      reps: 12,
+      description: "Close-hand push-up variation focusing on triceps and inner chest activation."
+    },
+    {
+      id: 13,
+      name: "Diamond Push Ups",
+      targetMuscles: "Triceps, Chest, Core",
+      difficulty: "Advanced",
+      duration: 8,
+      caloriesBurn: 55,
+      sets: 3,
+      reps: 10,
+      description: "Hands form a diamond under chest to emphasize triceps and inner chest engagement."
+    },
+    {
+      id: 14,
+      name: "Knee Push Ups",
+      targetMuscles: "Chest, Arms, Core",
+      difficulty: "Beginner",
+      duration: 6,
+      caloriesBurn: 30,
+      sets: 3,
+      reps: 12,
+      description: "Modified push-up performed from the knees to reduce load and focus on form."
     },
     {
       id: 2,
@@ -62,8 +138,8 @@ const Exercises = () => {
     },
     {
       id: 5,
-      name: "Mountain Climbers",
-      targetMuscles: "Core, Cardio, Arms",
+      name: "Sit-Ups",
+      targetMuscles: "Core, Abs",
       difficulty: "Intermediate",
       duration: 8,
       caloriesBurn: 80,
@@ -114,6 +190,17 @@ const Exercises = () => {
       sets: 3,
       reps: "20s",
       description: "Lateral core strengthening exercise targeting obliques and lateral stability."
+    },
+    {
+      id: 18,
+      name: "Reverse Plank",
+      targetMuscles: "Core, Glutes, Hamstrings",
+      difficulty: "Intermediate",
+      duration: 8,
+      caloriesBurn: 40,
+      sets: 3,
+      reps: "30s",
+      description: "An excellent exercise for strengthening the entire posterior chain, including the glutes, hamstrings, and lower back."
     },
     {
       id: 10,
@@ -204,7 +291,7 @@ const Exercises = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-                            <h1 className="text-3xl font-bold text-foreground">Exercises</h1>
+              <h1 className="text-3xl font-bold text-foreground">Exercise Library</h1>
               <p className="text-muted-foreground mt-1">
                 Choose from our collection of home-friendly exercises
               </p>
@@ -218,8 +305,6 @@ const Exercises = () => {
               Back to Dashboard
             </Button>
           </div>
-
-          <PlanningSection />
 
           {/* Search and Filter */}
           <div className="bg-card border border-border rounded-lg p-6 mb-6">
@@ -315,4 +400,4 @@ const Exercises = () => {
   );
 };
 
-export default Exercises;
+export default ExerciseLibrary;

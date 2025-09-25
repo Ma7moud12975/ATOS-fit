@@ -11,6 +11,7 @@ class PoseDetectionUtils {
   this.perModeState['squats'] = initMode('squats');
   this.perModeState['lunges'] = initMode('lunges');
   this.perModeState['burpees'] = initMode('burpees');
+  this.perModeState['situps'] = { state: 'down', count: 0 };
   this.perModeState['mountainclimbers'] = { state: 'neutral', count: 0, _lastLeftKneeY: null, _lastRightKneeY: null, _climberState: 'neutral', _lastClimberTime: 0 };
   this.perModeState['highknees'] = { state: 'down', count: 0 };
     this.postureStatus = 'unknown'; // correct, incorrect, unknown
@@ -33,12 +34,13 @@ class PoseDetectionUtils {
       this.perModeState[this.exerciseMode] = { state: 'up', count: 0 };
     }
     const normalized = String(mode || '').toLowerCase();
-    if (normalized === 'plank') this.exerciseMode = 'plank';
+    if (normalized.includes('plank')) this.exerciseMode = 'plank';
     else if (normalized === 'squats' || normalized === 'squat') this.exerciseMode = 'squats';
     else if (normalized === 'lunges' || normalized === 'lunge') this.exerciseMode = 'lunges';
     else if (normalized === 'burpees' || normalized === 'burpee') this.exerciseMode = 'burpees';
     else if (normalized.includes('mountain') || normalized.includes('climber')) this.exerciseMode = 'mountainclimbers';
     else if (normalized.includes('high') && normalized.includes('knees')) this.exerciseMode = 'highknees';
+    else if (normalized.includes('situp')) this.exerciseMode = 'situps';
     else this.exerciseMode = 'pushups';
   }
 
@@ -276,6 +278,10 @@ class PoseDetectionUtils {
         this.updateMountainClimbersCounter(landmarks);
       } else if (this.exerciseMode === 'highknees') {
         this.updateHighKneesCounter(landmarks);
+      } else if (this.exerciseMode === 'jumpingjacks') {
+       this.updateJumpingJacksCounter(landmarks);
+      } else if (this.exerciseMode === 'situps') {
+        this.updateSitupCounter(landmarks);
       } else {
         this.updatePushupCounter(landmarks);
       }
@@ -902,86 +908,7 @@ class PoseDetectionUtils {
 
   // Add Burpees counter
   // Update mountain climbers counter
-  updateMountainClimbersCounter(landmarks) {
-    try {
-      const config = window.MediaPipeConfig?.POSE_LANDMARKS || {};
-      
-      // Get key body points
-      const leftHip = landmarks[config.LEFT_HIP || 23];
-      const rightHip = landmarks[config.RIGHT_HIP || 24];
-      const leftKnee = landmarks[config.LEFT_KNEE || 25];
-      const rightKnee = landmarks[config.RIGHT_KNEE || 26];
-      const leftAnkle = landmarks[config.LEFT_ANKLE || 27];
-      const rightAnkle = landmarks[config.RIGHT_ANKLE || 28];
 
-      if (!leftHip || !rightHip || !leftKnee || !rightKnee || !leftAnkle || !rightAnkle) return;
-
-      // Calculate vertical distances between knees and hips
-      const leftKneeToHipY = Math.abs(leftKnee.y - leftHip.y);
-      const rightKneeToHipY = Math.abs(rightKnee.y - rightHip.y);
-
-      // Initialize states if needed
-      if (!this._lastLeftKneeY) this._lastLeftKneeY = leftKnee.y;
-      if (!this._lastRightKneeY) this._lastRightKneeY = rightKnee.y;
-      if (!this._climberState) this._climberState = 'neutral';
-      if (!this._lastClimberTime) this._lastClimberTime = Date.now();
-      
-      const KNEE_THRESHOLD = 0.05; // How far the knee needs to move
-      const MIN_REP_TIME = 250; // Minimum time between reps (ms)
-      const currentTime = Date.now();
-
-      // Calculate knee movements
-      const leftKneeMove = leftKnee.y - this._lastLeftKneeY;
-      const rightKneeMove = rightKnee.y - this._lastRightKneeY;
-
-      // Check for significant knee movements in opposite directions
-      const isAlternating = (leftKneeMove > KNEE_THRESHOLD && rightKneeMove < -KNEE_THRESHOLD) ||
-                           (leftKneeMove < -KNEE_THRESHOLD && rightKneeMove > KNEE_THRESHOLD);
-
-      // State machine for counting alternating leg movements
-      const cmode = this.perModeState['mountainclimbers'];
-      if (cmode._climberState === 'neutral') {
-        if (isAlternating && (currentTime - cmode._lastClimberTime > MIN_REP_TIME)) {
-          cmode._climberState = 'moving';
-          cmode._lastClimberTime = currentTime;
-          // Count the rep
-          cmode.count += 1;
-          this.playSuccessSound(); // Play success sound
-          if (this.onPushupCount) this.onPushupCount(cmode.count);
-          if (this.onFormFeedback) {
-            const leg = leftKneeMove > rightKneeMove ? 'Left' : 'Right';
-            this.onFormFeedback({
-              message: `${leg} knee drive - Rep ${cmode.count}`,
-              type: 'success',
-              timestamp: currentTime
-            });
-          }
-        }
-      } else if (cmode._climberState === 'moving') {
-        if (!isAlternating) {
-          cmode._climberState = 'neutral';
-        }
-      }
-
-      // Update last positions
-      cmode._lastLeftKneeY = leftKnee.y;
-      cmode._lastRightKneeY = rightKnee.y;
-
-      // Form feedback for incorrect movement
-      if (Math.abs(leftHip.y - rightHip.y) > 0.1) { // Hips not level
-        if (this.onFormFeedback && Math.random() < 0.1) {
-          this.onFormFeedback({
-            message: "Keep hips level!",
-            type: "warning",
-            timestamp: currentTime
-          });
-        }
-      }
-
-    } catch (error) {
-      console.error('Error updating mountain climbers counter:', error);
-    }
-  }
 
   updateBurpeesCounter(landmarks) {
     try {
@@ -1028,6 +955,187 @@ class PoseDetectionUtils {
     }
   }
 
+  updateJumpingJacksCounter(landmarks) {
+    try {
+      const config = window.MediaPipeConfig?.POSE_LANDMARKS || {};
+      const jjConfig = window.MediaPipeConfig?.JUMPINGJACKS_CONFIG || {};
+
+      // Get key landmarks for jumping jacks
+      const leftShoulder = landmarks[config.LEFT_SHOULDER || 11];
+      const rightShoulder = landmarks[config.RIGHT_SHOULDER || 12];
+      const leftHip = landmarks[config.LEFT_HIP || 23];
+      const rightHip = landmarks[config.RIGHT_HIP || 24];
+      const leftKnee = landmarks[config.LEFT_KNEE || 25];
+      const rightKnee = landmarks[config.RIGHT_KNEE || 26];
+      const leftElbow = landmarks[config.LEFT_ELBOW || 13];
+      const rightElbow = landmarks[config.RIGHT_ELBOW || 14];
+      const leftWrist = landmarks[config.LEFT_WRIST || 15];
+      const rightWrist = landmarks[config.RIGHT_WRIST || 16];
+      const leftAnkle = landmarks[config.LEFT_ANKLE || 27];
+      const rightAnkle = landmarks[config.RIGHT_ANKLE || 28];
+
+      if (!leftShoulder || !rightShoulder || !leftHip || !rightHip || !leftKnee || !rightKnee || !leftElbow || !rightElbow || !leftWrist || !rightWrist || !leftAnkle || !rightAnkle) {
+        return;
+      }
+
+      // Calculate shoulder abduction angles (shoulder-elbow-wrist) - arms overhead
+      const leftShoulderAbduction = this.calculateAngle(leftElbow, leftShoulder, leftWrist);
+      const rightShoulderAbduction = this.calculateAngle(rightElbow, rightShoulder, rightWrist);
+
+      // Calculate hip abduction angles (hip-knee-ankle) - legs apart
+      const leftHipAbduction = this.calculateAngle(leftKnee, leftHip, leftAnkle);
+      const rightHipAbduction = this.calculateAngle(rightKnee, rightHip, rightAnkle);
+
+      // Calculate knee flexion angles (hip-knee-ankle)
+      const leftKneeFlexion = this.calculateAngle(leftHip, leftKnee, leftAnkle);
+      const rightKneeFlexion = this.calculateAngle(rightHip, rightKnee, rightAnkle);
+
+      // Stricter thresholds and robust UP->DOWN detection to match pose breakdown
+  const SHOULDER_ABDUCTION_DOWN = jjConfig.SHOULDER_ABDUCTION_DOWN || 40;
+  // slightly relaxed peak requirement for rotation tolerance
+  const SHOULDER_ABDUCTION_UP = jjConfig.SHOULDER_ABDUCTION_UP || 145;
+  const HIP_ABDUCTION_DOWN = jjConfig.HIP_ABDUCTION_DOWN || 12;
+  const HIP_ABDUCTION_UP = jjConfig.HIP_ABDUCTION_UP || 32;
+
+      // Timing and smoothing
+  const MIN_REP_MS = jjConfig.MIN_REP_MS || 800; // increase debounce to avoid double counts
+  const UP_FRAMES = jjConfig.UP_FRAMES || 2;
+  const DOWN_FRAMES = jjConfig.DOWN_FRAMES || 3; // require more stable down confirmation
+      const ANKLE_SCALE = jjConfig.ANKLE_SCALE || 1.1;
+      const MIN_UP_MS = jjConfig.MIN_UP_MS || 200; // require the peak (UP) to last at least this ms
+
+      const jjState = this.perModeState['jumpingjacks'];
+      if (!jjState._lastRepAt) jjState._lastRepAt = 0;
+      if (!jjState._upCount) jjState._upCount = 0;
+      if (!jjState._downCount) jjState._downCount = 0;
+      if (!jjState._baselineAnkleDist) jjState._baselineAnkleDist = null;
+      if (!jjState._upSince) jjState._upSince = 0;
+  // short running history to smooth noisy angle/distance jumps (rotation tolerant)
+  if (!jjState._history) jjState._history = [];
+  const HISTORY_MAX = jjConfig.HISTORY_MAX || 5;
+      const now = Date.now();
+
+      const vis = (p) => p && (p.visibility == null || p.visibility > 0.5);
+
+  // Angle and position measures (frame values)
+  const avgShoulderAbduction = (leftShoulderAbduction + rightShoulderAbduction) / 2;
+  const avgHipAbduction = (leftHipAbduction + rightHipAbduction) / 2;
+  const avgWristY = (leftWrist.y + rightWrist.y) / 2;
+  const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
+  const ankleDistance = Math.abs(leftAnkle.x - rightAnkle.x);
+  const hipDistance = Math.abs(leftHip.x - rightHip.x);
+
+  // Normalizers to make detection robust to camera tilt/zoom
+  // Use shoulder span (x-distance) and torso height (shoulder y to hip y) as stable measures
+  const shoulderSpan = Math.abs(leftShoulder.x - rightShoulder.x) || 0.0001;
+  const torsoHeight = Math.abs(((leftShoulder.y + rightShoulder.y) / 2) - ((leftHip.y + rightHip.y) / 2)) || 0.0001;
+  // normalized ankle distance relative to shoulder span (accounts for zoom/tilt)
+  const normalizedAnkleDistance = ankleDistance / shoulderSpan;
+  const normalizedHipDistance = hipDistance / shoulderSpan;
+  // normalized vertical wrist offset relative to torso height
+  const wristAboveShoulderNorm = ((avgShoulderY - avgWristY) / torsoHeight) || 0;
+
+  // Push latest measures into history and compute smoothed values
+  jjState._history.push({ sa: avgShoulderAbduction, ha: avgHipAbduction, nad: normalizedAnkleDistance, nhd: normalizedHipDistance, wan: wristAboveShoulderNorm });
+  if (jjState._history.length > HISTORY_MAX) jjState._history.shift();
+  const smooth = { sa: 0, ha: 0, nad: 0, nhd: 0, wan: 0 };
+  jjState._history.forEach(h => { smooth.sa += h.sa; smooth.ha += h.ha; smooth.nad += h.nad; smooth.nhd += h.nhd; smooth.wan += h.wan; });
+  const hf = jjState._history.length || 1;
+  const smoothedShoulderAbduction = smooth.sa / hf;
+  const smoothedHipAbduction = smooth.ha / hf;
+  const smoothedNormalizedAnkleDistance = smooth.nad / hf;
+  const smoothedNormalizedHipDistance = smooth.nhd / hf;
+  const smoothedWristAboveShoulder = smooth.wan / hf;
+
+      // Initialize baseline ankle distance when in DOWN and we have a stable reading
+      if (jjState.state === 'down' && (jjState._baselineAnkleDist == null) && ankleDistance > 0 && hipDistance > 0) {
+        jjState._baselineAnkleDist = Math.max(hipDistance, ankleDistance * 0.9);
+      }
+
+      // Precise checks for peak/UP position
+  // rotation/tilt tolerant checks
+  const wristsAboveHead = vis(leftWrist) && vis(rightWrist) && (wristAboveShoulderNorm > 0.18); // wrists sufficiently above shoulders relative to torso height
+  const anklesWider = normalizedAnkleDistance > Math.max((jjState._baselineAnkleDist ? (jjState._baselineAnkleDist / shoulderSpan) : normalizedHipDistance) * ANKLE_SCALE, normalizedHipDistance * ANKLE_SCALE);
+      const shouldersAngleUp = smoothedShoulderAbduction > SHOULDER_ABDUCTION_UP;
+      const hipsAngleApart = smoothedHipAbduction > HIP_ABDUCTION_UP;
+
+      // Consider UP if peak is well-formed: wrists above head and ankles wider OR strong angle indicators
+  // use smoothed/wrist-normalized checks for robustness to tilt
+  const wristsAboveHeadSm = vis(leftWrist) && vis(rightWrist) && (smoothedWristAboveShoulder > 0.16);
+  const anklesWiderSm = smoothedNormalizedAnkleDistance > Math.max((jjState._baselineAnkleDist ? (jjState._baselineAnkleDist / shoulderSpan) : smoothedNormalizedHipDistance) * ANKLE_SCALE, smoothedNormalizedHipDistance * ANKLE_SCALE);
+  const isUpPeak = (wristsAboveHeadSm && anklesWiderSm) || (shouldersAngleUp && hipsAngleApart) || (wristsAboveHeadSm && hipsAngleApart) || (shouldersAngleUp && anklesWiderSm);
+
+      // Consider DOWN if arms low and ankles near baseline
+  const armsLow = avgShoulderAbduction < SHOULDER_ABDUCTION_DOWN;
+  const anklesNarrow = smoothedNormalizedAnkleDistance < (((jjState._baselineAnkleDist || hipDistance) / shoulderSpan) * (ANKLE_SCALE - 0.05));
+  const isDownPose = (armsLow && anklesNarrow) || (smoothedShoulderAbduction < SHOULDER_ABDUCTION_DOWN && smoothedHipAbduction < HIP_ABDUCTION_DOWN);
+
+      // Debug info occasionally
+      if ((jjState._debugCounter || 0) % 30 === 0) {
+        jjState._debugCounter = 0;
+        console.log('🔍 JJ Debug:', { avgShoulderAbduction: Math.round(avgShoulderAbduction), avgHipAbduction: Math.round(avgHipAbduction), wristsAboveHead, anklesWider, shouldersAngleUp, hipsAngleApart, state: jjState.state, count: jjState.count });
+      } else {
+        jjState._debugCounter = (jjState._debugCounter || 0) + 1;
+      }
+
+      // State transitions
+      // short ignore window after counting to avoid immediate re-detection from jitter
+      if (!jjState._ignoreUntil) jjState._ignoreUntil = 0;
+      if (jjState.state === 'down') {
+        if (isUpPeak) {
+          // only count UP frames if not in ignore window
+          if (now >= jjState._ignoreUntil) jjState._upCount += 1;
+          if (!jjState._upSince) jjState._upSince = now;
+        } else {
+          jjState._upCount = 0;
+          jjState._upSince = 0;
+        }
+
+        if (jjState._upCount >= UP_FRAMES && (now - (jjState._lastStateChange || 0)) > 120) {
+          jjState.state = 'up';
+          jjState._lastStateChange = now;
+          jjState._upCount = 0;
+          jjState._upSince = jjState._upSince || now;
+        }
+
+        // refresh baseline if idle
+        if ((now - (jjState._lastStateChange || 0)) > 6000) {
+          jjState._baselineAnkleDist = Math.max(hipDistance, ankleDistance * 0.9);
+        }
+
+      } else if (jjState.state === 'up') {
+        const upDuration = jjState._upSince ? (now - jjState._upSince) : 0;
+        if (isDownPose) {
+          jjState._downCount += 1;
+        } else {
+          jjState._downCount = 0;
+        }
+
+        // only count when coming back to DOWN (end of rep), ensure UP lasted minimum time and down is stable
+        if (jjState._downCount >= DOWN_FRAMES && upDuration >= MIN_UP_MS && (now - jjState._lastRepAt) > MIN_REP_MS) {
+          jjState.state = 'down';
+          jjState.count += 1;
+          jjState._lastRepAt = now;
+          jjState._lastStateChange = now;
+          jjState._downCount = 0;
+          jjState._upSince = 0;
+          // set a short ignore window proportional to MIN_REP_MS to avoid jitter-based double counts
+          jjState._ignoreUntil = now + Math.min(600, Math.floor(MIN_REP_MS / 2));
+          // recalibrate baseline relative to shoulder span
+          jjState._baselineAnkleDist = Math.max(hipDistance, ankleDistance * 0.9);
+          console.log('🎯 Jumping Jack counted (end-of-rep)! Count:', jjState.count);
+          this.playSuccessSound();
+          if (this.onPushupCount) this.onPushupCount(jjState.count);
+          if (this.onFormFeedback) this.onFormFeedback({ message: `Jumping Jack ${jjState.count}`, type: 'success', timestamp: now });
+        }
+      }
+
+    } catch (error) {
+      console.error('Error updating jumping jacks counter:', error);
+    }
+  }
+
+  // Update side plank counter (time-based like regular plank)
   updateHighKneesCounter(landmarks) {
     try {
       const config = window.MediaPipeConfig?.POSE_LANDMARKS || {};
@@ -1274,6 +1382,8 @@ class PoseDetectionUtils {
     }
     this.isInitialized = false;
   }
-}
 
+
+
+}
 export default PoseDetectionUtils;

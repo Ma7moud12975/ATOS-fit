@@ -2,8 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
-import ExerciseCard from '../../../components/ui/ExerciseCard';
-import { exerciseData } from '../../../utils/exerciseData';
 
 const ExerciseControls = ({ 
   selectedExercise = null,
@@ -30,25 +28,30 @@ const ExerciseControls = ({
 
   const exercises = [
     { id: 1, name: "Push-Ups", category: "Upper Body", difficulty: "Beginner", duration: "3-5 min" },
+  { id: 11, name: "Wide Push Ups", category: "Upper Body", difficulty: "Intermediate", duration: "3-5 min" },
+  { id: 12, name: "Narrow Push Ups", category: "Upper Body", difficulty: "Intermediate", duration: "3-5 min" },
+  { id: 13, name: "Diamond Push Ups", category: "Upper Body", difficulty: "Advanced", duration: "3-5 min" },
+  { id: 14, name: "Knee Push Ups", category: "Upper Body", difficulty: "Beginner", duration: "3-5 min" },
     { id: 2, name: "Squats", category: "Lower Body", difficulty: "Beginner", duration: "4-6 min" },
     { id: 3, name: "Lunges", category: "Lower Body", difficulty: "Intermediate", duration: "5-7 min" },
     { id: 4, name: "Burpees", category: "Full Body", difficulty: "Advanced", duration: "6-8 min" },
-    { id: 5, name: "Mountain Climbers", category: "Cardio", difficulty: "Intermediate", duration: "3-5 min" },
+    { id: 5, name: "Sit-Ups", category: "Core", difficulty: "Intermediate", duration: "3-5 min" },
     { id: 6, name: "Jumping Jacks", category: "Cardio", difficulty: "Beginner", duration: "2-4 min" },
     { id: 7, name: "High Knees", category: "Cardio", difficulty: "Beginner", duration: "2-3 min" },
     { id: 8, name: "Plank", category: "Core", difficulty: "Intermediate", duration: "1-3 min" },
-    { id: 9, name: "Side Plank", category: "Core", difficulty: "Intermediate", duration: "2-4 min" },
-    { id: 10, name: "Wall Sit", category: "Lower Body", difficulty: "Beginner", duration: "1-2 min" }
+  { id: 9, name: "Side Plank", category: "Core", difficulty: "Intermediate", duration: "2-4 min" },
+
+    { id: 16, name: "Wall Sit", category: "Lower Body", difficulty: "Beginner", duration: "1-2 min" }
   ];
 
   const currentExercise = selectedExercise || exercises?.[0];
 
   const isTimeBased = useMemo(() => {
     const timeBased = new Set([
-      'Plank',
-      'Side Plank',
-      'Wall Sit',
-      'Mountain Climbers',
+  'Plank',
+  'Side Plank',
+  'Wall Sit',
+  'Sit-Ups',
       'Jumping Jacks',
       'High Knees'
     ]);
@@ -116,38 +119,24 @@ const ExerciseControls = ({
           </Button>
         </div>
 
-        {/* Current Exercise Card */}
-        <div className="mb-2">
-          {(() => {
-            // Normalize name for lookup
-            const name = currentExercise?.name?.replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
-            const data = exerciseData[name] || exerciseData[name?.replace(/s$/, '')] || {};
-            // Map for fallback photo
-            const photoMap = {
-              'Push-ups': 'Push up.jpeg',
-              'Push Ups': 'Push up.jpeg',
-              'Squats': 'Squat.jpeg',
-              'Lunges': 'Lunges.jpeg',
-              'Burpees': 'Burpees.jpeg',
-              'Mountain Climbers': 'Mountain Climbers.jpeg',
-              'Jumping Jacks': 'Jumping Jacks.jpeg',
-              'High Knees': 'High Knees.jpg',
-              'Plank': 'Plank.jpeg',
-              'Side Plank': 'Side Plank.jpeg',
-              'Wall Sit': 'Wall Sit.jpeg',
-            };
-            const photoFile = data.photo || photoMap[name] || photoMap[name?.replace(/-/g, ' ')] || null;
-            return (
-              <ExerciseCard
-                title={data.title || currentExercise?.name}
-                level={data.level || currentExercise?.difficulty || 'Beginner'}
-                targetMuscles={data.targetMuscles || []}
-                exerciseType={data.exerciseType || currentExercise?.category || ''}
-                gifUrl={data.gifUrl || ''}
-                photo={photoFile}
-              />
-            );
-          })()}
+        {/* Current Exercise Info */}
+        <div className="bg-muted rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold text-card-foreground">{currentExercise?.name}</h3>
+            <span className={`text-sm font-medium ${getDifficultyColor(currentExercise?.difficulty)}`}>
+              {currentExercise?.difficulty}
+            </span>
+          </div>
+          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+            <span className="flex items-center space-x-1">
+              <Icon name="Tag" size={14} />
+              <span>{currentExercise?.category}</span>
+            </span>
+            <span className="flex items-center space-x-1">
+              <Icon name="Clock" size={14} />
+              <span>{currentExercise?.duration}</span>
+            </span>
+          </div>
         </div>
       </div>
       {/* Workout Configuration */}

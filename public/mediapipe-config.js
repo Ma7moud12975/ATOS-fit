@@ -67,6 +67,58 @@ window.MediaPipeConfig = {
     WARNING_COOLDOWN: 2000
   },
   
+  // Jumping Jacks-specific settings
+  JUMPINGJACKS_CONFIG: {
+    // Shoulder abduction angles (shoulder-elbow-wrist) - arms overhead
+    SHOULDER_ABDUCTION_DOWN: 40,    // degrees: arms down (stricter)
+    SHOULDER_ABDUCTION_UP: 145,     // degrees: arms overhead (more lenient for rotation)
+    
+    // Hip abduction angles (hip-knee-ankle) - legs apart
+    HIP_ABDUCTION_DOWN: 12,          // degrees: legs together (stricter)
+    HIP_ABDUCTION_UP: 32,            // degrees: legs apart (slightly more lenient)
+    
+    // Timing and debouncing
+    MIN_REP_MS: 800,                // minimum milliseconds between reps
+    MIN_UP_MS: 200,                 // minimum time UP position must be held
+    UP_FRAMES: 2,                   // frames required to confirm UP state
+    DOWN_FRAMES: 3,                 // frames required to confirm DOWN state
+    ANKLE_SCALE: 1.1,               // scaling factor for ankle distance
+    HISTORY_MAX: 5,                 // maximum frames for smoothing
+    WARNING_COOLDOWN: 2000          // milliseconds between warnings
+  },
+  
+  // Side Plank-specific settings
+  SIDEPLANK_CONFIG: {
+    // Shoulder support angle (shoulder-elbow-wrist) - should be ~90°
+    SHOULDER_ANGLE_MIN: 80,         // degrees: minimum elbow angle
+    SHOULDER_ANGLE_MAX: 100,        // degrees: maximum elbow angle
+    
+    // Torso-hip line (shoulder-hip-ankle) - should be ~180° (straight line)
+    TORSO_ANGLE_MIN: 160,           // degrees: minimum straight line angle
+    TORSO_ANGLE_MAX: 200,           // degrees: maximum straight line angle
+    
+    // Hip position thresholds (normalized units)
+    HIP_SAG_THRESHOLD: 0.05,        // hip sagging tolerance
+    HIP_HIKE_THRESHOLD: 0.05,       // hip hiking tolerance
+    
+    // Elbow alignment (elbow should be under shoulder)
+    ELBOW_ALIGNMENT_THRESHOLD: 0.08, // normalized units
+    
+    // Feet stacking (ankles should be close together)
+    FEET_STACKING_THRESHOLD: 0.1,   // normalized units
+    
+    // Head-neck alignment (ear-shoulder-hip should be ~180°)
+    HEAD_NECK_ANGLE_MIN: 160,       // degrees: minimum head-neck alignment
+    HEAD_NECK_ANGLE_MAX: 200,       // degrees: maximum head-neck alignment
+    
+    // Posture smoothing
+    POSTURE_GOOD_FRAMES: 3,         // consecutive good frames to confirm correct posture
+    POSTURE_BAD_FRAMES: 4,          // consecutive bad frames to confirm incorrect posture
+    
+    // Warning cooldown
+    WARNING_COOLDOWN: 2000          // milliseconds between warnings
+  },
+  
   // Pose landmark indices (MediaPipe standard)
   POSE_LANDMARKS: {
     NOSE: 0,

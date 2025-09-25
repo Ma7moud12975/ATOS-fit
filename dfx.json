@@ -3,7 +3,7 @@
     "frontend": {
       "type": "assets",
       "source": [
-        "build/"
+        "build-minimal/"
       ],
       "assets": [
         ["index.html", {"path": "/"}],
@@ -11,7 +11,11 @@
       ],
       "exclude": [
         "**/*.map"
-      ]
+      ],
+      "frontend": {
+        "entrypoint": "build/index.html"
+      },
+      "timeout_seconds": 120
     }
   },
   "networks": {

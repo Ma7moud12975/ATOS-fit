@@ -72,18 +72,29 @@ This application currently supports a variety of common bodyweight exercises:
 
 # Workout Exercises GIFs
 
-| Exercise           | Preview                                                                                                                         |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| *Push-ups*         | ![](https://i.pinimg.com/originals/47/0d/31/470d318a551421e46c3891fb1f04dd50.gif)                                               |
-| *Squats*           | ![](https://i.pinimg.com/originals/27/30/c2/2730c2da52a5f9200caa7e5d8705efde.gif)                                               |
-| *Lunges*           | ![](https://i.pinimg.com/originals/66/78/58/6678589817d6026fab7bd23838a8e3eb.gif)                                               |
-| *Plank*            | ![](https://i.pinimg.com/originals/8d/51/1e/8d511edb34e36c468aef1027f7642621.gif)                                               |
-| *Mountain Climbers*| ![](https://i.pinimg.com/originals/bd/f2/a3/bdf2a3ec9beb4f231033af0d744057bb.gif)                                               |
-| *High Knees*       | ![](https://i.pinimg.com/originals/95/db/ae/95dbae82f51c67fc0f5aa30a57da663c.gif)                                               |
-| *Burpees*          | ![](https://i.pinimg.com/originals/f0/a3/da/f0a3da2890f6edf4c7b45845fa14e39c.gif)                                               |
-| *Wall Sit*         | ![](https://i.pinimg.com/originals/50/bb/fa/50bbfa9d11ce94feff442ad0c1a3e250.gif)                                               |
-| *Jumping Jacks*    | ![](https://i.pinimg.com/originals/b4/b5/b9/b4b5b94c119dde698d138b8fe0b8d521.gif)                                               |
-| *Side Plank*       | ![](https://i.pinimg.com/originals/4b/bb/42/4bbb42ef233861f68ca244692493cb3d.gif)                                               |
+| Exercise                  | Preview                                                                                                                                 |
+|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| *Push-ups*                 | ![](https://i.pinimg.com/originals/47/0d/31/470d318a551421e46c3891fb1f04dd50.gif)                                                       |
+| *Squats*                   | ![](https://i.pinimg.com/originals/27/30/c2/2730c2da52a5f9200caa7e5d8705efde.gif)                                                       |
+| *Lunges*                   | ![](https://i.pinimg.com/originals/66/78/58/6678589817d6026fab7bd23838a8e3eb.gif)                                                       |
+| *Burpees*                  | ![](https://i.pinimg.com/originals/f0/a3/da/f0a3da2890f6edf4c7b45845fa14e39c.gif)                                                       |
+| *Mountain Climbers*        | ![](https://i.pinimg.com/originals/bd/f2/a3/bdf2a3ec9beb4f231033af0d744057bb.gif)                                                       |
+| *Jumping Jacks*            | ![](https://i.pinimg.com/originals/b4/b5/b9/b4b5b94c119dde698d138b8fe0b8d521.gif)                                                       |
+| *High Knees*               | ![](https://i.pinimg.com/originals/95/db/ae/95dbae82f51c67fc0f5aa30a57da663c.gif)                                                       |
+| *Plank*                    | ![](<img width="790" height="596" alt="image" src="https://github.com/user-attachments/assets/7db97be8-551e-463e-ae78-4c0e47481adf" />
+)                                                            |
+| *Side Plank*               | ![](https://i.pinimg.com/736x/bd/cf/9a/bdcf9a908f66c3f28a47adc08a6c8448.jpg)                                                            |
+| *Wall Sit*                 | ![](https://i.pinimg.com/originals/50/bb/fa/50bbfa9d11ce94feff442ad0c1a3e250.gif)                                                       |
+| *Knee Plank*               | ![](https://i.pinimg.com/originals/8d/51/1e/8d511edb34e36c468aef1027f7642621.gif)                                                       |
+| *Knee Push Ups*            | ![](https://i.pinimg.com/originals/f6/20/c9/f620c92cf9f2631338f51f711669d320.gif)                                                       |
+| *Sit Ups*                  | ![](https://i.pinimg.com/originals/53/05/a5/5305a5d4e53c24604ccdc1c1ba564561.gif)                                                       |
+| *Reverse Straight Arm Plank* | ![](https://i.pinimg.com/736x/37/ca/7e/37ca7ebf394ecc3df96f3c2c700f9738.jpg)                                                            |
+| *Straight Arm Plank*       | ![](https://i.pinimg.com/736x/d2/42/af/d242af1590d71c24ab930d6588f710d3.jpg)                                                            |
+| *Reverse Plank*            | ![](https://i.pinimg.com/736x/f4/1e/0f/f41e0f356b1cd9202ad0dda957cee97a.jpg)                                                            |
+| *Wide Push Ups*            | ![](https://i.pinimg.com/originals/47/0d/31/470d318a551421e46c3891fb1f04dd50.gif)                                                       |
+| *Narrow Push Ups*          | ![](https://i.pinimg.com/originals/47/0d/31/470d318a551421e46c3891fb1f04dd50.gif)                                                       |
+| *Diamond Push Ups*         | ![](https://i.pinimg.com/originals/47/0d/31/470d318a551421e46c3891fb1f04dd50.gif)                                                       |
+
 
 ---
 

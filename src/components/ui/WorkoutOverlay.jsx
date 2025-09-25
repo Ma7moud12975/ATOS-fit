@@ -128,20 +128,74 @@ const WorkoutOverlay = ({
           </div>
         </div>
 
-        {/* Exercise Preview Card */}
-        <div className="border-t border-border bg-muted/50">
-          <div className="container mx-auto px-4 py-6">
-            {currentWorkout?.currentExercise && exerciseData[currentWorkout.currentExercise] && (
-              <ExerciseCard {...exerciseData[currentWorkout.currentExercise]} />
-            )}
+        {/* Stats Bar - Desktop Only */}
+        <div className="hidden lg:block border-t border-border bg-muted/50">
+          <div className="px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <Icon name="Clock" size={16} className="text-muted-foreground" />
+                <span className="text-sm font-mono text-card-foreground">
+                  {formatTime(currentWorkout?.timeElapsed)}
+                </span>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Icon name="Flame" size={16} className="text-accent" />
+                <span className="text-sm font-mono text-card-foreground">
+                  {currentWorkout?.caloriesBurned} cal
+                </span>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Icon name="Heart" size={16} className="text-error" />
+                <span className="text-sm font-mono text-card-foreground">
+                  {currentWorkout?.heartRate} bpm
+                </span>
+              </div>
+            </div>
+
+            <div className="text-sm text-muted-foreground">
+              Current: <span className="font-medium text-card-foreground">{currentWorkout?.currentExercise}</span>
+            </div>
           </div>
         </div>
       </div>
-      {/* Mobile Exercise Preview */}
-      <div className="lg:hidden fixed bottom-4 left-4 right-4 p-4">
-        {currentWorkout?.currentExercise && exerciseData[currentWorkout.currentExercise] && (
-          <ExerciseCard {...exerciseData[currentWorkout.currentExercise]} />
-        )}
+      {/* Mobile Stats Overlay */}
+      <div className="lg:hidden fixed bottom-4 left-4 right-4 bg-card border border-border rounded-lg shadow-elevation-3 z-workout-overlay">
+        <div className="p-3">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-1">
+                <Icon name="Clock" size={14} className="text-muted-foreground" />
+                <span className="font-mono text-card-foreground">
+                  {formatTime(currentWorkout?.timeElapsed)}
+                </span>
+              </div>
+              
+              <div className="flex items-center space-x-1">
+                <Icon name="Flame" size={14} className="text-accent" />
+                <span className="font-mono text-card-foreground">
+                  {currentWorkout?.caloriesBurned}
+                </span>
+              </div>
+              
+              <div className="flex items-center space-x-1">
+                <Icon name="Heart" size={14} className="text-error" />
+                <span className="font-mono text-card-foreground">
+                  {currentWorkout?.heartRate}
+                </span>
+              </div>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggleMinimize}
+            >
+              <Icon name="Minimize2" size={14} />
+            </Button>
+          </div>
+        </div>
       </div>
       {/* Exit Confirmation Modal */}
       {showExitConfirm && (

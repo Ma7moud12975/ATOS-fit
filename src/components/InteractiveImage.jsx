@@ -49,9 +49,9 @@ const InteractiveImage = () => {
         className="relative w-full"
       >
         <img 
-          src="/assets/images/weekly_tasks.png" 
+          src="/assets/images/weekly_tasks.gif" 
           alt="ATOSfit App Interface" 
-          className="w-full h-auto object-cover cursor-pointer"
+          className="w-1/2 h-auto object-cover cursor-pointer mx-auto block"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         />

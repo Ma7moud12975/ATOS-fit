@@ -90,7 +90,7 @@ const InternetIdentityLogin = ({ isLoading: parentLoading = false }) => {
         className="h-12 flex items-center justify-center space-x-2"
       >
         <Icon name="LogIn" size={18} className="text-[#edad45]" />
-        <span>Sign In with Internet Identity</span>
+        <span>Sign In</span>
       </Button>
 
       {/* Help Text */}
