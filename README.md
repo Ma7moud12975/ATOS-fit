@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # ATOS Fit: AI-Powered Fitness Coach
 
 <div align="center">
