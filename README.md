@@ -1,7 +1,7 @@
 # ATOS Fit: AI-Powered Fitness Coach
 
 <div align="center">
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg"/>
+<img width="1898" height="1077" alt="image" src="https://github.com/user-attachments/assets/5417c77c-3c0b-43b9-9e08-0b98629994ae" />
   <img alt="React" src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB"/>
   <img alt="TensorFlow" src="https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white"/>
   <img alt="Internet Computer" src="https://img.shields.io/badge/Internet%20Computer-3B00B9?style=for-the-badge&logo=dfinity&logoColor=white"/>
