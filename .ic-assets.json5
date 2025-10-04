@@ -1,0 +1,19 @@
+[
+  {
+    "match": "**/*.map",
+    "ignore": true
+  },
+  {
+    "match": "**/*.wav",
+    "ignore": true
+  },
+  {
+    "match": "**/pp.png",
+    "ignore": true
+  },
+  {
+    "match": "**/*",
+    "security_policy": "standard",
+    "disable_security_policy_warning": true
+  }
+]
