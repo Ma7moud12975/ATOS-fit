@@ -1,7 +1,7 @@
 # ATOS Fit: AI-Powered Fitness Coach
 
 <div align="center">
-<img width="1898" height="1077" alt="image" src="https://github.com/user-attachments/assets/5417c77c-3c0b-43b9-9e08-0b98629994ae" />
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg"/>
   <img alt="React" src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB"/>
   <img alt="TensorFlow" src="https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white"/>
   <img alt="Internet Computer" src="https://img.shields.io/badge/Internet%20Computer-3B00B9?style=for-the-badge&logo=dfinity&logoColor=white"/>
@@ -10,7 +10,7 @@
 
 > A real-time fitness tracking web application that uses TensorFlow.js and pose detection to monitor exercise form, count repetitions, and provide feedback—all through your webcam!
 > 
-<img width="1894" height="1079" alt="Screenshot 2025-09-12 155454" src="https://github.com/user-attachments/assets/24268d17-7c1b-4af6-a050-a61cff7ab415" />
+<img width="1898" height="1077" alt="image" src="https://github.com/user-attachments/assets/70e5af13-2646-4c07-9ab7-5f1c7ff8ddb9" />
 <img width="1876" height="1079" alt="Screenshot 2025-09-12 155527" src="https://github.com/user-attachments/assets/9c110a76-f73c-438d-8d42-b19bf052ede8" />
 <img width="1893" height="1079" alt="Screenshot 2025-09-17 125816" src="https://github.com/user-attachments/assets/77cc2ea8-006e-49a3-ad4e-4a01bbbe2ce0" />
 <img width="1891" height="1079" alt="Screenshot 2025-09-17 130240" src="https://github.com/user-attachments/assets/5298cd5b-931d-4251-91d2-a8ee85614c54" />
