@@ -1,0 +1,27 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment and keys
+.env
+key.pem
+cert.pem
+
+# Build outputs
+build/
+build-minimal/
+dist/
+
+# DFINITY local artifacts
+.dfx/
+canister_ids.json
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log
