@@ -13,12 +13,12 @@ import FitnessMetricsTab from './components/FitnessMetricsTab';
 const UserProfile = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState('light');
+  const [currentTheme, setCurrentTheme] = useState('dark'); // Default to dark mode
   const [activeTab, setActiveTab] = useState('personal');
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedTheme = localStorage.getItem('theme') || 'dark'; // Default to dark
     setCurrentTheme(savedTheme);
     // Use class instead of data attribute for Tailwind dark mode
     if (savedTheme === 'dark') {

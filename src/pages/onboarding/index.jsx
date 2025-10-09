@@ -12,6 +12,7 @@ const OnboardingScreen = () => {
   const { isAuthenticated, principal } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState('dark');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -23,6 +24,12 @@ const OnboardingScreen = () => {
   });
 
   const totalSteps = 2;
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setCurrentTheme(savedTheme);
+    document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -218,7 +225,9 @@ const OnboardingScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className={`min-h-screen bg-background flex items-center justify-center p-4 ${
+      currentTheme === 'dark' ? 'dark' : ''
+    }`}>
       <div className="w-full max-w-2xl">
         {/* Progress Bar */}
         <div className="mb-8">

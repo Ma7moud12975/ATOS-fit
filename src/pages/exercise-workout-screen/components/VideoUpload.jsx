@@ -12,6 +12,8 @@ const VideoUpload = ({ onVideoAnalysis, isAnalyzing = false, selectedExercise })
   const [postureStatus, setPostureStatus] = useState('unknown');
   const [poseResults, setPoseResults] = useState(null);
   const [showPoseOverlay, setShowPoseOverlay] = useState(true);
+  const [videoAspectRatio, setVideoAspectRatio] = useState(16/9); // Default aspect ratio
+  const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -197,6 +199,52 @@ const VideoUpload = ({ onVideoAnalysis, isAnalyzing = false, selectedExercise })
     };
   }, [uploadedVideo]);
 
+  // Container dimension observer for responsive design
+  const containerRef = useRef(null);
+  
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        const { width, height } = entry.contentRect;
+        setContainerDimensions({ width, height });
+      }
+    });
+    
+    resizeObserver.observe(containerRef.current);
+    
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  // Calculate responsive container style based on video aspect ratio
+  const getResponsiveContainerStyle = () => {
+    if (!containerDimensions.width || !containerDimensions.height) {
+      return { aspectRatio: videoAspectRatio || '16/9' };
+    }
+    
+    const containerAspectRatio = containerDimensions.width / containerDimensions.height;
+    const videoAR = videoAspectRatio || 16/9;
+    
+    if (videoAR > containerAspectRatio) {
+      // Video is wider - fit to width
+      return {
+        width: '100%',
+        height: `${containerDimensions.width / videoAR}px`,
+        maxHeight: '400px'
+      };
+    } else {
+      // Video is taller - fit to height
+      return {
+        width: `${Math.min(containerDimensions.height * videoAR, containerDimensions.width)}px`,
+        height: '400px',
+        maxWidth: '100%'
+      };
+    }
+  };
+
   // Remove drawPoseOverlay interval, handled in RAF loop
 
   const handleDrag = (e) => {
@@ -248,6 +296,17 @@ const VideoUpload = ({ onVideoAnalysis, isAnalyzing = false, selectedExercise })
     setPushupCount(0);
     setPostureStatus('unknown');
     setPoseResults(null);
+    
+    // Create a temporary video element to get aspect ratio
+    const tempVideo = document.createElement('video');
+    tempVideo.src = videoUrl;
+    tempVideo.addEventListener('loadedmetadata', () => {
+      if (tempVideo.videoWidth && tempVideo.videoHeight) {
+        const aspectRatio = tempVideo.videoWidth / tempVideo.videoHeight;
+        setVideoAspectRatio(aspectRatio);
+        console.log('📐 Uploaded video aspect ratio detected:', aspectRatio);
+      }
+    });
     
     // No need for separate analysis - will be live during playback
     console.log('📹 Video uploaded, ready for live analysis during playback');
@@ -366,7 +425,7 @@ const VideoUpload = ({ onVideoAnalysis, isAnalyzing = false, selectedExercise })
       </div>
       {!uploadedVideo ? (
         /* Upload Area */
-        (<div
+        <div
           className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
             dragActive 
               ? 'border-primary bg-primary/5' :'border-border hover:border-primary/50 hover:bg-muted/50'
@@ -405,85 +464,90 @@ const VideoUpload = ({ onVideoAnalysis, isAnalyzing = false, selectedExercise })
               Choose File
             </Button>
           </div>
-        </div>)
+        </div>
       ) : (
         /* Video Preview and Analysis */
-        (<div className="space-y-6">
+        <div className="space-y-6">
           {/* Video Preview with Pose Detection */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-card-foreground">Video Preview</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowPoseOverlay(!showPoseOverlay)}
-                className="text-sm"
-              >
-                <Icon name={showPoseOverlay ? "Eye" : "EyeOff"} size={16} className="mr-2" />
-                {showPoseOverlay ? 'Hide' : 'Show'} Pose
-              </Button>
-            </div>
-            <div className="relative bg-black rounded-lg overflow-hidden">
-              <video
-                ref={videoRef}
-                src={uploadedVideo?.url}
-                controls
-                className="w-full h-64 object-contain"
-                onPlay={handleVideoPlay}
-                onPause={handleVideoPause}
-                onEnded={handleVideoPause}
-              />
-              
-              {/* Pose Overlay Canvas */}
-              {showPoseOverlay && (
-                <canvas
-                  ref={canvasRef}
-                  className="absolute inset-0 w-full h-full pointer-events-none"
-                  style={{ zIndex: 10 }}
-                />
-              )}
-              
-              {/* Live Stats Overlay */}
-              {isVideoPlaying && (
-                 <div className="absolute top-4 left-4 bg-black/70 rounded-lg p-3 text-white">
-                  <div className="text-center mb-2">
-                                         <div className="text-2xl font-bold text-green-400">{(poseDetectionRef.current?.exerciseMode === 'plank' || poseDetectionRef.current?.exerciseMode === 'sideplank') ? plankSeconds : pushupCount}</div>
-                    <div class="text-xs text-gray-300">{selectedExercise?.name || 'Exercise'}</div>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-card-foreground">Video Preview</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowPoseOverlay(!showPoseOverlay)}
+                  className="text-sm"
+                >
+                  <Icon name={showPoseOverlay ? "Eye" : "EyeOff"} size={16} className="mr-2" />
+                  {showPoseOverlay ? 'Hide' : 'Show'} Pose
+                </Button>
+              </div>
+              <div ref={containerRef} className="w-full">
+                <div 
+                  className="relative bg-black rounded-lg overflow-hidden mx-auto"
+                  style={getResponsiveContainerStyle()}
+                >
+                  <video
+                    ref={videoRef}
+                    src={uploadedVideo?.url}
+                    controls
+                    className="w-full h-full object-contain"
+                    onPlay={handleVideoPlay}
+                    onPause={handleVideoPause}
+                    onEnded={handleVideoPause}
+                  />
+                  
+                  {/* Pose Overlay Canvas */}
+                  {showPoseOverlay && (
+                    <canvas
+                      ref={canvasRef}
+                      className="absolute inset-0 w-full h-full pointer-events-none"
+                      style={{ zIndex: 10 }}
+                    />
+                  )}
+                 
+                  {/* Live Stats Overlay */}
+                  {isVideoPlaying && (
+                     <div className="absolute top-4 left-4 bg-black/70 rounded-lg p-3 text-white">
+                      <div className="text-center mb-2">
+                                             <div className="text-2xl font-bold text-green-400">{(poseDetectionRef.current?.exerciseMode === 'plank' || poseDetectionRef.current?.exerciseMode === 'sideplank') ? plankSeconds : pushupCount}</div>
+                        <div className="text-xs text-gray-300">{selectedExercise?.name || 'Exercise'}</div>
+                      </div>
+                      <div className={`text-xs px-2 py-1 rounded text-center ${
+                        postureStatus === 'correct' ? 'bg-green-500/20 text-green-300' :
+                        postureStatus === 'incorrect' ? 'bg-red-500/20 text-red-300' :
+                        'bg-gray-500/20 text-gray-300'
+                      }`}>
+                        {postureStatus === 'correct' ? '✓ Good Posture' :
+                         postureStatus === 'incorrect' ? '⚠ Fix Posture' :
+                         'Detecting...'}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Posture Warning - Only for Plank and Side Plank */}
+                  {postureStatus === 'incorrect' && isVideoPlaying && (poseDetectionRef.current?.exerciseMode === 'plank' || poseDetectionRef.current?.exerciseMode === 'sideplank') && (
+                    <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-red-600/90 text-white px-6 py-3 rounded-lg text-center animate-pulse">
+                      <div className="font-bold text-lg">⚠️ DANGEROUS POSTURE!</div>
+                      <div className="text-sm">
+                        {poseDetectionRef.current?.exerciseMode === 'plank' ? 'Straighten your back' : 
+                         poseDetectionRef.current?.exerciseMode === 'sideplank' ? 'Fix your side plank form' : 
+                         'Fix your posture'}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Video Status */}
+                  <div className="absolute bottom-4 right-4">
+                    <div className="flex items-center space-x-2 bg-black/50 rounded-full px-3 py-1">
+                      <div className={`w-2 h-2 rounded-full ${isVideoPlaying ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
+                      <span className="text-white text-sm font-medium">
+                        {isVideoPlaying ? 'Analyzing' : 'Paused'}
+                      </span>
+                    </div>
                   </div>
-                  <div className={`text-xs px-2 py-1 rounded text-center ${
-                    postureStatus === 'correct' ? 'bg-green-500/20 text-green-300' :
-                    postureStatus === 'incorrect' ? 'bg-red-500/20 text-red-300' :
-                    'bg-gray-500/20 text-gray-300'
-                  }`}>
-                    {postureStatus === 'correct' ? '✓ Good Posture' :
-                     postureStatus === 'incorrect' ? '⚠ Fix Posture' :
-                     'Detecting...'}
-                  </div>
-                </div>
-              )}
-              
-              {/* Posture Warning - Only for Plank and Side Plank */}
-              {postureStatus === 'incorrect' && isVideoPlaying && (poseDetectionRef.current?.exerciseMode === 'plank' || poseDetectionRef.current?.exerciseMode === 'sideplank') && (
-                <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-red-600/90 text-white px-6 py-3 rounded-lg text-center animate-pulse">
-                  <div className="font-bold text-lg">⚠️ DANGEROUS POSTURE!</div>
-                  <div className="text-sm">
-                    {poseDetectionRef.current?.exerciseMode === 'plank' ? 'Straighten your back' : 
-                     poseDetectionRef.current?.exerciseMode === 'sideplank' ? 'Fix your side plank form' : 
-                     'Fix your posture'}
-                  </div>
-                </div>
-              )}
-              
-              {/* Video Status */}
-              <div className="absolute bottom-4 right-4">
-                <div className="flex items-center space-x-2 bg-black/50 rounded-full px-3 py-1">
-                  <div className={`w-2 h-2 rounded-full ${isVideoPlaying ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
-                  <span className="text-white text-sm font-medium">
-                    {isVideoPlaying ? 'Analyzing' : 'Paused'}
-                  </span>
                 </div>
               </div>
-            </div>
             
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span className="flex items-center space-x-2">
@@ -649,7 +713,7 @@ const VideoUpload = ({ onVideoAnalysis, isAnalyzing = false, selectedExercise })
               </div>
             </div>
           )}
-        </div>)
+        </div>
       )}
     </div>
   );

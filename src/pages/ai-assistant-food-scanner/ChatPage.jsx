@@ -9,13 +9,13 @@ import ChatInput from './components/ChatInput';
 const ChatPage = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState('light');
+  const [currentTheme, setCurrentTheme] = useState('dark'); // Default to dark mode
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState([{ id: 1, message: "Hello! I'm your AI fitness coach. How can I assist you today?", isUser: false, timestamp: new Date() }]);
   const chatContainerRef = useRef(null);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedTheme = localStorage.getItem('theme') || 'dark'; // Default to dark
     setCurrentTheme(savedTheme);
     if (savedTheme === 'dark') document.documentElement?.classList?.add('dark');
     else document.documentElement?.classList?.remove('dark');

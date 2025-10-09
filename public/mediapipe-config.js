@@ -6,12 +6,12 @@ window.MediaPipeConfig = {
   DRAWING_UTILS_URL: 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils',
   
   // Backend selection: 'mediapipe' (default) or 'blazepose_tfjs'
-  POSE_BACKEND: 'blazepose_tfjs',
-  // TFJS CDN URLs for BlazePose backend
+  POSE_BACKEND: 'mediapipe',
+  // TFJS CDN URLs for BlazePose backend - using stable versions
   TFJS_CORE_URL: 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@4.10.0/dist/tf-core.esm.js',
   TFJS_CONVERTER_URL: 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@4.10.0/dist/tf-converter.esm.js',
   TFJS_BACKEND_WEBGL_URL: 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.10.0/dist/tf-backend-webgl.esm.js',
-  POSE_DETECTION_URL: 'https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@3.0.0/dist/pose-detection.esm.js',
+  POSE_DETECTION_URL: 'https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.0/dist/pose-detection.esm.js',
   BLAZEPOSE_MODEL_TYPE: 'lite', // 'lite'|'full'|'heavy'
   
   // Pose detection settings optimized for web
@@ -26,13 +26,13 @@ window.MediaPipeConfig = {
     maxNumHands: 0 // Disable hand detection to save memory
   },
   
-  // Push-up specific settings
+  // Push-up specific settings - made more lenient for better detection
   PUSHUP_CONFIG: {
-    ELBOW_ANGLE_DOWN: 95,   // easier: degrees for down position
-    ELBOW_ANGLE_UP: 155,    // easier: degrees for up position
-    SHOULDER_HEIGHT_DOWN: 0.02, // shoulder should be close to ground (normalized)
-    BACK_ALIGNMENT_MIN: 150, // minimum angle for good posture
-    BACK_ALIGNMENT_MAX: 210, // maximum angle for good posture
+    ELBOW_ANGLE_DOWN: 110,   // more lenient: degrees for down position
+    ELBOW_ANGLE_UP: 140,     // more lenient: degrees for up position  
+    SHOULDER_HEIGHT_DOWN: 0.05, // more lenient shoulder position
+    BACK_ALIGNMENT_MIN: 140, // more lenient minimum angle for good posture
+    BACK_ALIGNMENT_MAX: 220, // more lenient maximum angle for good posture
     WARNING_COOLDOWN: 2000   // milliseconds between warnings
   },
   

@@ -10,7 +10,7 @@ const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState('all'); // all, unread, read
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState('light');
+  const [currentTheme, setCurrentTheme] = useState('dark'); // Default to dark mode
 
   // Load notifications from localStorage
   useEffect(() => {

@@ -51,7 +51,7 @@ const AchievementsPage = () => {
         onSidebarToggle={()=>{}}
         isSidebarOpen={false}
         onThemeToggle={()=>{}}
-        currentTheme={localStorage.getItem('theme') || 'light'}
+        currentTheme={localStorage.getItem('theme') || 'dark'}
         user={user || { name: 'New User', email: '' }}
         onLogout={()=>{}}
       />

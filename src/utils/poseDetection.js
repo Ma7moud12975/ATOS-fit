@@ -51,35 +51,89 @@ class PoseDetectionUtils {
 
       // Alternative backend: TFJS BlazePose (fast init, accurate keypoints)
       if (this.backend === 'blazepose_tfjs') {
+        console.log('📦 Loading TensorFlow.js BlazePose backend...');
+        
         // Dynamically import TFJS and pose-detection from CDN as configured
         const cfg = window.MediaPipeConfig || {};
+        console.log('🔧 MediaPipe config:', cfg);
+        
         const tfCoreUrl = cfg.TFJS_CORE_URL || 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@4.10.0/dist/tf-core.esm.js';
         const tfConverterUrl = cfg.TFJS_CONVERTER_URL || 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@4.10.0/dist/tf-converter.esm.js';
         const tfWebglUrl = cfg.TFJS_BACKEND_WEBGL_URL || 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.10.0/dist/tf-backend-webgl.esm.js';
-        const poseDetectionUrl = cfg.POSE_DETECTION_URL || 'https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@3.0.0/dist/pose-detection.esm.js';
+        const poseDetectionUrl = cfg.POSE_DETECTION_URL || 'https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.0/dist/pose-detection.esm.js';
 
-        // Load TFJS modules
-        const tf = await import(/* @vite-ignore */ tfCoreUrl);
-        await import(/* @vite-ignore */ tfConverterUrl);
-        await import(/* @vite-ignore */ tfWebglUrl);
-        await tf.setBackend('webgl');
-        await tf.ready();
-
-        const poseDetection = await import(/* @vite-ignore */ poseDetectionUrl);
-
-        const modelType = cfg.BLAZEPOSE_MODEL_TYPE || 'lite'; // 'lite'|'full'|'heavy'
-        this.detector = await poseDetection.createDetector(
-          poseDetection.SupportedModels.BlazePose,
-          {
-            runtime: 'tfjs',
-            modelType,
-            enableSmoothing: true
+        try {
+          // Load TFJS modules with better error handling
+          console.log('📥 Loading TensorFlow.js core from:', tfCoreUrl);
+          const tf = await import(/* @vite-ignore */ tfCoreUrl);
+          
+          if (!tf || !tf.setBackend) {
+            throw new Error('TensorFlow.js core failed to load properly');
           }
-        );
+          console.log('✅ TensorFlow.js core loaded');
+          
+          console.log('📥 Loading TensorFlow.js converter from:', tfConverterUrl);
+          await import(/* @vite-ignore */ tfConverterUrl);
+          console.log('✅ TensorFlow.js converter loaded');
+          
+          console.log('📥 Loading TensorFlow.js WebGL backend from:', tfWebglUrl);
+          await import(/* @vite-ignore */ tfWebglUrl);
+          console.log('✅ TensorFlow.js WebGL backend loaded');
+          
+          console.log('🔧 Setting backend to WebGL...');
+          await tf.setBackend('webgl');
+          console.log('⏳ Waiting for TensorFlow.js to be ready...');
+          await tf.ready();
+          console.log('✅ TensorFlow.js is ready!');
 
-        this.isInitialized = true;
-        console.log('✅ TFJS BlazePose initialized');
-        return true;
+          console.log('📥 Loading pose detection from:', poseDetectionUrl);
+          const poseDetection = await import(/* @vite-ignore */ poseDetectionUrl);
+          
+          if (!poseDetection) {
+            throw new Error('Pose detection library failed to load');
+          }
+          console.log('✅ Pose detection library loaded');
+          console.log('🎯 Available models:', Object.keys(poseDetection.SupportedModels || {}));
+
+          const modelType = cfg.BLAZEPOSE_MODEL_TYPE || 'lite'; // 'lite'|'full'|'heavy'
+          console.log('🏗️ Creating BlazePose detector with model type:', modelType);
+          
+          // Check if BlazePose model is available
+          if (!poseDetection.SupportedModels || !poseDetection.SupportedModels.BlazePose) {
+            console.warn('⚠️ BlazePose model not found, available models:', Object.keys(poseDetection.SupportedModels || {}));
+            throw new Error('BlazePose model not found in pose detection library');
+          }
+          
+          this.detector = await poseDetection.createDetector(
+            poseDetection.SupportedModels.BlazePose,
+            {
+              runtime: 'tfjs',
+              modelType,
+              enableSmoothing: true
+            }
+          );
+
+          if (!this.detector) {
+            throw new Error('Failed to create BlazePose detector');
+          }
+
+          this.isInitialized = true;
+          console.log('✅ TFJS BlazePose initialized successfully!');
+          return true;
+          
+        } catch (tfError) {
+          console.error('❌ TensorFlow.js/BlazePose loading failed:', tfError);
+          console.error('Error details:', {
+            message: tfError.message,
+            stack: tfError.stack,
+            name: tfError.name
+          });
+          
+          // Try fallback to MediaPipe if TensorFlow.js fails
+          console.log('🔄 Attempting fallback to MediaPipe backend...');
+          this.backend = 'mediapipe';
+          // Continue to MediaPipe initialization below
+        }
       }
 
       // Default backend: MediaPipe classic Pose
@@ -2675,7 +2729,7 @@ class PoseDetectionUtils {
   }
 
   // Draw pose landmarks on canvas
-  drawPoseOverlay(canvasCtx, results, canvasWidth, canvasHeight) {
+  drawPoseOverlay(canvasCtx, results, canvasWidth, canvasHeight, transform = null) {
     // Only log occasionally to avoid spam
     if (Math.random() < 0.05) {
       console.log('🎨 Drawing pose overlay with', results.poseLandmarks?.length || 0, 'landmarks');
@@ -2694,16 +2748,95 @@ class PoseDetectionUtils {
 
     landmarks.forEach((landmark, index) => {
       if (landmark.visibility && landmark.visibility > 0.5) {
-        const x = landmark.x * canvasWidth;
-        const y = landmark.y * canvasHeight;
+        let x, y;
+        
+        if (transform) {
+          // MediaPipe landmarks are normalized (0-1), so we scale directly
+          x = (landmark.x * transform.scaleX) + transform.offsetX;
+          y = (landmark.y * transform.scaleY) + transform.offsetY;
+        } else {
+          // Fallback to simple scaling
+          x = landmark.x * canvasWidth;
+          y = landmark.y * canvasHeight;
+        }
 
+        // Enhanced landmark styling with professional gradient and shadow effects
+        const radius = landmark.visibility > 0.9 ? 10 : landmark.visibility > 0.7 ? 8 : 6;
+        const shadowBlur = 6;
+        
+        // Draw outer glow effect first
+        canvasCtx.save();
+        canvasCtx.shadowColor = 'rgba(255, 255, 255, 0.3)';
+        canvasCtx.shadowBlur = shadowBlur * 1.5;
+        canvasCtx.shadowOffsetX = 0;
+        canvasCtx.shadowOffsetY = 0;
+        
+        // Create professional radial gradient for landmark
+        const gradient = canvasCtx.createRadialGradient(x, y, 0, x, y, radius);
+        
+        // Professional color scheme based on visibility and confidence
+        if (landmark.visibility > 0.9) {
+          // High confidence - professional emerald gradient
+          gradient.addColorStop(0, '#A7F3D0');   // Light emerald center
+          gradient.addColorStop(0.4, '#34D399'); // Bright emerald
+          gradient.addColorStop(0.8, '#10B981'); // Rich emerald
+          gradient.addColorStop(1, '#047857');   // Deep emerald edge
+        } else if (landmark.visibility > 0.8) {
+          // Good confidence - professional blue gradient
+          gradient.addColorStop(0, '#DBEAFE');   // Light blue center
+          gradient.addColorStop(0.4, '#93C5FD'); // Sky blue
+          gradient.addColorStop(0.8, '#3B82F6'); // Bright blue
+          gradient.addColorStop(1, '#1E40AF');   // Deep blue edge
+        } else if (landmark.visibility > 0.7) {
+          // Medium confidence - professional amber gradient
+          gradient.addColorStop(0, '#FEF3C7');   // Light amber center
+          gradient.addColorStop(0.4, '#FCD34D'); // Bright amber
+          gradient.addColorStop(0.8, '#F59E0B'); // Rich amber
+          gradient.addColorStop(1, '#D97706');   // Deep amber edge
+        } else {
+          // Lower confidence - professional rose gradient
+          gradient.addColorStop(0, '#FCE7F3');   // Light rose center
+          gradient.addColorStop(0.4, '#F9A8D4'); // Bright rose
+          gradient.addColorStop(0.8, '#EC4899'); // Rich rose
+          gradient.addColorStop(1, '#BE185D');   // Deep rose edge
+        }
+        
+        // Draw the main landmark circle with professional styling
         canvasCtx.beginPath();
-        canvasCtx.arc(x, y, 6, 0, 2 * Math.PI); // Bigger circles
-        canvasCtx.fillStyle = landmark.visibility > 0.7 ? '#10B981' : '#F59E0B';
+        canvasCtx.arc(x, y, radius, 0, 2 * Math.PI);
+        canvasCtx.fillStyle = gradient;
         canvasCtx.fill();
-        canvasCtx.strokeStyle = '#FFFFFF';
+        
+        canvasCtx.restore();
+        
+        // Add professional white border with subtle shadow
+        canvasCtx.save();
+        canvasCtx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        canvasCtx.shadowBlur = 3;
+        canvasCtx.shadowOffsetX = 1;
+        canvasCtx.shadowOffsetY = 1;
+        
+        canvasCtx.beginPath();
+        canvasCtx.arc(x, y, radius, 0, 2 * Math.PI);
+        canvasCtx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
         canvasCtx.lineWidth = 2;
         canvasCtx.stroke();
+        canvasCtx.restore();
+        
+        // Add inner highlight for premium 3D effect
+        const highlightRadius = radius * 0.35;
+        const highlightGradient = canvasCtx.createRadialGradient(
+          x - highlightRadius, y - highlightRadius, 0,
+          x - highlightRadius, y - highlightRadius, highlightRadius
+        );
+        highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+        highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        
+        canvasCtx.beginPath();
+        canvasCtx.arc(x - highlightRadius * 0.5, y - highlightRadius * 0.5, highlightRadius, 0, 2 * Math.PI);
+        canvasCtx.fillStyle = highlightGradient;
+        canvasCtx.fill();
+        
         drawnLandmarks++;
       }
     });
@@ -2713,8 +2846,14 @@ class PoseDetectionUtils {
       console.log('✨ Drew', drawnLandmarks, 'landmarks');
     }
 
+    // Add pulse animation effect for high-confidence landmarks
+    this.addPulseEffect(canvasCtx, landmarks, canvasWidth, canvasHeight, transform);
+
     // Always use basic connections (more reliable)
-    this.drawBasicConnections(canvasCtx, landmarks, canvasWidth, canvasHeight);
+    this.drawBasicConnections(canvasCtx, landmarks, canvasWidth, canvasHeight, transform);
+
+    // Add confidence indicator overlay
+    this.drawConfidenceIndicator(canvasCtx, landmarks, canvasWidth, canvasHeight);
 
     // Draw sit-ups debug overlay if available
     try {
@@ -2748,7 +2887,7 @@ class PoseDetectionUtils {
   }
 
   // Draw basic pose connections
-  drawBasicConnections(canvasCtx, landmarks, canvasWidth, canvasHeight) {
+  drawBasicConnections(canvasCtx, landmarks, canvasWidth, canvasHeight, transform = null) {
     const connections = [
       [11, 12], // shoulders
       [11, 13], // left shoulder to elbow
@@ -2764,6 +2903,13 @@ class PoseDetectionUtils {
       [26, 28]  // right knee to ankle
     ];
 
+    // Define connection types for different styling
+    const connectionTypes = {
+      torso: [[11, 12], [11, 23], [12, 24], [23, 24]], // Core body connections
+      arms: [[11, 13], [13, 15], [12, 14], [14, 16]], // Arm connections
+      legs: [[23, 25], [25, 27], [24, 26], [26, 28]]  // Leg connections
+    };
+
     let drawnConnections = 0;
     connections.forEach(([startIdx, endIdx]) => {
       const startPoint = landmarks[startIdx];
@@ -2771,12 +2917,110 @@ class PoseDetectionUtils {
 
       if (startPoint && endPoint &&
         startPoint.visibility > 0.5 && endPoint.visibility > 0.5) {
+        
+        let startX, startY, endX, endY;
+        
+        if (transform) {
+          // MediaPipe landmarks are normalized (0-1), so we scale directly
+          startX = (startPoint.x * transform.scaleX) + transform.offsetX;
+          startY = (startPoint.y * transform.scaleY) + transform.offsetY;
+          endX = (endPoint.x * transform.scaleX) + transform.offsetX;
+          endY = (endPoint.y * transform.scaleY) + transform.offsetY;
+        } else {
+          // Fallback to simple scaling
+          startX = startPoint.x * canvasWidth;
+          startY = startPoint.y * canvasHeight;
+          endX = endPoint.x * canvasWidth;
+          endY = endPoint.y * canvasHeight;
+        }
+        
+        // Determine connection type and styling with professional color scheme
+        let connectionColor, lineWidth, shadowColor, glowColor;
+        const connection = [startIdx, endIdx];
+        
+        if (connectionTypes.torso.some(([s, e]) => (s === startIdx && e === endIdx) || (s === endIdx && e === startIdx))) {
+          // Torso connections - professional blue gradient
+          connectionColor = '#3B82F6';
+          glowColor = '#60A5FA';
+          lineWidth = 6;
+          shadowColor = 'rgba(59, 130, 246, 0.5)';
+        } else if (connectionTypes.arms.some(([s, e]) => (s === startIdx && e === endIdx) || (s === endIdx && e === startIdx))) {
+          // Arm connections - professional green gradient
+          connectionColor = '#10B981';
+          glowColor = '#34D399';
+          lineWidth = 5;
+          shadowColor = 'rgba(16, 185, 129, 0.5)';
+        } else if (connectionTypes.legs.some(([s, e]) => (s === startIdx && e === endIdx) || (s === endIdx && e === startIdx))) {
+          // Leg connections - professional purple gradient
+          connectionColor = '#8B5CF6';
+          glowColor = '#A78BFA';
+          lineWidth = 5;
+          shadowColor = 'rgba(139, 92, 246, 0.5)';
+        } else {
+          // Default styling - professional gray gradient
+          connectionColor = '#6B7280';
+          glowColor = '#9CA3AF';
+          lineWidth = 4;
+          shadowColor = 'rgba(107, 114, 128, 0.4)';
+        }
+
+        // Create professional linear gradient for the connection line
+        const gradient = canvasCtx.createLinearGradient(startX, startY, endX, endY);
+        const avgVisibility = (startPoint.visibility + endPoint.visibility) / 2;
+        
+        if (avgVisibility > 0.9) {
+          // High confidence - rich gradient with glow
+          gradient.addColorStop(0, glowColor);
+          gradient.addColorStop(0.3, connectionColor);
+          gradient.addColorStop(0.7, connectionColor);
+          gradient.addColorStop(1, glowColor);
+        } else if (avgVisibility > 0.8) {
+          // Good confidence - solid gradient
+          gradient.addColorStop(0, connectionColor);
+          gradient.addColorStop(0.5, connectionColor + 'DD');
+          gradient.addColorStop(1, connectionColor);
+        } else if (avgVisibility > 0.7) {
+          // Medium confidence - semi-transparent gradient
+          gradient.addColorStop(0, connectionColor + 'CC');
+          gradient.addColorStop(0.5, connectionColor + '99');
+          gradient.addColorStop(1, connectionColor + 'CC');
+        } else {
+          // Lower confidence - more transparent gradient
+          gradient.addColorStop(0, connectionColor + '99');
+          gradient.addColorStop(0.5, connectionColor + '66');
+          gradient.addColorStop(1, connectionColor + '99');
+        }
+
+        // Draw professional shadow/glow effect
+        canvasCtx.save();
+        canvasCtx.shadowColor = shadowColor;
+        canvasCtx.shadowBlur = 12; // Enhanced glow effect
+        canvasCtx.shadowOffsetX = 0;
+        canvasCtx.shadowOffsetY = 0;
+        
+        // Draw the main connection line with professional styling
         canvasCtx.beginPath();
-        canvasCtx.moveTo(startPoint.x * canvasWidth, startPoint.y * canvasHeight);
-        canvasCtx.lineTo(endPoint.x * canvasWidth, endPoint.y * canvasHeight);
-        canvasCtx.strokeStyle = '#3B82F6';
-        canvasCtx.lineWidth = 3; // Thicker lines
+        canvasCtx.moveTo(startX, startY);
+        canvasCtx.lineTo(endX, endY);
+        canvasCtx.strokeStyle = gradient;
+        canvasCtx.lineWidth = lineWidth;
+        canvasCtx.lineCap = 'round'; // Rounded line caps for professional appearance
+        canvasCtx.lineJoin = 'round'; // Rounded line joins for smooth connections
         canvasCtx.stroke();
+        
+        canvasCtx.restore();
+        
+        // Add subtle inner highlight for premium depth
+        canvasCtx.save();
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(startX, startY);
+        canvasCtx.lineTo(endX, endY);
+        canvasCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        canvasCtx.lineWidth = 1;
+        canvasCtx.lineCap = 'round';
+        canvasCtx.stroke();
+        canvasCtx.restore();
+        
         drawnConnections++;
       }
     });
@@ -2785,6 +3029,137 @@ class PoseDetectionUtils {
     if (Math.random() < 0.02) {
       console.log('✅ Drawing completed!', drawnConnections, 'connections');
     }
+  }
+
+  // Add professional pulse animation effect for high-confidence landmarks
+  addPulseEffect(canvasCtx, landmarks, canvasWidth, canvasHeight, transform = null) {
+    if (!landmarks) return;
+    
+    const currentTime = Date.now();
+    const pulseSpeed = 0.002; // Slower, more professional pulse
+    const pulseIntensity = Math.sin(currentTime * pulseSpeed) * 0.5 + 0.5; // 0 to 1
+    
+    landmarks.forEach((landmark, index) => {
+      if (landmark.visibility && landmark.visibility > 0.9) { // Only very high-confidence landmarks
+        let x, y;
+        
+        if (transform) {
+          x = (landmark.x * transform.scaleX) + transform.offsetX;
+          y = (landmark.y * transform.scaleY) + transform.offsetY;
+        } else {
+          x = landmark.x * canvasWidth;
+          y = landmark.y * canvasHeight;
+        }
+
+        // Create professional pulsing outer ring
+        const pulseRadius = 14 + (pulseIntensity * 8); // Varies from 14 to 22
+        const pulseAlpha = 0.4 - (pulseIntensity * 0.25); // Fades as it expands
+        const pulseWidth = 3 - (pulseIntensity * 1); // Gets thinner as it expands
+        
+        canvasCtx.save();
+        canvasCtx.beginPath();
+        canvasCtx.arc(x, y, pulseRadius, 0, 2 * Math.PI);
+        canvasCtx.strokeStyle = `rgba(52, 211, 153, ${pulseAlpha})`; // Professional green pulse
+        canvasCtx.lineWidth = pulseWidth;
+        canvasCtx.stroke();
+        
+        // Add inner glow ring for premium effect
+        const innerRadius = pulseRadius - 4;
+        const innerAlpha = pulseAlpha * 0.7;
+        canvasCtx.beginPath();
+        canvasCtx.arc(x, y, innerRadius, 0, 2 * Math.PI);
+        canvasCtx.strokeStyle = `rgba(167, 243, 208, ${innerAlpha})`; // Light emerald inner glow
+        canvasCtx.lineWidth = 1;
+        canvasCtx.stroke();
+        
+        canvasCtx.restore();
+        canvasCtx.restore();
+      }
+    });
+  }
+
+  // Draw professional confidence indicator overlay
+  drawConfidenceIndicator(canvasCtx, landmarks, canvasWidth, canvasHeight) {
+    if (!landmarks) return;
+    
+    // Calculate overall pose confidence
+    const visibleLandmarks = landmarks.filter(l => l.visibility > 0.5);
+    const avgConfidence = visibleLandmarks.length > 0 
+      ? visibleLandmarks.reduce((sum, l) => sum + l.visibility, 0) / visibleLandmarks.length 
+      : 0;
+    
+    // Professional confidence indicator in top-right corner
+    const barWidth = 140;
+    const barHeight = 10;
+    const barX = canvasWidth - barWidth - 25;
+    const barY = 25;
+    const cornerRadius = 5;
+    
+    canvasCtx.save();
+    
+    // Professional background with subtle shadow
+    canvasCtx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    canvasCtx.shadowBlur = 6;
+    canvasCtx.shadowOffsetX = 0;
+    canvasCtx.shadowOffsetY = 2;
+    
+    // Background bar with rounded corners
+    canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    canvasCtx.beginPath();
+    canvasCtx.roundRect(barX, barY, barWidth, barHeight, cornerRadius);
+    canvasCtx.fill();
+    
+    // Confidence fill with professional gradient
+    const fillWidth = barWidth * avgConfidence;
+    let fillColor, gradientColor;
+    
+    if (avgConfidence > 0.85) {
+      fillColor = '#10B981'; // Professional emerald green
+      gradientColor = '#34D399';
+    } else if (avgConfidence > 0.65) {
+      fillColor = '#F59E0B'; // Professional amber
+      gradientColor = '#FCD34D';
+    } else {
+      fillColor = '#EF4444'; // Professional red
+      gradientColor = '#F87171';
+    }
+    
+    // Create professional gradient fill
+    const fillGradient = canvasCtx.createLinearGradient(barX, barY, barX, barY + barHeight);
+    fillGradient.addColorStop(0, gradientColor);
+    fillGradient.addColorStop(1, fillColor);
+    
+    canvasCtx.fillStyle = fillGradient;
+    canvasCtx.beginPath();
+    canvasCtx.roundRect(barX, barY, fillWidth, barHeight, cornerRadius);
+    canvasCtx.fill();
+    
+    // Professional border
+    canvasCtx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+    canvasCtx.lineWidth = 1;
+    canvasCtx.beginPath();
+    canvasCtx.roundRect(barX, barY, barWidth, barHeight, cornerRadius);
+    canvasCtx.stroke();
+    
+    // Professional confidence text
+    canvasCtx.font = 'bold 11px system-ui, -apple-system, sans-serif';
+    canvasCtx.fillStyle = '#FFFFFF';
+    canvasCtx.textAlign = 'right';
+    canvasCtx.textBaseline = 'bottom';
+    canvasCtx.fillText(`Pose: ${Math.round(avgConfidence * 100)}%`, barX + barWidth, barY - 8);
+    
+    // Add confidence level indicator
+    let confidenceLevel;
+    if (avgConfidence > 0.85) confidenceLevel = 'Excellent';
+    else if (avgConfidence > 0.65) confidenceLevel = 'Good';
+    else confidenceLevel = 'Low';
+    
+    canvasCtx.font = '10px system-ui, -apple-system, sans-serif';
+    canvasCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    canvasCtx.textAlign = 'right';
+    canvasCtx.fillText(confidenceLevel, barX + barWidth, barY + barHeight + 14);
+    
+    canvasCtx.restore();
   }
 
   // Reset counter

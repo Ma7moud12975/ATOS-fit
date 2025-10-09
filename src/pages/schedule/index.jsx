@@ -12,7 +12,7 @@ const SchedulePage = () => {
   const [appointments, setAppointments] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState('light');
+  const [currentTheme, setCurrentTheme] = useState('dark'); // Default to dark mode
   const [formData, setFormData] = useState({
     title: '',
     date: '',

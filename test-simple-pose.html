@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Pose Detection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e9; color: #2e7d32; }
+        .warning { background: #fff3e0; color: #ef6c00; }
+    </style>
+</head>
+<body>
+    <h1>Simple Pose Detection Test</h1>
+    <button onclick="testTensorFlowJS()">Test TensorFlow.js Loading</button>
+    <button onclick="testPoseDetection()">Test Pose Detection</button>
+    <div id="logs"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logs.appendChild(div);
+            console.log(message);
+        }
+
+        async function testTensorFlowJS() {
+            try {
+                log('🚀 Testing TensorFlow.js loading...');
+                
+                // Test loading TensorFlow.js core
+                const tf = await import('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@4.10.0/dist/tf-core.esm.js');
+                log('✅ TensorFlow.js core loaded', 'success');
+                
+                // Test loading converter
+                await import('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@4.10.0/dist/tf-converter.esm.js');
+                log('✅ TensorFlow.js converter loaded', 'success');
+                
+                // Test loading WebGL backend
+                await import('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.10.0/dist/tf-backend-webgl.esm.js');
+                log('✅ TensorFlow.js WebGL backend loaded', 'success');
+                
+                // Test setting backend
+                await tf.setBackend('webgl');
+                log('✅ WebGL backend set', 'success');
+                
+                // Test ready
+                await tf.ready();
+                log('✅ TensorFlow.js is ready!', 'success');
+                
+                log('🎉 TensorFlow.js test completed successfully!', 'success');
+                
+            } catch (error) {
+                log(`❌ TensorFlow.js test failed: ${error.message}`, 'error');
+                log(`Error stack: ${error.stack}`, 'error');
+            }
+        }
+
+        async function testPoseDetection() {
+            try {
+                log('🚀 Testing Pose Detection loading...');
+                
+                // First ensure TensorFlow.js is loaded
+                await testTensorFlowJS();
+                
+                // Test loading pose detection
+                const poseDetection = await import('https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.0/dist/pose-detection.esm.js');
+                log('✅ Pose detection library loaded', 'success');
+                
+                // Check available models
+                const models = Object.keys(poseDetection.SupportedModels || {});
+                log(`📋 Available models: ${models.join(', ')}`, 'info');
+                
+                // Check if BlazePose is available
+                if (poseDetection.SupportedModels && poseDetection.SupportedModels.BlazePose) {
+                    log('✅ BlazePose model found', 'success');
+                    
+                    // Try to create detector
+                    const detector = await poseDetection.createDetector(
+                        poseDetection.SupportedModels.BlazePose,
+                        {
+                            runtime: 'tfjs',
+                            modelType: 'lite',
+                            enableSmoothing: true
+                        }
+                    );
+                    
+                    if (detector) {
+                        log('✅ BlazePose detector created successfully!', 'success');
+                        log('🎉 Pose detection test completed successfully!', 'success');
+                    } else {
+                        log('❌ Failed to create BlazePose detector', 'error');
+                    }
+                } else {
+                    log('❌ BlazePose model not found', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Pose detection test failed: ${error.message}`, 'error');
+                log(`Error stack: ${error.stack}`, 'error');
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            log('🌟 Page loaded, ready for testing');
+        });
+    </script>
+</body>
+</html>

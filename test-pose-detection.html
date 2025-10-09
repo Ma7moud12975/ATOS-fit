@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pose Detection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        #logs {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin-top: 20px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏋️ Pose Detection Test</h1>
+        <div id="status" class="status info">Ready to test pose detection...</div>
+        
+        <button onclick="testTensorFlowJS()">Test TensorFlow.js Loading</button>
+        <button onclick="testPoseDetection()">Test Pose Detection</button>
+        <button onclick="clearLogs()">Clear Logs</button>
+        
+        <div id="logs"></div>
+    </div>
+
+    <!-- Load MediaPipe config -->
+    <script src="/mediapipe-config.js"></script>
+    
+    <script>
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logs = document.getElementById('logs');
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
+            if (type === 'error') logEntry.style.color = 'red';
+            if (type === 'success') logEntry.style.color = 'green';
+            logs.appendChild(logEntry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        async function testTensorFlowJS() {
+            try {
+                updateStatus('Testing TensorFlow.js loading...', 'info');
+                log('🚀 Starting TensorFlow.js test...');
+                
+                const cfg = window.MediaPipeConfig || {};
+                log(`Config found: ${JSON.stringify(cfg, null, 2)}`);
+                
+                const tfCoreUrl = cfg.TFJS_CORE_URL || 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@4.10.0/dist/tf-core.esm.js';
+                const tfConverterUrl = cfg.TFJS_CONVERTER_URL || 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@4.10.0/dist/tf-converter.esm.js';
+                const tfWebglUrl = cfg.TFJS_BACKEND_WEBGL_URL || 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.10.0/dist/tf-backend-webgl.esm.js';
+                
+                log(`Loading TensorFlow.js core from: ${tfCoreUrl}`);
+                const tf = await import(/* @vite-ignore */ tfCoreUrl);
+                log('✅ TensorFlow.js core loaded');
+                
+                log(`Loading TensorFlow.js converter from: ${tfConverterUrl}`);
+                await import(/* @vite-ignore */ tfConverterUrl);
+                log('✅ TensorFlow.js converter loaded');
+                
+                log(`Loading TensorFlow.js WebGL backend from: ${tfWebglUrl}`);
+                await import(/* @vite-ignore */ tfWebglUrl);
+                log('✅ TensorFlow.js WebGL backend loaded');
+                
+                log('Setting backend to WebGL...');
+                await tf.setBackend('webgl');
+                log('✅ WebGL backend set');
+                
+                log('Waiting for TensorFlow.js to be ready...');
+                await tf.ready();
+                log('✅ TensorFlow.js is ready!');
+                
+                log(`TensorFlow.js version: ${tf.version.tfjs}`);
+                log(`Backend: ${tf.getBackend()}`);
+                
+                updateStatus('TensorFlow.js loaded successfully!', 'success');
+                
+            } catch (error) {
+                log(`❌ TensorFlow.js test failed: ${error.message}`, 'error');
+                log(`Error stack: ${error.stack}`, 'error');
+                updateStatus('TensorFlow.js loading failed!', 'error');
+            }
+        }
+
+        async function testPoseDetection() {
+            try {
+                updateStatus('Testing pose detection loading...', 'info');
+                log('🎯 Starting pose detection test...');
+                
+                const cfg = window.MediaPipeConfig || {};
+                const poseDetectionUrl = cfg.POSE_DETECTION_URL || 'https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@3.0.0/dist/pose-detection.esm.js';
+                
+                log(`Loading pose detection from: ${poseDetectionUrl}`);
+                const poseDetection = await import(/* @vite-ignore */ poseDetectionUrl);
+                log('✅ Pose detection library loaded');
+                
+                log('Available models:', Object.keys(poseDetection.SupportedModels));
+                log('BlazePose model:', poseDetection.SupportedModels.BlazePose);
+                
+                const modelType = cfg.BLAZEPOSE_MODEL_TYPE || 'lite';
+                log(`Creating BlazePose detector with model type: ${modelType}`);
+                
+                const detector = await poseDetection.createDetector(
+                    poseDetection.SupportedModels.BlazePose,
+                    {
+                        runtime: 'tfjs',
+                        modelType,
+                        enableSmoothing: true
+                    }
+                );
+                
+                log('✅ BlazePose detector created successfully!');
+                log(`Detector type: ${typeof detector}`);
+                log(`Detector methods: ${Object.getOwnPropertyNames(Object.getPrototypeOf(detector))}`);
+                
+                updateStatus('Pose detection loaded successfully!', 'success');
+                
+            } catch (error) {
+                log(`❌ Pose detection test failed: ${error.message}`, 'error');
+                log(`Error stack: ${error.stack}`, 'error');
+                updateStatus('Pose detection loading failed!', 'error');
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            log('🌟 Page loaded, ready for testing');
+            log(`MediaPipe config backend: ${window.MediaPipeConfig?.POSE_BACKEND}`);
+        });
+    </script>
+</body>
+</html>

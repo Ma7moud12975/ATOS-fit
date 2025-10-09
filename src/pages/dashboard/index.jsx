@@ -15,7 +15,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState('light');
+  const [currentTheme, setCurrentTheme] = useState('dark'); // Default to dark mode
 
   // User data from localStorage
   const [user, setUser] = useState({ name: 'New User', email: '', profilePicture: '', fitnessLevel: 'Beginner', goals: [] });
@@ -94,14 +94,14 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    // Check for saved theme preference
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    // Load theme from localStorage or default to dark
+    const savedTheme = localStorage.getItem('theme') || 'dark';
     setCurrentTheme(savedTheme);
     // Use class instead of data attribute for Tailwind dark mode
     if (savedTheme === 'dark') {
-      document.documentElement?.classList?.add('dark');
+      document.documentElement.classList.add('dark');
     } else {
-      document.documentElement?.classList?.remove('dark');
+      document.documentElement.classList.remove('dark');
     }
   }, []);
 

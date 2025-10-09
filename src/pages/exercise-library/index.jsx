@@ -11,7 +11,7 @@ import WorkoutPlanBuilder from './components/WorkoutPlanBuilder';
 const ExerciseLibrary = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState('light');
+  const [currentTheme, setCurrentTheme] = useState('dark'); // Default to dark mode
   const [filter, setFilter] = useState('all'); // all, beginner, intermediate, advanced
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('exercises'); // exercises, plans, create

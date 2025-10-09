@@ -16,10 +16,28 @@
 <script>
   (function(){
     try {
+      console.log('🔧 Checking MediaPipe backend configuration...');
+      console.log('MediaPipeConfig:', window.MediaPipeConfig);
+      
       if (window.MediaPipeConfig && window.MediaPipeConfig.POSE_BACKEND === 'mediapipe') {
+        console.log('📦 Loading MediaPipe Pose script...');
         var s = document.createElement('script');
         s.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js';
+        s.onload = function() {
+          console.log('✅ MediaPipe Pose script loaded successfully');
+          console.log('🔍 Available in window:', {
+            Pose: !!window.Pose,
+            Camera: !!window.Camera,
+            drawConnectors: !!window.drawConnectors,
+            drawLandmarks: !!window.drawLandmarks
+          });
+        };
+        s.onerror = function() {
+          console.error('❌ Failed to load MediaPipe Pose script');
+        };
         document.head.appendChild(s);
+      } else {
+        console.log('ℹ️ MediaPipe backend not selected, skipping script load');
       }
     } catch (e) {
       console.warn('Pose backend loader guard error:', e);

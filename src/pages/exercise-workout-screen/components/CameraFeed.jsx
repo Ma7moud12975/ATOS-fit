@@ -115,17 +115,38 @@ const CameraFeed = ({
   // Initialize MediaPipe pose detection
   const initializePoseDetection = async () => {
     try {
+      console.log('🚀 Starting pose detection initialization...');
+      console.log('Exercise selections:', {
+        isPushUpsSelected,
+        isPlankSelected,
+        isSquatSelected,
+        isLungesSelected,
+        isBurpeesSelected,
+        isJumpingJacksSelected,
+        isSidePlankSelected,
+        isHighKneesSelected,
+        isSitUpsSelected,
+        isDiamondPushSelected,
+        isStraightArmPlankSelected,
+        isKneePlankSelected
+      });
+      
       // Only initialize for supported exercises
       if (!isPushUpsSelected && !isPlankSelected && !isSquatSelected && !isLungesSelected && !isBurpeesSelected && !isJumpingJacksSelected && !isSidePlankSelected && !isHighKneesSelected && !isSitUpsSelected && !isDiamondPushSelected && !isStraightArmPlankSelected && !isKneePlankSelected && !isSitUpsSelected) {
+        console.log('⚠️ No supported exercises selected, skipping pose detection initialization');
         return;
       }
 
-  if (!poseDetectionRef.current) {
+      if (!poseDetectionRef.current) {
+        console.log('📦 Importing PoseDetectionUtils...');
         // Dynamic import to avoid loading MediaPipe for other exercises
         const { default: PoseDetectionUtils } = await import('../../../utils/poseDetection');
+        console.log('✅ PoseDetectionUtils imported successfully');
+        
         poseDetectionRef.current = new PoseDetectionUtils();
-        poseDetectionRef.current.setExerciseMode(
-          isReversePlankSelected ? 'reverseplank' :
+        console.log('✅ PoseDetectionUtils instance created');
+        
+        const exerciseMode = isReversePlankSelected ? 'reverseplank' :
           isReverseStraightArmPlankSelected ? 'reversestraightarmplank' :
           isStraightArmPlankSelected ? 'straightarmplank' :
           isKneePlankSelected ? 'kneeplank' :
@@ -141,28 +162,13 @@ const CameraFeed = ({
           isNarrowPushSelected ? 'narrowpushups' :
           isWidePushSelected ? 'widepushups' :
           isKneePushSelected ? 'kneepushups' :
-            'pushups'
-        );
-    console.log('PoseDetection: setExerciseMode ->',
-  isReversePlankSelected ? 'reverseplank' :
-  isReverseStraightArmPlankSelected ? 'reversestraightarmplank' :
-  isStraightArmPlankSelected ? 'straightarmplank' :
-  isKneePlankSelected ? 'kneeplank' :
-  isPlankSelected ? 'plank' :
-    isSquatSelected ? 'squats' :
-    isLungesSelected ? 'lunges' :
-    isBurpeesSelected ? 'burpees' :
-    isJumpingJacksSelected ? 'jumpingjacks' :
-    isSidePlankSelected ? 'sideplank' :
-    isHighKneesSelected ? 'highknees' :
-    isSitUpsSelected ? 'situps' :
-  isDiamondPushSelected ? 'diamondpushups' :
-  isNarrowPushSelected ? 'narrowpushups' :
-  isWidePushSelected ? 'widepushups' :
-  isKneePushSelected ? 'kneepushups' :
-  'pushups'
-        );
+          'pushups';
+          
+        console.log('🎯 Setting exercise mode to:', exerciseMode);
+        poseDetectionRef.current.setExerciseMode(exerciseMode);
+        
         // Set up callbacks
+        console.log('🔗 Setting up pose detection callbacks...');
         poseDetectionRef.current.setCallbacks({
           onPushupCount: (count) => {
             setPushupCount(count);
@@ -189,16 +195,26 @@ const CameraFeed = ({
             setPoseResults(poseDetectionRef.current?.getLastResults() || null);
           }
         });
+        
+        console.log('🚀 Initializing pose detection backend...');
         const initialized = await poseDetectionRef.current.initialize();
+        
         if (!initialized) {
-          console.warn('Pose detection not available, falling back to basic mode');
+          console.warn('⚠️ Pose detection not available, falling back to basic mode');
         } else {
           setIsPoseDetectionReady(true);
-          console.log('PoseDetection initialized and ready for', selectedExercise?.name);
+          console.log('✅ PoseDetection initialized and ready for', selectedExercise?.name);
         }
+      } else {
+        console.log('ℹ️ Pose detection already initialized');
       }
     } catch (error) {
-      console.error('Error initializing pose detection:', error);
+      console.error('❌ Error initializing pose detection:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
     }
   };
 
@@ -241,10 +257,42 @@ const CameraFeed = ({
           if (canvasRef.current && results && showPoseOverlay) {
             const canvas = canvasRef.current;
             const video = videoRef.current;
-            canvas.width = video?.videoWidth || 640;
-            canvas.height = video?.videoHeight || 480;
+            
+            // Get the actual displayed video dimensions (accounting for object-cover)
+            const videoRect = video.getBoundingClientRect();
+            const containerRect = video.parentElement.getBoundingClientRect();
+            
+            // Set canvas to match the container size exactly
+            canvas.width = containerRect.width;
+            canvas.height = containerRect.height;
+            
+            // Calculate video scaling and positioning within container
+            const videoAspect = video.videoWidth / video.videoHeight;
+            const containerAspect = containerRect.width / containerRect.height;
+            
+            let scaleX, scaleY, offsetX = 0, offsetY = 0;
+            
+            if (videoAspect > containerAspect) {
+              // Video is wider - fit to height, crop sides
+              scaleY = containerRect.height / video.videoHeight;
+              scaleX = scaleY;
+              offsetX = (containerRect.width - (video.videoWidth * scaleX)) / 2;
+            } else {
+              // Video is taller - fit to width, crop top/bottom
+              scaleX = containerRect.width / video.videoWidth;
+              scaleY = scaleX;
+              offsetY = (containerRect.height - (video.videoHeight * scaleY)) / 2;
+            }
+            
             const ctx = canvas.getContext('2d');
-            poseDetectionRef.current.drawPoseOverlay(ctx, results, canvas.width, canvas.height);
+            poseDetectionRef.current.drawPoseOverlay(ctx, results, canvas.width, canvas.height, {
+              scaleX,
+              scaleY,
+              offsetX,
+              offsetY,
+              videoWidth: video.videoWidth,
+              videoHeight: video.videoHeight
+            });
           }
         }
         rafId = requestAnimationFrame(runFrame);
@@ -348,15 +396,45 @@ const CameraFeed = ({
     const video = videoRef?.current;
     const ctx = canvas?.getContext('2d');
 
-    canvas.width = video?.videoWidth || 640;
-    canvas.height = video?.videoHeight || 480;
+    // Get the actual displayed video dimensions (accounting for object-cover)
+    const videoRect = video.getBoundingClientRect();
+    const containerRect = video.parentElement.getBoundingClientRect();
+    
+    // Set canvas to match the container size exactly
+    canvas.width = containerRect.width;
+    canvas.height = containerRect.height;
+    
+    // Calculate video scaling and positioning within container
+    const videoAspect = video.videoWidth / video.videoHeight;
+    const containerAspect = containerRect.width / containerRect.height;
+    
+    let scaleX, scaleY, offsetX = 0, offsetY = 0;
+    
+    if (videoAspect > containerAspect) {
+      // Video is wider - fit to height, crop sides
+      scaleY = containerRect.height / video.videoHeight;
+      scaleX = scaleY;
+      offsetX = (containerRect.width - (video.videoWidth * scaleX)) / 2;
+    } else {
+      // Video is taller - fit to width, crop top/bottom
+      scaleX = containerRect.width / video.videoWidth;
+      scaleY = scaleX;
+      offsetY = (containerRect.height - (video.videoHeight * scaleY)) / 2;
+    }
 
     console.log('🎨 Canvas dimensions:', canvas.width, 'x', canvas.height);
 
     // Use MediaPipe's built-in drawing function if available
     if (poseDetectionRef.current && poseResults) {
       console.log('🎨 Calling poseDetection.drawPoseOverlay...');
-      poseDetectionRef.current.drawPoseOverlay(ctx, poseResults, canvas.width, canvas.height);
+      poseDetectionRef.current.drawPoseOverlay(ctx, poseResults, canvas.width, canvas.height, {
+        scaleX,
+        scaleY,
+        offsetX,
+        offsetY,
+        videoWidth: video.videoWidth,
+        videoHeight: video.videoHeight
+      });
     }
   };
 
