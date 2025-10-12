@@ -29,7 +29,7 @@ const PricingPage = () => {
     {
       name: 'Free',
       price: { monthly: 0, yearly: 0 },
-      description: 'Perfect for getting started with ATOSfit',
+      description: 'Perfect for getting started with ATOS fit',
       features: {
         tracking: '10 hours/month',
         chatbot: '100 messages/month',
@@ -77,7 +77,7 @@ const PricingPage = () => {
     {
       name: 'Premium Plus',
       price: { monthly: 29.99, yearly: 299.99 },
-      description: 'Unlimited access to all ATOSfit features',
+      description: 'Unlimited access to all ATOS fit features',
       features: {
         tracking: 'Unlimited',
         chatbot: 'Unlimited',
@@ -167,8 +167,8 @@ const PricingPage = () => {
       <nav className="relative z-50 px-6 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <img src="/assets/images/atosfit.png" alt="ATOSfit Logo" className="w-10 h-10 object-contain" />
-            <span className="text-2xl font-bold text-white">ATOSfit</span>
+            <img src="/assets/images/atosfit.png" alt="ATOS fit Logo" className="w-10 h-10 object-contain" />
+            <span className="text-2xl font-bold text-white">ATOS fit</span>
           </div>
           
           {/* Desktop Navigation */}
@@ -452,7 +452,7 @@ const PricingPage = () => {
                 Why is everything free during beta?
               </h3>
               <p className="text-[rgba(255,255,255,0.4)]">
-                We're perfecting ATOSfit based on real user feedback. During beta, all features are free so you can 
+                We're perfecting ATOS fit based on real user feedback. During beta, all features are free so you can
                 experience the full platform and help us build the best AI fitness companion possible.
               </p>
             </div>
@@ -486,8 +486,8 @@ const PricingPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center space-x-3">
-              <img src="/assets/images/atosfit.png" alt="ATOSfit Logo" className="w-8 h-8 object-contain" />
-              <span className="text-xl font-bold text-white">ATOSfit</span>
+              <img src="/assets/images/atosfit.png" alt="ATOS fit Logo" className="w-8 h-8 object-contain" />
+              <span className="text-xl font-bold text-white">ATOS fit</span>
             </div>
             
             <div className="flex items-center space-x-8">

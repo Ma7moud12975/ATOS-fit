@@ -15,7 +15,7 @@ const GuidingGifsPage = () => (
         <p className="mb-6 text-lg">Find professional guides and GIFs to help you perfect your form and maximize results. We are working to add more high-quality materials soon!</p>
         <div className="grid gap-6 md:grid-cols-2">
           <div className="rounded-lg p-6 shadow flex flex-col items-center bg-gradient-to-b from-yellow-50/4 to-teal-50/4 border border-yellow-200/6">
-            <img src="/assets/images/atosfit.png" alt="Squat Guide" className="mb-2 w-32 h-32 object-contain" />
+            <img src="/assets/images/atosfit.png" alt="ATOS fit Logo" className="mb-2 w-32 h-32 object-contain" />
             <span className="font-semibold">Squat Form</span>
           </div>
           <div className="rounded-lg p-6 shadow flex flex-col items-center bg-gradient-to-b from-yellow-50/4 to-teal-50/4 border border-yellow-200/6">

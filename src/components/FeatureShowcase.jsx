@@ -36,7 +36,7 @@ const FeatureShowcase = () => {
     const isGif = src.endsWith('.gif') || src.includes('image/gif');
     if (isGif) {
       return (
-        <img src={src} alt="ATOSfit Video Analysis Demo" className="w-full h-auto object-cover" />
+        <img src={src} alt="ATOS fit Video Analysis Demo" className="w-full h-auto object-cover" />
       );
     }
 

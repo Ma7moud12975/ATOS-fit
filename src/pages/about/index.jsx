@@ -34,7 +34,7 @@ const AboutPage = () => {
     {
       icon: 'Shield',
       title: 'Privacy by Design',
-      description: 'Your data belongs to you. We\'ve architected ATOSfit from the ground up to ensure complete privacy and user control.'
+      description: 'Your data belongs to you. We\'ve architected ATOS fit from the ground up to ensure complete privacy and user control.'
     },
     {
       icon: 'Zap',
@@ -61,8 +61,8 @@ const AboutPage = () => {
       <nav className="relative z-50 px-6 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <img src="/assets/images/atosfit.png" alt="ATOSfit Logo" className="w-10 h-10 object-contain" />
-            <span className="text-2xl font-bold text-white">ATOSfit</span>
+            <img src="/assets/images/atosfit.png" alt="ATOS fit Logo" className="w-10 h-10 object-contain" />
+            <span className="text-2xl font-bold text-white">ATOS fit</span>
           </div>
           
           {/* Desktop Navigation */}
@@ -146,7 +146,7 @@ const AboutPage = () => {
       <section id="about" className="relative z-10 px-6 lg:px-8 py-24 lg:py-32">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-6xl font-bold text-white mb-6">
-            Meet the <span className="text-[#FF8A00]">ATOSfit</span> Team
+            Meet the <span className="text-[#FF8A00]">ATOS fit</span> Team
           </h1>
           <p className="text-xl text-[#E0E0E0] leading-relaxed mb-12">
             We're a group of passionate Egyptian AI students and friends, 
@@ -169,7 +169,7 @@ const AboutPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20 lg:mb-24">
             <h2 className="text-4xl font-semibold text-white mb-4">
-              The Minds Behind ATOSfit
+              The Minds Behind ATOS fit
             </h2>
             <p className="text-xl text-[#E0E0E0]">
               Four friends, one vision: making AI work for everyone
@@ -210,7 +210,7 @@ const AboutPage = () => {
             <p className="text-lg text-[#E0E0E0] leading-relaxed max-w-3xl mx-auto">
               We're Egyptian students passionate about Artificial Intelligence and its applications in health and wellness. 
               Our academic journey has provided us with a strong foundation in machine learning, computer vision, 
-              and AI ethics, which we apply directly to building ATOSfit. Our diverse backgrounds and collaborative spirit 
+              and AI ethics, which we apply directly to building ATOS fit. Our diverse backgrounds and collaborative spirit 
               drive us to create innovative solutions that work for everyone.
             </p>
           </div>
@@ -276,7 +276,7 @@ const AboutPage = () => {
                 <div>
                   <h3 className="text-xl font-medium text-white mb-2">The Development</h3>
                   <p className="text-[#E0E0E0] leading-relaxed">
-                    Combining our diverse expertise in AI, blockchain, and mobile development, we built ATOSfit 
+                    Combining our diverse expertise in AI, blockchain, and mobile development, we built ATOS fit 
                     from the ground up. Every line of code reflects our commitment to user privacy and 
                     technological excellence.
                   </p>
@@ -290,7 +290,7 @@ const AboutPage = () => {
                 <div>
                   <h3 className="text-xl font-medium text-white mb-2">The Mission</h3>
                   <p className="text-[#E0E0E0] leading-relaxed">
-                    Today, ATOSfit represents our vision of what AI-powered fitness should be: private, 
+                    Today, ATOS fit represents our vision of what AI-powered fitness should be: private, 
                     personalized, and genuinely helpful. We're not just building an app; we're pioneering 
                     a new standard for ethical AI in health and wellness.
                   </p>
@@ -335,8 +335,8 @@ const AboutPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center space-x-3">
-              <img src="/assets/images/atosfit.png" alt="ATOSfit Logo" className="w-8 h-8 object-contain" />
-              <span className="text-xl font-bold text-white">ATOSfit</span>
+              <img src="/assets/images/atosfit.png" alt="ATOS fit Logo" className="w-8 h-8 object-contain" />
+              <span className="text-xl font-bold text-white">ATOS fit</span>
             </div>
 
             <div className="flex items-center space-x-8">

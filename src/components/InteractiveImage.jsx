@@ -50,7 +50,7 @@ const InteractiveImage = () => {
       >
         <img 
           src="/assets/images/weekly_tasks.gif" 
-          alt="ATOSfit App Interface" 
+          alt="ATOS fit App Interface" 
           className="w-1/2 h-auto object-cover cursor-pointer mx-auto block"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}

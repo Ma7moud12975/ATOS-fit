@@ -61,8 +61,8 @@ const PrivacyPage = () => {
       <nav className="relative z-50 px-6 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <img src="/assets/images/atosfit.png" alt="ATOSfit Logo" className="w-10 h-10 object-contain" />
-            <span className="text-2xl font-bold text-white">ATOSfit</span>
+            <img src="/assets/images/atosfit.png" alt="ATOS fit Logo" className="w-10 h-10 object-contain" />
+            <span className="text-2xl font-bold text-white">ATOS fit</span>
           </div>
           
           {/* Desktop Navigation */}
@@ -146,7 +146,7 @@ const PrivacyPage = () => {
             Your Privacy is <span className="text-[#FF8A00]">Our Priority</span>
           </h1>
           <p className="text-xl text-[#E0E0E0] leading-relaxed mb-12">
-            ATOSfit is built from the ground up with privacy-first architecture. 
+            ATOS fit is built from the ground up with privacy-first architecture. 
             Your data stays yours, your workouts remain private, and your identity is protected.
           </p>
         </div>
@@ -196,7 +196,7 @@ const PrivacyPage = () => {
                 </h3>
                 <div className="space-y-4 text-[#E0E0E0] leading-relaxed">
                   <p>
-                    ATOSfit follows a strict data minimization principle, collecting only essential data for app functionality:
+                    ATOS fit follows a strict data minimization principle, collecting only essential data for app functionality:
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                     <div className="bg-[rgba(255,255,255,0.05)] rounded-xl p-6">
@@ -259,7 +259,7 @@ const PrivacyPage = () => {
                 </h3>
                 <div className="space-y-4 text-[#E0E0E0] leading-relaxed">
                   <p>
-                    ATOSfit leverages cutting-edge on-device AI processing to ensure your workout videos never leave your device. 
+                    ATOS fit leverages cutting-edge on-device AI processing to ensure your workout videos never leave your device. 
                     We combine Google's MediaPipe with MocapNET for real-time 3D motion analysis:
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
@@ -341,7 +341,7 @@ const PrivacyPage = () => {
                 </h3>
                 <div className="space-y-4 text-[#E0E0E0] leading-relaxed">
                   <p>
-                    ATOSfit uses Internet Identity, the world's most advanced privacy-preserving authentication system. 
+                    ATOS fit uses Internet Identity, the world's most advanced privacy-preserving authentication system. 
                     Built by the DFINITY Foundation, it eliminates traditional privacy vulnerabilities:
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
@@ -433,7 +433,7 @@ const PrivacyPage = () => {
                 </h3>
                 <div className="space-y-4 text-[#E0E0E0] leading-relaxed">
                   <p>
-                    ATOSfit stores your fitness data on the Internet Computer Protocol (ICP) blockchain, the world's most advanced 
+                    ATOS fit stores your fitness data on the Internet Computer Protocol (ICP) blockchain, the world's most advanced 
                     decentralized computing platform. This provides unprecedented security, transparency, and user control:
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
@@ -543,7 +543,7 @@ const PrivacyPage = () => {
                   How We Use Your Data
                 </h3>
                 <div className="space-y-4 text-[#E0E0E0] leading-relaxed">
-                  <p>Your data is used exclusively to provide and improve ATOSfit services:</p>
+                  <p>Your data is used exclusively to provide and improve ATOS fit services:</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                     <div>
                       <h4 className="text-white font-medium mb-3 text-[#FF8A00]">✓ What We Do</h4>
@@ -695,7 +695,7 @@ const PrivacyPage = () => {
                 </h3>
                 <div className="space-y-4 text-[#E0E0E0] leading-relaxed">
                   <p>
-                    ATOSfit complies with major privacy regulations worldwide while maintaining our privacy-first approach:
+                    ATOS fit complies with major privacy regulations worldwide while maintaining our privacy-first approach:
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                     <div className="bg-[rgba(255,255,255,0.05)] rounded-xl p-6">
@@ -809,8 +809,8 @@ const PrivacyPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center space-x-3">
-              <img src="/assets/images/atosfit.png" alt="ATOSfit Logo" className="w-8 h-8 object-contain" />
-              <span className="text-xl font-bold text-white">ATOSfit</span>
+              <img src="/assets/images/atosfit.png" alt="ATOS fit Logo" className="w-8 h-8 object-contain" />
+              <span className="text-xl font-bold text-white">ATOS fit</span>
             </div>
             
             <div className="flex items-center space-x-8">

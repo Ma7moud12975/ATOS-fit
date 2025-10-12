@@ -18,7 +18,7 @@ const AuthenticationLayout = ({
         {/* Logo Section */}
         {showLogo && (
           <div className="text-center mb-8">
-            <img src="/assets/images/atosfit.png" alt="Logo" className="w-16 h-16 mx-auto mb-4" />
+            <img src="/assets/images/atosfit.png" alt="ATOS fit Logo" className="w-16 h-16 mx-auto mb-4" />
                         <h1 className="text-3xl font-bold text-foreground mb-2">ATOS fit</h1>
           </div>
         )}

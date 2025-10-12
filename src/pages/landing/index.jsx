@@ -97,8 +97,8 @@ const LandingPage = () => {
       <nav className="relative z-50 px-6 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <img src="/assets/images/atosfit.png" alt="ATOSfit Logo" className="w-10 h-10 object-contain" />
-            <span className="text-2xl font-bold text-white">ATOSfit</span>
+            <img src="/assets/images/atosfit.png" alt="ATOS fit Logo" className="w-10 h-10 object-contain" />
+            <span className="text-2xl font-bold text-white">ATOS fit</span>
           </div>
 
           {/* Desktop Navigation */}
@@ -193,7 +193,7 @@ const LandingPage = () => {
                   <div className="text-[#FF8A00] mb-4">MAX RESULTS</div>
                 </h1>
                 <p className="text-xl text-[#E0E0E0] leading-relaxed max-w-lg">
-                  <span className="text-[#FF8A00] font-semibold">ATOSfit</span> corrects your form in real-time. With privacy-first technology, your video never leaves your device and you have full control of your data.
+                  <span className="text-[#FF8A00] font-semibold">ATOS fit</span> corrects your form in real-time. With privacy-first technology, your video never leaves your device and you have full control of your data.
                 </p>
               </div>
 
@@ -218,10 +218,10 @@ const LandingPage = () => {
       <section className="relative z-10 pt-16 lg:pt-20 pb-8">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
           <h2 className="text-5xl font-semibold text-white mb-6">
-            Why Choose <span className="text-[#FF8A00]">ATOSfit</span>?
+            Why Choose <span className="text-[#FF8A00]">ATOS fit</span>?
           </h2>
           <p className="text-xl text-[#E0E0E0] max-w-3xl mx-auto">
-            Discover the revolutionary features that make ATOSfit the ultimate AI-powered fitness companion
+            Discover the revolutionary features that make ATOS fit the ultimate AI-powered fitness companion
           </p>
         </div>
       </section>
@@ -294,7 +294,7 @@ const LandingPage = () => {
               Your Privacy is <span className="text-[#FF8A00]">Our Foundation</span>
             </h2>
             <p className="text-xl text-[#E0E0E0] max-w-3xl mx-auto">
-              Built with privacy-first architecture, ATOSfit ensures your data stays yours while delivering cutting-edge AI fitness coaching
+              Built with privacy-first architecture, ATOS fit ensures your data stays yours while delivering cutting-edge AI fitness coaching
             </p>
           </div>
 
@@ -394,7 +394,7 @@ const LandingPage = () => {
                 Complete Privacy Transparency
               </h3>
               <p className="text-[#E0E0E0] mb-6 leading-relaxed">
-                Learn exactly how we protect your privacy and why ATOSfit is the most secure fitness app available today.
+                Learn exactly how we protect your privacy and why ATOS fit is the most secure fitness app available today.
               </p>
               <button
                 onClick={() => navigate('/privacy')}
@@ -412,8 +412,8 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center space-x-3">
-              <img src="/assets/images/atosfit.png" alt="ATOSfit Logo" className="w-8 h-8 object-contain" />
-              <span className="text-xl font-bold text-white">ATOSfit</span>
+              <img src="/assets/images/atosfit.png" alt="ATOS fit Logo" className="w-8 h-8 object-contain" />
+              <span className="text-xl font-bold text-white">ATOS fit</span>
             </div>
 
             <div className="flex items-center space-x-8">

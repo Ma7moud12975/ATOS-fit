@@ -25,7 +25,7 @@ const PaymentCancel = () => {
         <h1 className="text-3xl font-bold text-white mb-4">Payment Cancelled</h1>
         <p className="text-gray-400 mb-8">
           No worries! Your payment was cancelled and you haven't been charged. 
-          You can still enjoy ATOSfit with our free plan or try upgrading again later.
+          You can still enjoy ATOS fit with our free plan or try upgrading again later.
         </p>
 
         {/* Action Buttons */}

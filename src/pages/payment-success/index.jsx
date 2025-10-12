@@ -103,7 +103,7 @@ const PaymentSuccess = () => {
         {/* Success Message */}
         <h1 className="text-3xl font-bold text-white mb-4">Payment Successful!</h1>
         <p className="text-gray-400 mb-8">
-          Welcome to ATOSfit {subscriptionDetails?.plan || 'Premium'}! Your subscription is now active.
+          Welcome to ATOS fit {subscriptionDetails?.plan || 'Premium'}! Your subscription is now active.
         </p>
 
         {/* Subscription Details */}
