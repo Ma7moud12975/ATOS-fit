@@ -8,6 +8,7 @@ import Button from '../../components/ui/Button';
 import ProfileHeader from './components/ProfileHeader';
 import PersonalInfoTab from './components/PersonalInfoTab';
 import FitnessMetricsTab from './components/FitnessMetricsTab';
+import { paymentService } from '../../utils/paymentService';
 // Achievements tab removed per request
 
 const UserProfile = () => {
@@ -16,6 +17,8 @@ const UserProfile = () => {
   const [currentTheme, setCurrentTheme] = useState('dark'); // Default to dark mode
   const [activeTab, setActiveTab] = useState('personal');
   const [user, setUser] = useState(null);
+  const [subscription, setSubscription] = useState(null);
+  const [isLoadingSubscription, setIsLoadingSubscription] = useState(true);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'dark'; // Default to dark
@@ -68,6 +71,32 @@ const UserProfile = () => {
         setUser(null);
       }
     })();
+
+    // Load subscription data
+    const loadSubscription = async () => {
+      try {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const u = JSON.parse(userData);
+          const userId = u?.id || u?.principalId;
+          
+          if (userId) {
+            await paymentService.initialize();
+            const subscriptionData = await paymentService.getUserSubscription(userId);
+            
+            if (subscriptionData.success) {
+              setSubscription(subscriptionData.subscription);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading subscription data:', error);
+      } finally {
+        setIsLoadingSubscription(false);
+      }
+    };
+
+    loadSubscription();
   }, []);
 
   const handleSidebarToggle = () => {
@@ -126,7 +155,8 @@ const UserProfile = () => {
 
   const tabs = [
     { id: 'personal', label: 'Personal Info', icon: 'User' },
-    { id: 'metrics', label: 'Fitness Metrics', icon: 'Activity' }
+    { id: 'metrics', label: 'Fitness Metrics', icon: 'Activity' },
+    { id: 'subscription', label: 'Subscription', icon: 'CreditCard' }
   ];
 
   const renderTabContent = () => {
@@ -135,9 +165,184 @@ const UserProfile = () => {
         return <PersonalInfoTab user={user} onUpdateUser={handleUpdateUser} />;
       case 'metrics':
         return <FitnessMetricsTab user={user} onUpdateMetrics={handleUpdateMetrics} />;
+      case 'subscription':
+        return renderSubscriptionTab();
       default:
         return <PersonalInfoTab user={user} onUpdateUser={handleUpdateUser} />;
     }
+  };
+
+  const renderSubscriptionTab = () => {
+    if (isLoadingSubscription) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <div className="w-8 h-8 border-4 border-[#FF8A00] border-t-transparent rounded-full animate-spin"></div>
+          <span className="ml-3 text-gray-400">Loading subscription...</span>
+        </div>
+      );
+    }
+
+    const handleUpgrade = () => {
+      navigate('/pricing');
+    };
+
+    const handleCancelSubscription = async () => {
+      if (!subscription?.id) return;
+      
+      const confirmed = window.confirm('Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.');
+      
+      if (confirmed) {
+        try {
+          const result = await paymentService.cancelSubscription(subscription.id);
+          if (result.success) {
+            alert('Subscription cancelled successfully.');
+            // Reload subscription data
+            const subscriptionData = await paymentService.getUserSubscription(user.id);
+            if (subscriptionData.success) {
+              setSubscription(subscriptionData.subscription);
+            }
+          } else {
+            alert('Failed to cancel subscription: ' + result.error);
+          }
+        } catch (error) {
+          console.error('Error cancelling subscription:', error);
+          alert('An error occurred while cancelling your subscription.');
+        }
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* Current Plan */}
+        <div className="bg-gray-900 rounded-xl p-6">
+          <h3 className="text-xl font-semibold text-white mb-4">Current Plan</h3>
+          
+          {subscription ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-lg font-medium text-white">{subscription.plan}</h4>
+                  <p className="text-gray-400 capitalize">Status: {subscription.status}</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-[#FF8A00]">
+                    ${paymentService.getSubscriptionPlanDetails(subscription.plan)?.price || 'N/A'}/month
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-400">Started:</span>
+                  <p className="text-white">
+                    {new Date(Number(subscription.createdAt) / 1000000).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-400">Next Billing:</span>
+                  <p className="text-white">
+                    {subscription.status === 'Active' ? 'Monthly' : 'N/A'}
+                  </p>
+                </div>
+              </div>
+
+              {subscription.status === 'Active' && (
+                <div className="pt-4 border-t border-gray-700">
+                  <button
+                    onClick={handleCancelSubscription}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                  >
+                    Cancel Subscription
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Icon name="CreditCard" className="w-8 h-8 text-gray-400" />
+              </div>
+              <h4 className="text-lg font-medium text-white mb-2">Free Plan</h4>
+              <p className="text-gray-400 mb-6">
+                You're currently on the free plan. Upgrade to unlock premium features!
+              </p>
+              <button
+                onClick={handleUpgrade}
+                className="px-6 py-3 bg-[#FF8A00] hover:bg-[#E67B00] text-black font-semibold rounded-xl transition-colors"
+              >
+                Upgrade to Premium
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Plan Features */}
+        <div className="bg-gray-900 rounded-xl p-6">
+          <h3 className="text-xl font-semibold text-white mb-4">Plan Features</h3>
+          
+          {subscription ? (
+            <div className="space-y-3">
+              {paymentService.getSubscriptionPlanDetails(subscription.plan)?.features.map((feature, index) => (
+                <div key={index} className="flex items-center">
+                  <div className="w-2 h-2 bg-[#FF8A00] rounded-full mr-3"></div>
+                  <span className="text-gray-300">{feature}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-[#FF8A00] rounded-full mr-3"></div>
+                <span className="text-gray-300">10 hours of workout tracking per month</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-[#FF8A00] rounded-full mr-3"></div>
+                <span className="text-gray-300">100 AI chatbot messages per month</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-[#FF8A00] rounded-full mr-3"></div>
+                <span className="text-gray-300">50 food scans per month</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-[#FF8A00] rounded-full mr-3"></div>
+                <span className="text-gray-300">Basic workout library access</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Upgrade Options */}
+        {!subscription && (
+          <div className="bg-gradient-to-r from-[#FF8A00]/10 to-[#E67B00]/10 border border-[#FF8A00]/20 rounded-xl p-6">
+            <h3 className="text-xl font-semibold text-white mb-4">Available Upgrades</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-gray-900 rounded-lg p-4">
+                <h4 className="font-semibold text-white mb-2">Premium</h4>
+                <p className="text-2xl font-bold text-[#FF8A00] mb-2">$19.99/month</p>
+                <p className="text-gray-400 text-sm mb-4">Enhanced features for serious fitness enthusiasts</p>
+                <button
+                  onClick={handleUpgrade}
+                  className="w-full py-2 bg-[#FF8A00] hover:bg-[#E67B00] text-black font-semibold rounded-lg transition-colors"
+                >
+                  Choose Premium
+                </button>
+              </div>
+              <div className="bg-gray-900 rounded-lg p-4">
+                <h4 className="font-semibold text-white mb-2">Premium Plus</h4>
+                <p className="text-2xl font-bold text-[#FF8A00] mb-2">$29.99/month</p>
+                <p className="text-gray-400 text-sm mb-4">Unlimited access to all features</p>
+                <button
+                  onClick={handleUpgrade}
+                  className="w-full py-2 bg-transparent border border-[#FF8A00] text-[#FF8A00] hover:bg-[#FF8A00] hover:text-black font-semibold rounded-lg transition-colors"
+                >
+                  Choose Premium Plus
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const safeUser = user || {

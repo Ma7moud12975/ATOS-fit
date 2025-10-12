@@ -10,12 +10,16 @@ import ProgressWidget from './components/ProgressWidget';
 import DashboardCharts from './components/DashboardCharts';
 import WaterMonitoringCard from './components/WaterMonitoringCard';
 import AdvancedAnalytics from './components/AdvancedAnalytics';
+import SubscriptionStatusCard from './components/SubscriptionStatusCard';
+import paymentService from '../../utils/paymentService';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('dark'); // Default to dark mode
+  const [subscription, setSubscription] = useState(null);
+  const [isLoadingSubscription, setIsLoadingSubscription] = useState(true);
 
   // User data from localStorage
   const [user, setUser] = useState({ name: 'New User', email: '', profilePicture: '', fitnessLevel: 'Beginner', goals: [] });
@@ -34,9 +38,33 @@ const Dashboard = () => {
           fitnessLevel: (parsedUser?.fitnessLevel || 'beginner')?.replace(/\b\w/g, c => c.toUpperCase()),
           goals: parsedUser?.goals || []
         });
+
+        // Load subscription data
+        const loadSubscription = async () => {
+          try {
+            await paymentService.init();
+            const subscriptionData = await paymentService.getUserSubscription(parsedUser.id);
+            if (subscriptionData.success) {
+              setSubscription(subscriptionData.subscription);
+            }
+          } catch (error) {
+            console.error('Error loading subscription:', error);
+          } finally {
+            setIsLoadingSubscription(false);
+          }
+        };
+
+        if (parsedUser.id) {
+          loadSubscription();
+        } else {
+          setIsLoadingSubscription(false);
+        }
       } catch (error) {
         console.error('Error parsing user data:', error);
+        setIsLoadingSubscription(false);
       }
+    } else {
+      setIsLoadingSubscription(false);
     }
   }, []);
 
@@ -183,13 +211,23 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Water Monitoring & Analytics */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <div className="lg:col-span-2">
-              <AdvancedAnalytics />
+          {/* Subscription Status & Water Monitoring */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div>
+              <SubscriptionStatusCard 
+                subscription={subscription} 
+                isLoading={isLoadingSubscription} 
+              />
             </div>
             <div>
               <WaterMonitoringCard />
+            </div>
+          </div>
+
+          {/* Analytics */}
+          <div className="grid grid-cols-1 gap-6 mb-6">
+            <div>
+              <AdvancedAnalytics />
             </div>
           </div>
 

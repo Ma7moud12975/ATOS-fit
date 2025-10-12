@@ -21,6 +21,8 @@ import ProtectedRoute from './components/ui/ProtectedRoute';
 import SchedulePage from './pages/schedule';
 import Exercises from './pages/exercise-library';
 import AchievementsPage from './pages/achievements';
+import PaymentSuccess from './pages/payment-success';
+import PaymentCancel from './pages/payment-cancel';
 
 const Routes = () => {
   return (
@@ -49,6 +51,11 @@ const Routes = () => {
             {/* Schedule route removed per request */}
             <Route path="/exercise-library" element={<Exercises />} />
             <Route path="/achievements" element={<AchievementsPage />} />
+            
+            {/* Payment flow routes */}
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/payment-cancel" element={<PaymentCancel />} />
+            
             <Route path="*" element={<NotFound />} />
           </RouterRoutes>
         </ErrorBoundary>

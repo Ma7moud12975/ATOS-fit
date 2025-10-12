@@ -1,11 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
+import { paymentService } from '../../utils/paymentService';
 
 const PricingPage = () => {
   const navigate = useNavigate();
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Initialize payment service and check user authentication
+  useEffect(() => {
+    const initializePayments = async () => {
+      await paymentService.initialize();
+      
+      // Check if user is logged in (you might want to get this from your auth context)
+      const userData = localStorage.getItem('userData');
+      if (userData) {
+        setCurrentUser(JSON.parse(userData));
+      }
+    };
+
+    initializePayments();
+  }, []);
 
   const plans = [
     {
@@ -29,11 +47,12 @@ const PricingPage = () => {
         unlimitedFoodScanning: false
       },
       popular: false,
-      betaNote: 'Currently free during beta'
+      betaNote: 'Currently free during beta',
+      planType: 'Basic'
     },
     {
       name: 'Premium',
-      price: { monthly: 9.99, yearly: 99.99 },
+      price: { monthly: 19.99, yearly: 199.99 },
       description: 'Enhanced features for serious fitness enthusiasts',
       features: {
         tracking: '100 hours/month',
@@ -52,11 +71,12 @@ const PricingPage = () => {
         unlimitedFoodScanning: false
       },
       popular: true,
-      betaNote: 'Free during beta - $9.99/month after launch'
+      betaNote: 'Free during beta - $19.99/month after launch',
+      planType: 'Premium'
     },
     {
       name: 'Premium Plus',
-      price: { monthly: 19.99, yearly: 199.99 },
+      price: { monthly: 29.99, yearly: 299.99 },
       description: 'Unlimited access to all ATOSfit features',
       features: {
         tracking: 'Unlimited',
@@ -75,7 +95,8 @@ const PricingPage = () => {
         unlimitedFoodScanning: true
       },
       popular: false,
-      betaNote: 'Free during beta - $19.99/month after launch'
+      betaNote: 'Free during beta - $29.99/month after launch',
+      planType: 'PremiumPlus'
     }
   ];
 
@@ -93,9 +114,44 @@ const PricingPage = () => {
     { key: 'prioritySupport', label: '24/7 Priority Support', icon: 'Headphones' }
   ];
 
-  const handleGetStarted = () => {
-    // During beta, all plans are free - route to login page
-    navigate('/login-screen');
+  const handleGetStarted = async (plan) => {
+    // For Free plan, just navigate to login
+    if (plan.planType === 'Basic') {
+      navigate('/login-screen');
+      return;
+    }
+
+    // Check if user is authenticated
+    if (!currentUser) {
+      // Store the selected plan and redirect to login
+      localStorage.setItem('selectedPlan', JSON.stringify(plan));
+      navigate('/login-screen');
+      return;
+    }
+
+    // Process payment for Premium/Premium Plus plans
+    setIsProcessing(true);
+    
+    try {
+      // Create checkout session
+      const result = await paymentService.createCheckoutSession(currentUser.id, plan.planType);
+      
+      if (result.success) {
+        // Redirect to Stripe Checkout
+        const redirectResult = await paymentService.redirectToCheckout(result.sessionId);
+        
+        if (!redirectResult.success) {
+          alert('Failed to redirect to checkout: ' + redirectResult.error);
+        }
+      } else {
+        alert('Failed to create checkout session: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('An error occurred while processing your payment. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -298,14 +354,24 @@ const PricingPage = () => {
                 </div>
 
                 <button
-                  onClick={handleGetStarted}
+                  onClick={() => handleGetStarted(plan)}
+                  disabled={isProcessing}
                   className={`w-full py-4 rounded-2xl font-semibold transition-all duration-300 ${
                     plan.popular
                       ? 'bg-[#FF8A00] hover:bg-[#E67B00] text-black hover:shadow-[0px_4px_15px_rgba(255,138,0,0.2)]'
                       : 'bg-transparent border border-[rgba(255,255,255,0.1)] text-white hover:bg-[rgba(255,255,255,0.05)] hover:border-[#FF8A00]'
-                  }`}
+                  } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  Start Free Beta
+                  {isProcessing ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                      <span>Processing...</span>
+                    </div>
+                  ) : plan.planType === 'Basic' ? (
+                    'Start Free Beta'
+                  ) : (
+                    `Choose ${plan.name}`
+                  )}
                 </button>
               </div>
             ))}

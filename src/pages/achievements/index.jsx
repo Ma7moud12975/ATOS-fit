@@ -5,6 +5,14 @@ import AchievementsTab from '../user-profile/components/AchievementsTab';
 
 const AchievementsPage = () => {
   const [user, setUser] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState('dark');
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setCurrentTheme(savedTheme);
+    document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+  }, []);
 
   useEffect(() => {
     try {
@@ -45,18 +53,33 @@ const AchievementsPage = () => {
     }
   }, []);
 
+  const handleSidebarToggle = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleSidebarClose = () => {
+    setIsSidebarOpen(false);
+  };
+
+  const handleThemeToggle = () => {
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setCurrentTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader
-        onSidebarToggle={()=>{}}
-        isSidebarOpen={false}
-        onThemeToggle={()=>{}}
-        currentTheme={localStorage.getItem('theme') || 'dark'}
+        onSidebarToggle={handleSidebarToggle}
+        isSidebarOpen={isSidebarOpen}
+        onThemeToggle={handleThemeToggle}
+        currentTheme={currentTheme}
         user={user || { name: 'New User', email: '' }}
         onLogout={()=>{}}
       />
-      <SidebarNavigation isOpen={true} onClose={()=>{}} />
-      <main className="pt-16 lg:pl-72 min-h-screen">
+      <SidebarNavigation isOpen={isSidebarOpen} onClose={handleSidebarClose} />
+      <main className={`pt-16 min-h-screen transition-all duration-300 ${isSidebarOpen ? 'lg:pl-72' : ''}`}>
         <div className="p-4 lg:p-6 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>

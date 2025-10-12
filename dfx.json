@@ -12,6 +12,10 @@
       "exclude": [
         "**/*.map"
       ]
+    },
+    "backend": {
+      "type": "motoko",
+      "main": "src/backend/main.mo"
     }
   },
   "networks": {

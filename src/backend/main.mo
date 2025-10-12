@@ -6,8 +6,14 @@ import Option "mo:base/Option";
 import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Result "mo:base/Result";
+import Int "mo:base/Int";
+import Float "mo:base/Float";
+import Debug "mo:base/Debug";
+import Blob "mo:base/Blob";
+import Cycles "mo:base/ExperimentalCycles";
 
-actor {
+persistent actor {
   // Types for our fitness app
   type UserId = Text;
   type ExerciseName = Text;
@@ -58,22 +64,102 @@ actor {
     progress: Nat;
     target: Nat;
   };
+
+  // Payment Types
+  type SubscriptionPlan = {
+    #Basic;
+    #Premium;
+    #PremiumPlus;
+  };
+
+  type SubscriptionStatus = {
+    #Active;
+    #Inactive;
+    #Cancelled;
+    #PastDue;
+  };
+
+  type Subscription = {
+    id: Text;
+    userId: UserId;
+    plan: SubscriptionPlan;
+    status: SubscriptionStatus;
+    stripeSubscriptionId: ?Text;
+    stripeCustomerId: ?Text;
+    currentPeriodStart: Int;
+    currentPeriodEnd: Int;
+    createdAt: Int;
+    updatedAt: Int;
+  };
+
+  type CheckoutSession = {
+    id: Text;
+    userId: UserId;
+    plan: SubscriptionPlan;
+    stripeSessionId: Text;
+    status: Text; // "pending", "completed", "expired"
+    createdAt: Int;
+    expiresAt: Int;
+  };
+
+  // HTTP Outcall Types for Stripe API
+  type HttpRequestArgs = {
+    url : Text;
+    max_response_bytes : ?Nat64;
+    headers : [HttpHeader];
+    body : ?[Nat8];
+    method : HttpMethod;
+    transform : ?TransformRawResponseFunction;
+  };
+
+  type HttpHeader = {
+    name : Text;
+    value : Text;
+  };
+
+  type HttpMethod = {
+    #get;
+    #post;
+    #head;
+  };
+
+  type HttpResponsePayload = {
+    status : Nat;
+    headers : [HttpHeader];
+    body : [Nat8];
+  };
+
+  type TransformRawResponseFunction = {
+    function : shared query TransformRawResponseArgs -> async HttpResponsePayload;
+    context : Blob;
+  };
+
+  type TransformRawResponseArgs = {
+    response : HttpResponsePayload;
+    context : Blob;
+  };
   
   // Storage
   private stable var nextUserId : Nat = 1;
   private stable var nextSessionId : Nat = 1;
   private stable var nextStatsId : Nat = 1;
   private stable var nextAchievementId : Nat = 1;
+  private stable var nextSubscriptionId : Nat = 1;
+  private stable var nextCheckoutSessionId : Nat = 1;
   
   private stable var usersEntries : [(UserId, User)] = [];
   private stable var sessionsEntries : [(Text, WorkoutSession)] = [];
   private stable var statsEntries : [(Text, Stats)] = [];
   private stable var achievementsEntries : [(Text, Achievement)] = [];
+  private stable var subscriptionsEntries : [(Text, Subscription)] = [];
+  private stable var checkoutSessionsEntries : [(Text, CheckoutSession)] = [];
   
-  private let users = HashMap.fromIter<UserId, User>(Iter.fromArray(usersEntries), 10, Text.equal, Text.hash);
-  private let sessions = HashMap.fromIter<Text, WorkoutSession>(Iter.fromArray(sessionsEntries), 10, Text.equal, Text.hash);
-  private let stats = HashMap.fromIter<Text, Stats>(Iter.fromArray(statsEntries), 10, Text.equal, Text.hash);
-  private let achievements = HashMap.fromIter<Text, Achievement>(Iter.fromArray(achievementsEntries), 10, Text.equal, Text.hash);
+  private transient let users = HashMap.fromIter<UserId, User>(Iter.fromArray(usersEntries), 10, Text.equal, Text.hash);
+  private transient let sessions = HashMap.fromIter<Text, WorkoutSession>(Iter.fromArray(sessionsEntries), 10, Text.equal, Text.hash);
+  private transient let stats = HashMap.fromIter<Text, Stats>(Iter.fromArray(statsEntries), 10, Text.equal, Text.hash);
+  private transient let achievements = HashMap.fromIter<Text, Achievement>(Iter.fromArray(achievementsEntries), 10, Text.equal, Text.hash);
+  private transient let subscriptions = HashMap.fromIter<Text, Subscription>(Iter.fromArray(subscriptionsEntries), 10, Text.equal, Text.hash);
+  private transient let checkoutSessions = HashMap.fromIter<Text, CheckoutSession>(Iter.fromArray(checkoutSessionsEntries), 10, Text.equal, Text.hash);
   
   // User Management
   public shared(msg) func createUser(email: Text, name: Text, fitnessLevel: Text, goals: [Text], profilePicture: ?Text) : async UserId {
@@ -108,11 +194,11 @@ actor {
         let updatedUser : User = {
           id = user.id;
           email = user.email;
-          name = Option.get(name, user.name);
+          name = switch (name) { case (null) user.name; case (?n) n; };
           createdAt = user.createdAt;
-          fitnessLevel = Option.get(fitnessLevel, user.fitnessLevel);
-          goals = Option.get(goals, user.goals);
-          profilePicture = Option.get(profilePicture, user.profilePicture);
+          fitnessLevel = switch (fitnessLevel) { case (null) user.fitnessLevel; case (?f) f; };
+          goals = switch (goals) { case (null) user.goals; case (?g) g; };
+          profilePicture = switch (profilePicture) { case (null) user.profilePicture; case (?p) ?p; };
         };
         
         users.put(userId, updatedUser);
@@ -155,9 +241,45 @@ actor {
     )
   };
   
+  // Helper functions for array operations
+  private func findIndex<T>(arr: [T], predicate: T -> Bool) : ?Nat {
+    var i = 0;
+    for (item in arr.vals()) {
+      if (predicate(item)) {
+        return ?i;
+      };
+      i += 1;
+    };
+    null
+  };
+
+  private func find<T>(arr: [T], predicate: T -> Bool) : ?T {
+    for (item in arr.vals()) {
+      if (predicate(item)) {
+        return ?item;
+      };
+    };
+    null
+  };
+
   // Stats Management
+  private func getUserStatsSync(userId: UserId) : ?Stats {
+    let userStats = Iter.toArray(
+      Iter.filter<(Text, Stats)>(
+        stats.entries(),
+        func((_, s)) { s.userId == userId }
+      )
+    );
+    
+    if (userStats.size() > 0) {
+      ?userStats[0].1
+    } else {
+      null
+    }
+  };
+
   private func updateStats(userId: UserId, items: [ExerciseItem]) : async () {
-    var userStats : Stats = switch (getUserStats(userId)) {
+    var userStats : Stats = switch (getUserStatsSync(userId)) {
       case (null) {
         {
           id = Nat.toText(nextStatsId);
@@ -199,7 +321,7 @@ actor {
   };
   
   private func updateExerciseReps(userStats: Stats, exerciseName: ExerciseName, reps: Nat) : Stats {
-    let existingIndex = Array.findIndex<(ExerciseName, Nat)>(
+    let existingIndex = findIndex<(ExerciseName, Nat)>(
       userStats.totalRepsByExercise, 
       func((name, _)) { name == exerciseName }
     );
@@ -233,7 +355,7 @@ actor {
   };
   
   private func updateExerciseDuration(userStats: Stats, exerciseName: ExerciseName, duration: Nat) : Stats {
-    let existingIndex = Array.findIndex<(ExerciseName, Nat)>(
+    let existingIndex = findIndex<(ExerciseName, Nat)>(
       userStats.totalDurationSecByExercise, 
       func((name, _)) { name == exerciseName }
     );
@@ -315,12 +437,180 @@ actor {
     )
   };
   
+  // Payment Functions
+  public shared(msg) func createCheckoutSession(userId: UserId, plan: SubscriptionPlan) : async Result.Result<Text, Text> {
+    let caller = Principal.toText(msg.caller);
+    let sessionId = Nat.toText(nextCheckoutSessionId);
+    nextCheckoutSessionId += 1;
+    
+    // Create Stripe checkout session via HTTP outcall
+    let stripeApiKey = "sk_test_..."; // This should be set via environment or configuration
+    let priceId = switch (plan) {
+      case (#Basic) { "price_basic_test_id" };
+      case (#Premium) { "price_premium_test_id" };
+      case (#PremiumPlus) { "price_premium_plus_test_id" };
+    };
+    
+    let requestBody = "price_data[currency]=usd&price_data[product_data][name]=ATOS Fit Subscription&price_data[unit_amount]=" # 
+      (switch (plan) {
+        case (#Basic) { "999" }; // $9.99
+        case (#Premium) { "1999" }; // $19.99
+        case (#PremiumPlus) { "2999" }; // $29.99
+      }) # "&mode=subscription&success_url=https://yourapp.com/success&cancel_url=https://yourapp.com/cancel";
+    
+    let request : HttpRequestArgs = {
+      url = "https://api.stripe.com/v1/checkout/sessions";
+      max_response_bytes = ?1024;
+      headers = [
+        { name = "Authorization"; value = "Bearer " # stripeApiKey },
+        { name = "Content-Type"; value = "application/x-www-form-urlencoded" }
+      ];
+      body = ?Blob.toArray(Text.encodeUtf8(requestBody));
+      method = #post;
+      transform = null;
+    };
+    
+    try {
+      let ic : actor {
+        http_request : HttpRequestArgs -> async HttpResponsePayload;
+      } = actor("aaaaa-aa"); // Management canister
+      
+      let response = await ic.http_request(request);
+      
+      if (response.status == 200) {
+        // Parse response to get session ID (simplified)
+        let stripeSessionId = "cs_test_" # sessionId; // In real implementation, parse from response
+        
+        let checkoutSession : CheckoutSession = {
+          id = sessionId;
+          userId = userId;
+          plan = plan;
+          stripeSessionId = stripeSessionId;
+          status = "pending";
+          createdAt = Time.now();
+          expiresAt = Time.now() + (24 * 60 * 60 * 1000000000); // 24 hours
+        };
+        
+        checkoutSessions.put(sessionId, checkoutSession);
+        #ok(stripeSessionId)
+      } else {
+        #err("Failed to create checkout session")
+      }
+    } catch (error) {
+      #err("HTTP request failed")
+    }
+  };
+  
+  public shared(msg) func verifySubscription(stripeSessionId: Text) : async Result.Result<Text, Text> {
+    let caller = Principal.toText(msg.caller);
+    
+    // Find checkout session
+    let sessionOpt = find<(Text, CheckoutSession)>(
+      Iter.toArray(checkoutSessions.entries()),
+      func((_, session)) { session.stripeSessionId == stripeSessionId }
+    );
+    
+    switch (sessionOpt) {
+      case (null) { #err("Checkout session not found") };
+      case (?(sessionId, session)) {
+        // Verify with Stripe API
+        let stripeApiKey = "sk_test_...";
+        let request : HttpRequestArgs = {
+          url = "https://api.stripe.com/v1/checkout/sessions/" # stripeSessionId;
+          max_response_bytes = ?1024;
+          headers = [
+            { name = "Authorization"; value = "Bearer " # stripeApiKey }
+          ];
+          body = null;
+          method = #get;
+          transform = null;
+        };
+        
+        try {
+          let ic : actor {
+            http_request : HttpRequestArgs -> async HttpResponsePayload;
+          } = actor("aaaaa-aa");
+          
+          let response = await ic.http_request(request);
+          
+          if (response.status == 200) {
+            // Create subscription record
+            let subscriptionId = Nat.toText(nextSubscriptionId);
+            nextSubscriptionId += 1;
+            
+            let subscription : Subscription = {
+              id = subscriptionId;
+              userId = session.userId;
+              plan = session.plan;
+              status = #Active;
+              stripeSubscriptionId = ?("sub_" # subscriptionId);
+              stripeCustomerId = ?("cus_" # session.userId);
+              currentPeriodStart = Time.now();
+              currentPeriodEnd = Time.now() + (30 * 24 * 60 * 60 * 1000000000); // 30 days
+              createdAt = Time.now();
+              updatedAt = Time.now();
+            };
+            
+            subscriptions.put(subscriptionId, subscription);
+            
+            // Update checkout session status
+            let updatedSession = {
+              session with status = "completed"
+            };
+            checkoutSessions.put(sessionId, updatedSession);
+            
+            #ok(subscriptionId)
+          } else {
+            #err("Failed to verify with Stripe")
+          }
+        } catch (error) {
+          #err("Verification failed")
+        }
+      }
+    }
+  };
+  
+  public query func getUserSubscription(userId: UserId) : async ?Subscription {
+    let userSubscriptions = Iter.toArray(
+      Iter.filter<(Text, Subscription)>(
+        subscriptions.entries(),
+        func((_, sub)) { sub.userId == userId and sub.status == #Active }
+      )
+    );
+    
+    if (userSubscriptions.size() > 0) {
+      ?userSubscriptions[0].1
+    } else {
+      null
+    }
+  };
+  
+  public shared(msg) func cancelSubscription(subscriptionId: Text) : async Result.Result<Text, Text> {
+    let caller = Principal.toText(msg.caller);
+    
+    switch (subscriptions.get(subscriptionId)) {
+      case (null) { #err("Subscription not found") };
+      case (?subscription) {
+        let updatedSubscription = {
+          subscription with 
+          status = #Cancelled;
+          updatedAt = Time.now();
+        };
+        
+        subscriptions.put(subscriptionId, updatedSubscription);
+        #ok("Subscription cancelled")
+      }
+    }
+  };
+  
   // System upgrade hooks
   system func preupgrade() {
     usersEntries := Iter.toArray(users.entries());
     sessionsEntries := Iter.toArray(sessions.entries());
     statsEntries := Iter.toArray(stats.entries());
     achievementsEntries := Iter.toArray(achievements.entries());
+    subscriptionsEntries := Iter.toArray(subscriptions.entries());
+    checkoutSessionsEntries := Iter.toArray(checkoutSessions.entries());
   };
   
   system func postupgrade() {
@@ -328,5 +618,7 @@ actor {
     sessionsEntries := [];
     statsEntries := [];
     achievementsEntries := [];
+    subscriptionsEntries := [];
+    checkoutSessionsEntries := [];
   };
 }
