@@ -16,8 +16,7 @@ const ExerciseControls = ({
   isPaused = false,
   currentSet = 1,
   currentRep = 0,
-  workoutTime = 0,
-  planExercise = null // Plan-specific exercise configuration
+  workoutTime = 0
 }) => {
   const [targetReps, setTargetReps] = useState(15);
   const [targetSets, setTargetSets] = useState(3);
@@ -27,48 +26,27 @@ const ExerciseControls = ({
   const [showSwitchModal, setShowSwitchModal] = useState(false);
   const [setDurationSeconds, setSetDurationSeconds] = useState(30);
 
-  // Initialize with plan configuration if available
-  useEffect(() => {
-    if (planExercise) {
-      if (planExercise.sets) setTargetSets(planExercise.sets);
-      if (planExercise.reps) {
-        // Handle both numeric reps and time-based (like "30s")
-        const repsValue = typeof planExercise.reps === 'string' && planExercise.reps.includes('s') 
-          ? parseInt(planExercise.reps.replace('s', '')) 
-          : planExercise.reps;
-        if (typeof repsValue === 'number') {
-          setTargetReps(repsValue);
-        }
-      }
-    }
-  }, [planExercise]);
-
   const exercises = [
     { id: 1, name: "Push-Ups", category: "Upper Body", difficulty: "Beginner", duration: "3-5 min" },
-  { id: 11, name: "Wide Push Ups", category: "Upper Body", difficulty: "Intermediate", duration: "3-5 min" },
-  { id: 12, name: "Narrow Push Ups", category: "Upper Body", difficulty: "Intermediate", duration: "3-5 min" },
-  { id: 13, name: "Diamond Push Ups", category: "Upper Body", difficulty: "Advanced", duration: "3-5 min" },
-  { id: 14, name: "Knee Push Ups", category: "Upper Body", difficulty: "Beginner", duration: "3-5 min" },
     { id: 2, name: "Squats", category: "Lower Body", difficulty: "Beginner", duration: "4-6 min" },
     { id: 3, name: "Lunges", category: "Lower Body", difficulty: "Intermediate", duration: "5-7 min" },
     { id: 4, name: "Burpees", category: "Full Body", difficulty: "Advanced", duration: "6-8 min" },
-    { id: 5, name: "Sit-Ups", category: "Core", difficulty: "Intermediate", duration: "3-5 min" },
+    { id: 5, name: "Mountain Climbers", category: "Cardio", difficulty: "Intermediate", duration: "3-5 min" },
     { id: 6, name: "Jumping Jacks", category: "Cardio", difficulty: "Beginner", duration: "2-4 min" },
     { id: 7, name: "High Knees", category: "Cardio", difficulty: "Beginner", duration: "2-3 min" },
     { id: 8, name: "Plank", category: "Core", difficulty: "Intermediate", duration: "1-3 min" },
-  { id: 9, name: "Side Plank", category: "Core", difficulty: "Intermediate", duration: "2-4 min" },
-
-    { id: 16, name: "Wall Sit", category: "Lower Body", difficulty: "Beginner", duration: "1-2 min" }
+    { id: 9, name: "Side Plank", category: "Core", difficulty: "Intermediate", duration: "2-4 min" },
+    { id: 10, name: "Wall Sit", category: "Lower Body", difficulty: "Beginner", duration: "1-2 min" }
   ];
 
   const currentExercise = selectedExercise || exercises?.[0];
 
   const isTimeBased = useMemo(() => {
     const timeBased = new Set([
-  'Plank',
-  'Side Plank',
-  'Wall Sit',
-  'Sit-Ups',
+      'Plank',
+      'Side Plank',
+      'Wall Sit',
+      'Mountain Climbers',
       'Jumping Jacks',
       'High Knees'
     ]);
@@ -140,16 +118,9 @@ const ExerciseControls = ({
         <div className="bg-muted rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-lg font-semibold text-card-foreground">{currentExercise?.name}</h3>
-            <div className="flex items-center space-x-2">
-              {planExercise && (
-                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                  Plan Config
-                </span>
-              )}
-              <span className={`text-sm font-medium ${getDifficultyColor(currentExercise?.difficulty)}`}>
-                {currentExercise?.difficulty}
-              </span>
-            </div>
+            <span className={`text-sm font-medium ${getDifficultyColor(currentExercise?.difficulty)}`}>
+              {currentExercise?.difficulty}
+            </span>
           </div>
           <div className="flex items-center space-x-4 text-sm text-muted-foreground">
             <span className="flex items-center space-x-1">
@@ -161,11 +132,6 @@ const ExerciseControls = ({
               <span>{currentExercise?.duration}</span>
             </span>
           </div>
-          {planExercise && (
-            <div className="mt-2 text-xs text-primary bg-primary/5 p-2 rounded">
-              <span className="font-medium">Plan Configuration:</span> {planExercise.sets} sets × {planExercise.reps} reps
-            </div>
-          )}
         </div>
       </div>
       {/* Workout Configuration */}
@@ -397,9 +363,7 @@ const ExerciseControls = ({
           <Icon name="RotateCcw" size={18} className="mr-2" />
           Switch Exercise
         </Button>
-        
-        {/* Next Exercise Button - Always visible when there's a next exercise */}
-        {hasNextExercise && (
+        {isWorkoutActive && hasNextExercise && (
           <Button variant="secondary" className="w-full" onClick={onNextExercise}>
             <Icon name="ChevronRight" size={18} className="mr-2" />
             Next Exercise

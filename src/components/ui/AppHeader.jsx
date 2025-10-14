@@ -175,22 +175,21 @@ const AppHeader = ({
             <span className="text-xl font-bold text-foreground hidden sm:block">
               ATOS fit
             </span>
+            {/* Get Premium Button beside ATOS fit text */}
+            {user && (
+              <button
+                onClick={() => navigate('/pricing')}
+                className="hidden sm:flex items-center ml-4 px-2 py-1 md:px-3 md:py-1.5 rounded-full font-medium text-xs bg-gradient-to-r from-[#FF8A00] to-[#E67B00] hover:from-[#E67B00] hover:to-[#CC6600] text-white shadow-md hover:shadow-lg focus:ring-2 focus:ring-orange-300 focus:ring-offset-2 border-none outline-none select-none transition-all duration-300 transform hover:scale-105"
+              >
+                <span className="hidden lg:inline">Get Premium</span>
+                <span className="lg:hidden">Premium</span>
+              </button>
+            )}
           </div>
         </div>
 
         {/* Right Section - Actions */}
         <div className="flex items-center space-x-2">
-          {/* Get Premium Button - Better positioned and responsive */}
-          {user && (
-            <button
-              onClick={() => navigate('/pricing')}
-              className="hidden sm:flex items-center px-3 py-1.5 md:px-4 md:py-2 rounded-full font-semibold text-sm md:text-base bg-gradient-to-r from-[#FF8A00] to-[#E67B00] hover:from-[#E67B00] hover:to-[#CC6600] text-white shadow-lg hover:shadow-xl focus:ring-2 focus:ring-orange-300 focus:ring-offset-2 border-none outline-none select-none transition-all duration-300 transform hover:scale-105"
-            >
-              <span className="hidden md:inline">Get Premium</span>
-              <span className="md:hidden">Premium</span>
-            </button>
-          )}
-          
           {/* Mobile Get Premium Button */}
           {user && (
             <button
