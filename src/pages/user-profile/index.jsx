@@ -266,7 +266,7 @@ const UserProfile = () => {
               <p className="text-[#232323] dark:text-white mb-6">You're currently on the free plan. Upgrade to unlock premium features!</p>
               <button
                 onClick={handleUpgrade}
-                className="px-6 py-3 bg-[#FF8A00] hover:bg-[#E67B00] text-black font-semibold rounded-xl transition-colors"
+                className="px-6 py-3 bg-gradient-to-r from-[#FF8A00] to-[#E67B00] hover:from-[#E67B00] hover:to-[#CC6600] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               >
                 Upgrade to Premium
               </button>
@@ -354,9 +354,14 @@ const UserProfile = () => {
             <div className="text-center mt-8">
               <button
                 onClick={() => navigate('/pricing')}
-                className="px-7 py-3 rounded-full font-bold text-lg bg-[#FF8A00] hover:bg-[#E67B00] text-white shadow focus:ring focus:ring-orange-300 border-none outline-none select-none transition-colors"
+                className="px-8 py-4 rounded-full font-bold text-lg bg-gradient-to-r from-[#FF8A00] via-[#FFB347] to-[#E67B00] hover:from-[#E67B00] hover:via-[#FF8A00] hover:to-[#FFB347] text-white shadow-xl hover:shadow-2xl focus:ring-4 focus:ring-orange-300 focus:ring-offset-2 border-none outline-none select-none transition-all duration-500 transform hover:scale-110 animate-pulse"
+                style={{
+                  background: 'linear-gradient(45deg, #FF8A00, #FFB347, #E67B00, #FF8A00)',
+                  backgroundSize: '300% 300%',
+                  animation: 'gradient-shift 3s ease infinite, pulse 2s infinite'
+                }}
               >
-                Get Premium
+                ✨ Get Premium ✨
               </button>
             </div>
           )}
@@ -373,7 +378,7 @@ const UserProfile = () => {
                 <p className="text-[#232323] dark:text-gray-200 text-sm mb-4">Enhanced features for serious fitness enthusiasts</p>
                 <button
                   onClick={handleUpgrade}
-                  className="w-full py-2 bg-[#FF8A00] hover:bg-[#E67B00] text-black font-semibold rounded-lg transition-colors"
+                  className="w-full py-3 bg-gradient-to-r from-[#FF8A00] to-[#E67B00] hover:from-[#E67B00] hover:to-[#CC6600] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 >
                   Choose Premium
                 </button>
@@ -384,7 +389,7 @@ const UserProfile = () => {
                 <p className="text-[#232323] dark:text-gray-200 text-sm mb-4">Unlimited access to all features</p>
                 <button
                   onClick={handleUpgrade}
-                  className="w-full py-2 bg-transparent border border-[#FF8A00] text-[#FF8A00] hover:bg-[#FF8A00] hover:text-black font-semibold rounded-lg transition-colors"
+                  className="w-full py-3 bg-transparent border-2 border-[#FF8A00] text-[#FF8A00] hover:bg-gradient-to-r hover:from-[#FF8A00] hover:to-[#E67B00] hover:text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 >
                   Choose Premium Plus
                 </button>

@@ -1,0 +1,86 @@
+/* Premium Button Animations */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes premium-shimmer {
+  0% { background-position: -100%; }
+  100% { background-position: 200%; }
+}
+
+@keyframes premium-glow {
+  0% { 
+    box-shadow: 0 0 20px rgba(255, 138, 0, 0.3);
+    filter: drop-shadow(0 0 8px rgba(255, 138, 0, 0.4));
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(255, 138, 0, 0.6);
+    filter: drop-shadow(0 0 16px rgba(255, 138, 0, 0.7));
+  }
+  100% { 
+    box-shadow: 0 0 20px rgba(255, 138, 0, 0.3);
+    filter: drop-shadow(0 0 8px rgba(255, 138, 0, 0.4));
+  }
+}
+
+@keyframes premium-pulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+/* Premium Button Classes */
+.premium-button {
+  background: linear-gradient(45deg, #FF8A00, #FFB347, #E67B00, #FF8A00);
+  background-size: 300% 300%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+.premium-button:hover {
+  animation: gradient-shift 1.5s ease infinite, premium-glow 2s ease infinite;
+}
+
+.premium-shimmer {
+  background: linear-gradient(90deg, #fff 25%, #ffe29e 50%, #ff9800 75%, #fff 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: premium-shimmer 2.2s linear infinite;
+}
+
+.premium-glow {
+  animation: premium-glow 1.8s infinite alternate;
+}
+
+.premium-pulse {
+  animation: premium-pulse 2s infinite;
+}
+
+/* Responsive Premium Button Styles */
+@media (max-width: 640px) {
+  .premium-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .premium-button {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .premium-button {
+    padding: 1.25rem 2.5rem;
+    font-size: 1.125rem;
+  }
+}
