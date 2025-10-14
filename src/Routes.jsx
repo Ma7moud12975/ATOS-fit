@@ -33,8 +33,8 @@ const Routes = () => {
           <ScrollToTop />
           <RouterRoutes>
             {/* Define your route here */}
-            {/* Make the dashboard the app root (public) */}
-            <Route path="/" element={<Dashboard />} />
+            {/* Make the landing page the app root */}
+            <Route path="/" element={<LandingPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/landing" element={<LandingPage />} />
             <Route path="/pricing" element={<PricingPage />} />
