@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useUserProfile, useWorkoutTracking, useUserStatistics } from '../../hooks/useICPDatabase';
 import AppHeader from '../../components/ui/AppHeader';
 import SidebarNavigation from '../../components/ui/SidebarNavigation';
 import WelcomeSection from './components/WelcomeSection';
@@ -11,62 +12,68 @@ import DashboardCharts from './components/DashboardCharts';
 import WaterMonitoringCard from './components/WaterMonitoringCard';
 import AdvancedAnalytics from './components/AdvancedAnalytics';
 import SubscriptionStatusCard from './components/SubscriptionStatusCard';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import UserTable from '../../components/UserTable';
+import DatabaseTest from '../../components/DatabaseTest';
 import paymentService from '../../utils/paymentService';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, principal } = useAuth();
+  const { profile, loading: profileLoading } = useUserProfile();
+  const { workouts } = useWorkoutTracking();
+  const { stats } = useUserStatistics();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('dark'); // Default to dark mode
   const [subscription, setSubscription] = useState(null);
   const [isLoadingSubscription, setIsLoadingSubscription] = useState(true);
 
-  // User data from localStorage
+  // User data from ICP profile or localStorage fallback
   const [user, setUser] = useState({ name: 'New User', email: '', profilePicture: '', fitnessLevel: 'Beginner', goals: [] });
-  // Allow skipping onboarding/login redirects in development by setting
-  // localStorage.setItem('SKIP_LOGIN','1') or VITE_SKIP_LOGIN=true in .env
+  
+  // Allow skipping onboarding/login redirects in development
   const skipLoginFlag = (typeof window !== 'undefined' && window.localStorage?.getItem('SKIP_LOGIN') === '1') || import.meta.env.VITE_SKIP_LOGIN === 'true' || import.meta.env.VITE_SKIP_LOGIN === '1';
+  
+  // Update user state from ICP profile
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        setUser({
-          name: parsedUser?.name || 'New User',
-          email: parsedUser?.email || '',
-          profilePicture: parsedUser?.profilePicture || '',
-          fitnessLevel: (parsedUser?.fitnessLevel || 'beginner')?.replace(/\b\w/g, c => c.toUpperCase()),
-          goals: parsedUser?.goals || []
-        });
-
-        // Load subscription data
-        const loadSubscription = async () => {
-          try {
-            await paymentService.init();
-            const subscriptionData = await paymentService.getUserSubscription(parsedUser.id);
-            if (subscriptionData.success) {
-              setSubscription(subscriptionData.subscription);
-            }
-          } catch (error) {
-            console.error('Error loading subscription:', error);
-          } finally {
-            setIsLoadingSubscription(false);
-          }
-        };
-
-        if (parsedUser.id) {
-          loadSubscription();
-        } else {
-          setIsLoadingSubscription(false);
-        }
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-        setIsLoadingSubscription(false);
-      }
+    if (profile) {
+      console.log('Loading user from ICP profile:', profile);
+      setUser({
+        name: profile.username || 'New User',
+        email: profile.email || '',
+        profilePicture: '',
+        fitnessLevel: (profile.activityLevel || 'beginner')?.replace(/\b\w/g, c => c.toUpperCase()),
+        goals: [profile.fitnessGoal] || []
+      });
+      
+      // Also update localStorage for backward compatibility
+      const userData = {
+        id: principal?.toString(),
+        name: profile.username,
+        email: profile.email,
+        fitnessLevel: profile.activityLevel,
+        goals: [profile.fitnessGoal]
+      };
+      localStorage.setItem('user', JSON.stringify(userData));
     } else {
-      setIsLoadingSubscription(false);
+      // Fallback to localStorage if profile not loaded yet
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          setUser({
+            name: parsedUser?.name || 'New User',
+            email: parsedUser?.email || '',
+            profilePicture: parsedUser?.profilePicture || '',
+            fitnessLevel: (parsedUser?.fitnessLevel || 'beginner')?.replace(/\b\w/g, c => c.toUpperCase()),
+            goals: parsedUser?.goals || []
+          });
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+        }
+      }
     }
-  }, []);
+  }, [profile, principal]);
 
   // Check if user needs to complete onboarding
   useEffect(() => {
@@ -75,51 +82,37 @@ const Dashboard = () => {
       return;
     }
 
-    const userData = localStorage.getItem('user');
-    if (!userData) {
-      // No user data, redirect to onboarding
-      navigate('/onboarding', { replace: true });
-      return;
-    }
-    
-    try {
-      const user = JSON.parse(userData);
-      // Check if user has completed basic onboarding (name and email)
-      if (!user.name || !user.email) {
+    // Wait for profile to load
+    if (!profileLoading) {
+      if (!profile) {
+        // No profile in ICP database, redirect to onboarding
+        console.log('No profile found, redirecting to onboarding');
         navigate('/onboarding', { replace: true });
       }
-    } catch (error) {
-      // Invalid user data, redirect to onboarding
-      navigate('/onboarding', { replace: true });
     }
-  }, [navigate]);
+  }, [profile, profileLoading, navigate, skipLoginFlag]);
 
 
 
-  // Mock progress data
-  const [progressData, setProgressData] = useState({
+  // Progress data from ICP statistics
+  const progressData = {
     weeklyGoal: 5,
-    completedWorkouts: 0,
-    currentStreak: 0,
-    totalWorkouts: 0,
-    caloriesBurned: 0,
+    completedWorkouts: stats?.totalWorkouts || 0,
+    currentStreak: stats?.currentStreak || 0,
+    totalWorkouts: stats?.totalWorkouts || 0,
+    caloriesBurned: stats?.totalCaloriesBurned || 0,
     weeklyCalorieGoal: 2000,
     achievements: []
-  });
-  useEffect(() => {
-    (async () => {
-      try {
-        const session = JSON.parse(localStorage.getItem('user') || 'null');
-        if (session?.id) {
-          const { db } = await import('../../utils/db');
-          const sessions = await db.sessions.where({ userId: session.id }).toArray();
-          const totalWorkouts = sessions.length;
-          const calories = 0; // placeholder: in real case compute
-          setProgressData(prev => ({ ...prev, totalWorkouts, caloriesBurned: calories, completedWorkouts: 0, currentStreak: 0 }));
-        }
-      } catch {}
-    })();
-  }, []);
+  };
+
+  // Show loading while profile loads
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <LoadingSpinner size="lg" text="Loading your dashboard..." />
+      </div>
+    );
+  }
 
   useEffect(() => {
     // Load theme from localStorage or default to dark
@@ -221,6 +214,16 @@ const Dashboard = () => {
             </div>
             <div>
               <WaterMonitoringCard />
+            </div>
+          </div>
+
+          {/* Database Connection Status */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div>
+              <UserTable />
+            </div>
+            <div>
+              <DatabaseTest />
             </div>
           </div>
 

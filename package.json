@@ -67,7 +67,12 @@
     "start": "vite",
     "dev": "vite",
     "build": "vite build --sourcemap",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "setup:local": "powershell -ExecutionPolicy Bypass -File scripts/setup-simple.ps1",
+    "setup:local:bash": "bash scripts/setup-local.sh",
+    "dfx:start": "wsl -d Ubuntu-24.04 bash -c 'cd \"/mnt/d/Gait Scope/ATOS NEW/ATOSfit DB/ATOS-fit\" && ~/.local/share/dfx/bin/dfx start --background'",
+    "dfx:stop": "wsl -d Ubuntu-24.04 bash -c 'cd \"/mnt/d/Gait Scope/ATOS NEW/ATOSfit DB/ATOS-fit\" && ~/.local/share/dfx/bin/dfx stop'",
+    "dfx:deploy": "wsl -d Ubuntu-24.04 bash -c 'cd \"/mnt/d/Gait Scope/ATOS NEW/ATOSfit DB/ATOS-fit\" && ~/.local/share/dfx/bin/dfx deploy'"
   },
   "eslintConfig": {
     "extends": [

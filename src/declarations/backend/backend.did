@@ -1,0 +1,239 @@
+type WorkoutRecord = 
+ record {
+   averageHeartRate: opt nat;
+   caloriesBurned: float64;
+   createdAt: Time;
+   duration: nat;
+   id: text;
+   userId: UserId;
+   workoutData: WorkoutJSON;
+ };
+type WorkoutPlan = 
+ record {
+   createdAt: Time;
+   description: text;
+   difficulty: text;
+   duration: nat;
+   equipment: vec text;
+   exercises: vec PlannedExercise;
+   id: text;
+   isSystem: bool;
+   name: text;
+   tags: vec text;
+   userId: opt UserId;
+ };
+type WorkoutJSON = 
+ record {
+   completionRate: float64;
+   exercises: vec ExerciseData;
+   overallFormScore: float64;
+   workoutName: text;
+ };
+type UserStatistics = 
+ record {
+   averageWorkoutDuration: float64;
+   currentStreak: nat;
+   favoriteExercise: opt text;
+   lastWorkoutDate: opt Time;
+   longestStreak: nat;
+   totalCaloriesBurned: float64;
+   totalDuration: nat;
+   totalWorkouts: nat;
+   userId: UserId;
+   weeklyAverage: float64;
+ };
+type UserProfile = 
+ record {
+   activityLevel: text;
+   age: nat;
+   createdAt: Time;
+   email: text;
+   fitnessGoal: text;
+   gender: text;
+   height: float64;
+   id: UserId;
+   preferences: UserPreferences;
+   updatedAt: Time;
+   username: text;
+   weight: float64;
+ };
+type UserPreferences = 
+ record {
+   dietaryRestrictions: vec text;
+   equipmentAvailable: vec text;
+   injuryHistory: vec text;
+   preferredWorkoutTime: opt text;
+   workoutReminders: bool;
+ };
+type UserId = principal;
+type UserContextData = 
+ record {
+   currentGoal: text;
+   currentWeight: float64;
+   injuryStatus: opt text;
+   recentWorkouts: nat;
+ };
+type UserAchievement = 
+ record {
+   achievementId: text;
+   id: text;
+   progress: float64;
+   unlockedAt: Time;
+   userId: UserId;
+ };
+type Time = int;
+type Result_5 = 
+ variant {
+   err: text;
+   ok: WorkoutPlan;
+ };
+type Result_4 = 
+ variant {
+   err: text;
+   ok: text;
+ };
+type Result_3 = 
+ variant {
+   err: text;
+   ok: FoodAnalysis;
+ };
+type Result_2 = 
+ variant {
+   err: text;
+   ok: WorkoutRecord;
+ };
+type Result_1 = 
+ variant {
+   err: text;
+   ok: ChatHistory;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok: UserProfile;
+ };
+type PlannedExercise = 
+ record {
+   duration: opt nat;
+   exerciseName: text;
+   instructions: text;
+   reps: nat;
+   restTime: nat;
+   sets: nat;
+   targetMuscles: vec text;
+ };
+type Message = 
+ record {
+   content: text;
+   role: text;
+   timestamp: Time;
+ };
+type FormError = 
+ record {
+   correction: text;
+   errorType: text;
+   severity: text;
+   timestamp: nat;
+ };
+type FoodJSON = 
+ record {
+   imageUrl: opt text;
+   items: vec FoodItem;
+   totalCalories: float64;
+   totalCarbs: float64;
+   totalFat: float64;
+   totalFiber: float64;
+   totalProtein: float64;
+ };
+type FoodItem = 
+ record {
+   calories: float64;
+   carbs: float64;
+   confidence: float64;
+   fat: float64;
+   fiber: float64;
+   name: text;
+   protein: float64;
+   quantity: float64;
+   unit: text;
+ };
+type FoodAnalysis = 
+ record {
+   createdAt: Time;
+   foodData: FoodJSON;
+   id: text;
+   mealType: text;
+   userId: UserId;
+ };
+type ExerciseData = 
+ record {
+   completedReps: nat;
+   formErrors: vec FormError;
+   name: text;
+   notes: opt text;
+   plannedReps: nat;
+   restTime: nat;
+   sets: nat;
+ };
+type ConversationJSON = 
+ record {
+   messages: vec Message;
+   summary: opt text;
+   userContext: UserContextData;
+ };
+type ChatHistory = 
+ record {
+   context: text;
+   conversation: ConversationJSON;
+   createdAt: Time;
+   id: text;
+   userId: UserId;
+ };
+type AchievementRequirement = 
+ record {
+   metric: text;
+   target: nat;
+   "type": text;
+ };
+type Achievement = 
+ record {
+   category: text;
+   description: text;
+   icon: text;
+   id: text;
+   name: text;
+   points: nat;
+   requirement: AchievementRequirement;
+ };
+service : {
+  clearTestData: (adminSecret: text) -> (Result_4);
+  createUserProfile: (username: text, email: text, weight: float64, height:
+   float64, age: nat, gender: text, activityLevel: text, fitnessGoal: 
+   text, preferences: UserPreferences) -> (Result);
+  createWorkoutPlan: (name: text, description: text, difficulty: text,
+   duration: nat, equipment: vec text, exercises: vec PlannedExercise, tags:
+   vec text) -> (Result_5);
+  deleteAllUserData: () -> (Result_4);
+  getAchievements: () -> (vec Achievement) query;
+  getChatById: (id: text) -> (opt ChatHistory) query;
+  getFoodAnalysisById: (id: text) -> (opt FoodAnalysis) query;
+  getTotalUsers: () -> (nat) query;
+  getUserAchievements: () -> (vec UserAchievement);
+  getUserChatHistory: (limit: nat) -> (vec ChatHistory);
+  getUserFoodAnalyses: (daysBack: nat) -> (vec FoodAnalysis);
+  getUserProfile: () -> (opt UserProfile);
+  getUserStatistics: () -> (UserStatistics);
+  getUserWorkoutPlans: () -> (vec WorkoutPlan);
+  getUserWorkouts: () -> (vec WorkoutRecord);
+  getWorkoutById: (id: text) -> (opt WorkoutRecord) query;
+  getWorkoutPlanById: (id: text) -> (opt WorkoutPlan) query;
+  getWorkoutPlans: () -> (vec WorkoutPlan) query;
+  recordFoodAnalysis: (foodData: FoodJSON, mealType: text) -> (Result_3);
+  recordWorkout: (workoutData: WorkoutJSON, duration: nat, caloriesBurned:
+   float64, averageHeartRate: opt nat) -> (Result_2);
+  saveChatHistory: (conversation: ConversationJSON, context: text) ->
+   (Result_1);
+  updateUserProfile: (weight: opt float64, height: opt float64, age: 
+   opt nat, activityLevel: opt text, fitnessGoal: opt text, preferences:
+   opt UserPreferences) -> (Result);
+}

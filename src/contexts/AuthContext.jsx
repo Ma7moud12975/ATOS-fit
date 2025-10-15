@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
   
   const II_URL = isProduction
     ? 'https://identity.ic0.app'
-    : `http://localhost:8000/?canisterId=${import.meta.env.VITE_INTERNET_IDENTITY_CANISTER_ID || 'rdmx6-jaaaa-aaaaa-aaadq-cai'}`;
+    : `http://localhost:8000/?canisterId=${import.meta.env.VITE_INTERNET_IDENTITY_CANISTER_ID || 'uzt4z-lp777-77774-qaabq-cai'}`;
 
   // Development-only fake auth: enabled by default in development to bypass login
   // - To explicitly disable, set VITE_DISABLE_FAKE_AUTH=true

@@ -1,29 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useUserProfile } from '../../hooks/useICPDatabase';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Icon from '../../components/AppIcon';
-import { updateUserProfile } from '../../utils/db';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import ErrorMessage from '../../components/ErrorMessage';
 
 const OnboardingScreen = () => {
   const navigate = useNavigate();
   const { isAuthenticated, principal } = useAuth();
+  const { profile, loading: profileLoading, error: profileError, createProfile } = useUserProfile();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('dark');
+  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
+    fullName: '',
     email: '',
     age: 30,
     height: 175,
     weight: 70,
-    fitnessLevel: 'intermediate',
-    goals: [],
+    gender: 'Male',
+    activityLevel: 'Moderate - Exercise 3-5 days/week',
+    primaryGoals: [],
+    preferredWorkoutTime: 'Morning (6am - 12pm)',
+    workoutReminders: true,
   });
 
-  const totalSteps = 2;
+  const totalSteps = 3;
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -37,20 +44,12 @@ const OnboardingScreen = () => {
       return;
     }
 
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      try {
-        const user = JSON.parse(userData);
-        if (user.name && user.email) {
-          navigate('/dashboard', { replace: true });
-          return;
-        }
-        setFormData(prev => ({ ...prev, ...user }));
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-      }
+    // Check if user already has a profile in ICP database
+    if (!profileLoading && profile) {
+      console.log('User already has profile, redirecting to dashboard');
+      navigate('/dashboard', { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, profile, profileLoading, navigate]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -79,37 +78,56 @@ const OnboardingScreen = () => {
 
   const handleComplete = async () => {
     setIsLoading(true);
+    setError(null);
+    
     try {
-      const userProfile = {
-        ...formData,
-        principalId: principal?.toString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+      // Create profile in ICP database with new structure
+      const result = await createProfile({
+        fullName: formData.fullName,
+        email: formData.email || null, // Optional field
+        age: formData.age,
+        height: formData.height,
+        weight: formData.weight,
+        gender: formData.gender,
+        activityLevel: formData.activityLevel,
+        primaryGoals: formData.primaryGoals,
+        preferredWorkoutTime: formData.preferredWorkoutTime,
+        workoutReminders: formData.workoutReminders,
+      });
 
-      localStorage.setItem('user', JSON.stringify({ id: principal?.toString(), ...userProfile }));
-      await updateUserProfile(principal?.toString(), userProfile);
-      navigate('/dashboard', { replace: true });
+      if (result.success) {
+        console.log('Profile created successfully in ICP database');
+        
+        // Also save to localStorage for backward compatibility
+        const userProfile = {
+          id: principal?.toString(),
+          principalId: principal?.toString(),
+          fullName: formData.fullName,
+          email: formData.email,
+          ...formData,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem('user', JSON.stringify(userProfile));
+        
+        navigate('/dashboard', { replace: true });
+      } else {
+        setError(result.error || 'Failed to create profile');
+      }
     } catch (error) {
       console.error('Failed to save user profile:', error);
-      navigate('/dashboard', { replace: true });
+      setError(error.message || 'An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fitnessLevelOptions = [
-    { value: 'beginner', label: 'Beginner - New to fitness' },
-    { value: 'intermediate', label: 'Intermediate - Some experience' },
-    { value: 'advanced', label: 'Advanced - Regular exerciser' },
-  ];
-
   const goalOptions = [
-    { value: 'weight_loss', label: 'Weight Loss' },
-    { value: 'muscle_gain', label: 'Muscle Gain' },
-    { value: 'endurance', label: 'Build Endurance' },
-    { value: 'strength', label: 'Increase Strength' },
-    { value: 'general_fitness', label: 'General Fitness' },
+    { value: 'Weight Loss', label: 'Weight Loss' },
+    { value: 'Muscle Gain', label: 'Muscle Gain' },
+    { value: 'Build Endurance', label: 'Build Endurance' },
+    { value: 'Increase Strength', label: 'Increase Strength' },
+    { value: 'General Fitness', label: 'General Fitness' },
   ];
 
   const renderStep = () => {
@@ -123,9 +141,9 @@ const OnboardingScreen = () => {
             </div>
             <div className="space-y-4">
               <Input
-                label="Full Name"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                label="Full Name*"
+                value={formData.fullName}
+                onChange={(e) => handleInputChange('fullName', e.target.value)}
                 placeholder="Enter your full name"
                 required
               />
@@ -182,27 +200,78 @@ const OnboardingScreen = () => {
                 />
               </div>
               <Select
-                label="Fitness Level"
-                value={formData.fitnessLevel}
-                onChange={(value) => handleInputChange('fitnessLevel', value)}
-                options={fitnessLevelOptions}
-                placeholder="Select your fitness level"
+                label="Gender"
+                value={formData.gender}
+                onChange={(value) => handleInputChange('gender', value)}
+                options={[
+                  { value: 'Male', label: 'Male' },
+                  { value: 'Female', label: 'Female' },
+                  { value: 'Other', label: 'Other' },
+                ]}
+                placeholder="Select your gender"
               />
+              <Select
+                label="Activity Level"
+                value={formData.activityLevel}
+                onChange={(value) => handleInputChange('activityLevel', value)}
+                options={[
+                  { value: 'Sedentary - Little to no exercise', label: 'Sedentary - Little to no exercise' },
+                  { value: 'Light - Exercise 1-2 days/week', label: 'Light - Exercise 1-2 days/week' },
+                  { value: 'Moderate - Exercise 3-5 days/week', label: 'Moderate - Exercise 3-5 days/week' },
+                  { value: 'Active - Exercise 6-7 days/week', label: 'Active - Exercise 6-7 days/week' },
+                  { value: 'Very Active - Intense exercise daily', label: 'Very Active - Intense exercise daily' },
+                ]}
+                placeholder="Select your activity level"
+              />
+            </div>
+          </div>
+        );
+        
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Goals & Preferences</h2>
+              <p className="text-muted-foreground">Help us personalize your fitness journey.</p>
+            </div>
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-3">Primary Goal</label>
+                <label className="block text-sm font-medium text-foreground mb-3">Primary Goals (Select at least one)</label>
                 <div className="space-y-2">
                   {goalOptions.map((goal) => (
                     <label key={goal.value} className="flex items-center space-x-3 p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
                       <input
                         type="checkbox"
-                        checked={formData.goals.includes(goal.value)}
-                        onChange={(e) => handleArrayChange('goals', goal.value, e.target.checked)}
+                        checked={formData.primaryGoals.includes(goal.value)}
+                        onChange={(e) => handleArrayChange('primaryGoals', goal.value, e.target.checked)}
                         className="w-4 h-4 text-primary border-border rounded focus:ring-primary"
                       />
                       <span className="text-foreground">{goal.label}</span>
                     </label>
                   ))}
                 </div>
+              </div>
+              <Select
+                label="Preferred Workout Time"
+                value={formData.preferredWorkoutTime}
+                onChange={(value) => handleInputChange('preferredWorkoutTime', value)}
+                options={[
+                  { value: 'Morning (6am - 12pm)', label: 'Morning (6am - 12pm)' },
+                  { value: 'Afternoon (12pm - 6pm)', label: 'Afternoon (12pm - 6pm)' },
+                  { value: 'Evening (6pm - 12am)', label: 'Evening (6pm - 12am)' },
+                ]}
+                placeholder="When do you prefer to workout?"
+              />
+              <div>
+                <label className="flex items-center space-x-3 p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={formData.workoutReminders}
+                    onChange={(e) => handleInputChange('workoutReminders', e.target.checked)}
+                    className="w-4 h-4 text-primary border-border rounded focus:ring-primary"
+                  />
+                  <span className="text-foreground">Enable workout reminders</span>
+                </label>
               </div>
             </div>
           </div>
@@ -216,13 +285,24 @@ const OnboardingScreen = () => {
   const isStepValid = () => {
     switch (currentStep) {
       case 1:
-        return formData.name.trim(); // Only name is required, email is optional
+        return formData.fullName.trim(); // Only full name is required, email is optional
       case 2:
-        return formData.age && formData.height && formData.weight && formData.fitnessLevel && formData.goals.length > 0;
+        return formData.age && formData.height && formData.weight && formData.gender && formData.activityLevel;
+      case 3:
+        return formData.primaryGoals.length > 0;
       default:
         return false;
     }
   };
+
+  // Show loading while checking profile
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <LoadingSpinner size="lg" text="Loading..." />
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen bg-background flex items-center justify-center p-4 ${
@@ -245,6 +325,7 @@ const OnboardingScreen = () => {
 
         {/* Form Card */}
         <div className="bg-card border border-border rounded-xl shadow-lg p-8">
+          {error && <ErrorMessage error={error} className="mb-6" />}
           {renderStep()}
           
           {/* Navigation Buttons */}
@@ -290,7 +371,7 @@ const OnboardingScreen = () => {
               const minimalUserData = {
                 id: principal?.toString(),
                 principalId: principal?.toString(),
-                name: formData.name || 'New User',
+                fullName: formData.fullName || 'New User',
                 email: formData.email || '',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),

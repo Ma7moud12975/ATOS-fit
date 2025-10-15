@@ -20,6 +20,13 @@ export default defineConfig({
     }
   },
   plugins: [tsconfigPaths(), react(), tagger()],
+  define: {
+    // Define process.env for browser compatibility
+    'process.env': {},
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+    // Add other environment variables that might be needed
+    global: 'globalThis',
+  },
   server: {
     // Allow overriding port via environment variables for local development.
     // Use VITE_PORT or PORT to change the dev server port without editing this file.
