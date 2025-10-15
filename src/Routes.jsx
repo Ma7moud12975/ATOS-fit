@@ -41,7 +41,7 @@ const Routes = () => {
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/ai-assistant-food-scanner" element={<AIAssistantFoodScanner />} />
-            <Route path="/ai-chat" element={<AIChatPage />} />
+            <Route path="/ai-chat" element={<AIAssistantFoodScanner chatOnly={true} />} />
             <Route path="/food-scanner" element={<FoodScannerPage />} />
             <Route path="/login-screen" element={<LoginScreen />} />
             {/* Keep a /dashboard route as alias (public) */}

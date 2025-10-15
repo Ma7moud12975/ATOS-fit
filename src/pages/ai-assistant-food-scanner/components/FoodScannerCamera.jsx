@@ -109,8 +109,8 @@ const FoodScannerCamera = ({ onCapture, onUpload, isScanning = false }) => {
             {/* Viewfinder Overlay */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className={`border-2 rounded-xl ${
-                scanMode === 'food' ?'w-64 h-64 border-primary' :'w-48 h-48 border-success'
-              } bg-transparent`}>
+                scanMode === 'food' ? 'w-64 h-64 border-primary' : 'w-48 h-48 border-success'
+              } bg-transparent ${isScanning ? 'premium-glow' : ''}`}>
                 <div className="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-white rounded-tl-lg"></div>
                 <div className="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-white rounded-tr-lg"></div>
                 <div className="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-white rounded-bl-lg"></div>
@@ -120,12 +120,18 @@ const FoodScannerCamera = ({ onCapture, onUpload, isScanning = false }) => {
 
             {/* Scanning Animation */}
             {isScanning && (
-              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                <div className="bg-background/90 rounded-lg px-4 py-2 flex items-center space-x-2">
-                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-sm font-medium">
-                    {scanMode === 'food' ? 'Analyzing food...' : 'Scanning QR code...'}
-                  </span>
+              <div className="absolute inset-0 z-20">
+                <div className="atos-scan-overlay"></div>
+                <div className="atos-scan-lines"></div>
+                <div className="atos-radar-pulse"></div>
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <div className="flex flex-col items-center">
+                    <div className="atos-loader-ring mb-2"></div>
+                    <span className="text-sm font-semibold text-primary-foreground premium-shimmer">
+                      {scanMode === 'food' ? 'Analyzing food...' : 'Scanning QR code...'}
+                    </span>
+                    <div className="atos-shimmer-bar mt-2"></div>
+                  </div>
                 </div>
               </div>
             )}

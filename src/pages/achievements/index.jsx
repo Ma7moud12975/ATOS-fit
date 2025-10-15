@@ -79,7 +79,7 @@ const AchievementsPage = () => {
         onLogout={()=>{}}
       />
       <SidebarNavigation isOpen={isSidebarOpen} onClose={handleSidebarClose} />
-      <main className={`pt-16 min-h-screen transition-all duration-300 ${isSidebarOpen ? 'lg:pl-72' : ''}`}>
+      <main className={"pt-16 lg:pl-72 min-h-screen transition-all duration-300"}>
         <div className="p-4 lg:p-6 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>

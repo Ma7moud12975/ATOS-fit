@@ -24,6 +24,49 @@ const CameraFeed = ({
   const [pushupCount, setPushupCount] = useState(0);
   const [postureStatus, setPostureStatus] = useState('unknown');
   const [isPoseDetectionReady, setIsPoseDetectionReady] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef(null);
+
+  // Fullscreen helpers
+  const enterFullscreen = async () => {
+    const el = containerRef.current;
+    if (!el) return;
+    try {
+      if (el.requestFullscreen) {
+        await el.requestFullscreen();
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen();
+      } else if (el.msRequestFullscreen) {
+        el.msRequestFullscreen();
+      }
+      setIsFullscreen(true);
+    } catch (e) {
+      console.error('Failed to enter fullscreen:', e);
+    }
+  };
+
+  const exitFullscreen = async () => {
+    try {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+      setIsFullscreen(false);
+    } catch (e) {
+      console.error('Failed to exit fullscreen:', e);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      enterFullscreen();
+    } else {
+      exitFullscreen();
+    }
+  };
 
   // Normalize exercise name
   const isPushUpsSelected = (() => {
@@ -220,17 +263,40 @@ const CameraFeed = ({
 
     const canvas = canvasRef?.current;
     const video = videoRef?.current;
+    const container = containerRef?.current;
     const ctx = canvas?.getContext('2d');
 
-    canvas.width = video?.videoWidth || 640;
-    canvas.height = video?.videoHeight || 480;
+    // Draw overlay to match displayed size, not intrinsic video size
+    const containerW = container?.clientWidth || video?.clientWidth || video?.videoWidth || 640;
+    const containerH = container?.clientHeight || video?.clientHeight || video?.videoHeight || 480;
 
-    console.log('🎨 Canvas dimensions:', canvas.width, 'x', canvas.height);
+    canvas.width = containerW;
+    canvas.height = containerH;
 
-    // Use MediaPipe's built-in drawing function if available
+    // Compute displayed video rectangle inside container for object-fit
+    const vw = video?.videoWidth || 640;
+    const vh = video?.videoHeight || 480;
+    const fitContain = false; // use cover mapping to avoid black bars in fullscreen
+    const scale = fitContain 
+      ? Math.min(containerW / vw, containerH / vh)
+      : Math.max(containerW / vw, containerH / vh);
+    const displayW = vw * scale;
+    const displayH = vh * scale;
+    const offsetX = (containerW - displayW) / 2;
+    const offsetY = (containerH - displayH) / 2;
+
+    console.log('🎨 Canvas(container) dimensions:', containerW, 'x', containerH, 'display rect:', displayW, 'x', displayH, 'offset', offsetX, offsetY);
+
+    // Use MediaPipe's built-in drawing function with transform mapping
     if (poseDetectionRef.current && poseResults) {
-      console.log('🎨 Calling poseDetection.drawPoseOverlay...');
-      poseDetectionRef.current.drawPoseOverlay(ctx, poseResults, canvas.width, canvas.height);
+      console.log('🎨 Calling poseDetection.drawPoseOverlay with transform...');
+      poseDetectionRef.current.drawPoseOverlay(
+        ctx,
+        poseResults,
+        containerW,
+        containerH,
+        { scaleX: displayW, scaleY: displayH, offsetX, offsetY }
+      );
     }
   };
 
@@ -252,6 +318,43 @@ const CameraFeed = ({
     }
   }, [selectedExercise]);
 
+  // Handle fullscreen functionality
+  useEffect(() => {
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+
+    if (isFullscreen) {
+      document.addEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isFullscreen]);
+
+  // Sync isFullscreen state with browser Fullscreen API
+  useEffect(() => {
+    const sync = () => {
+      const active = !!document.fullscreenElement || !!document.webkitFullscreenElement || !!document.msFullscreenElement;
+      setIsFullscreen(active);
+    };
+    document.addEventListener('fullscreenchange', sync);
+    document.addEventListener('webkitfullscreenchange', sync);
+    document.addEventListener('msfullscreenchange', sync);
+    return () => {
+      document.removeEventListener('fullscreenchange', sync);
+      document.removeEventListener('webkitfullscreenchange', sync);
+      document.removeEventListener('msfullscreenchange', sync);
+    };
+  }, []);
+
   if (error) {
     return (
       <div className="relative w-full h-full bg-muted rounded-lg flex items-center justify-center">
@@ -268,7 +371,10 @@ const CameraFeed = ({
   }
 
   return (
-    <div className="relative w-full h-full bg-black rounded-lg overflow-hidden">
+    <div 
+      ref={containerRef}
+      className={`relative w-full h-full bg-black rounded-lg overflow-hidden ${isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''}`}
+    >
       {/* Loading State */}
       {isLoading &&
       <div className="absolute inset-0 bg-muted rounded-lg flex items-center justify-center z-10">
@@ -284,7 +390,8 @@ const CameraFeed = ({
         autoPlay
         playsInline
         muted
-        className="w-full h-full object-cover"
+        className={`w-full h-full ${isFullscreen ? 'object-cover' : 'object-cover'}`}
+        style={{ transform: 'scaleX(-1)' }}
         onLoadedMetadata={drawPoseOverlay} />
 
       {/* Pose Overlay Canvas */}
@@ -293,7 +400,8 @@ const CameraFeed = ({
         ref={canvasRef}
         className="absolute inset-0 w-full h-full pointer-events-none"
         style={{ 
-          zIndex: 10
+          zIndex: 10,
+          transform: 'scaleX(-1)'
         }} />
 
       }
@@ -306,6 +414,15 @@ const CameraFeed = ({
           className="bg-black/50 hover:bg-black/70 text-white border-white/20">
 
           <Icon name={showPoseOverlay ? "Eye" : "EyeOff"} size={18} />
+        </Button>
+        
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={toggleFullscreen}
+          className="bg-black/50 hover:bg-black/70 text-white border-white/20">
+
+          <Icon name={isFullscreen ? "Minimize2" : "Maximize2"} size={18} />
         </Button>
         
         <Button
