@@ -7,7 +7,6 @@ import Array "mo:base/Array";
 import Iter "mo:base/Iter";
 import Float "mo:base/Float";
 import Nat "mo:base/Nat";
-import Int "mo:base/Int";
 import Option "mo:base/Option";
 import Types "./Types";
 
@@ -29,8 +28,8 @@ actor ATOSfitDB {
   private stable var nextFoodId : Nat = 1;
   private stable var nextUserAchievementId : Nat = 1;
   private stable var nextPlanId : Nat = 1;
-  private stable var nextExerciseAchievementId : Nat = 1;
-  private stable var nextUserExerciseProgressId : Nat = 1;
+  private stable var _nextExerciseAchievementId : Nat = 1;
+  private stable var _nextUserExerciseProgressId : Nat = 1;
 
   // ============ HASHMAPS ============
   private var userProfiles = HashMap.HashMap<Types.UserId, Types.UserProfile>(10, Principal.equal, Principal.hash);
@@ -129,7 +128,7 @@ actor ATOSfitDB {
     userProfiles.get(msg.caller)
   };
 
-  public shared(msg) func updateUserProfile(
+  public shared(_msg) func updateUserProfile(
     fullName: ?Text,
     email: ??Text,
     age: ?Nat,
