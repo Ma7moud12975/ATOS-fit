@@ -77,7 +77,7 @@ const ExerciseCard = ({ exercise }) => {
   const photoFile = normalizedPhotoMap[normalized] || null;
 
   return (
-    <div className="bg-card border border-border rounded-[20px] p-5 shadow-elevation-1 hover:shadow-elevation-2 transition-all duration-300 group">
+    <div className="bg-card border border-border rounded-[20px] p-4 sm:p-5 shadow-elevation-1 hover:shadow-elevation-2 transition-all duration-300 group">
       <div className="mb-4">
         <div className="rounded-lg overflow-hidden bg-white">
           <img
@@ -87,23 +87,23 @@ const ExerciseCard = ({ exercise }) => {
               || '/assets/images/no_image.png'
             }
             alt={exercise?.name}
-            className="w-full h-44 object-contain bg-white"
+            className="w-full h-52 sm:h-44 md:h-48 object-contain bg-white"
             loading="lazy"
           />
         </div>
       </div>
 
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-card-foreground text-xl">
+        <h3 className="font-semibold text-card-foreground text-xl sm:text-lg md:text-xl">
           {exercise?.name}
         </h3>
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getDifficultyColor(exercise?.difficulty)}`}>
+        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs sm:text-sm font-medium border ${getDifficultyColor(exercise?.difficulty)}`}>
           {exercise?.difficulty}
         </span>
       </div>
 
       <div className="mb-4">
-        <p className="text-sm text-muted-foreground">{exercise?.targetMuscles}</p>
+        <p className="text-sm md:text-base text-muted-foreground">{exercise?.targetMuscles}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-3">

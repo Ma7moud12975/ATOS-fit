@@ -333,15 +333,16 @@ const ExerciseLibrary = () => {
       <main className="pt-16 lg:pl-72 min-h-screen">
         <div className="p-4 lg:p-6 max-w-7xl mx-auto">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Exercise Library</h1>
-              <p className="text-muted-foreground mt-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Exercise Library</h1>
+              <p className="text-sm sm:text-base text-muted-foreground mt-1">
                 Browse exercises, preset plans, or create your own workout plans
               </p>
             </div>
             <Button
               variant="outline"
+              size="sm"
               onClick={() => navigate('/dashboard')}
               iconName="ArrowLeft"
               iconPosition="left"
@@ -351,39 +352,39 @@ const ExerciseLibrary = () => {
           </div>
 
           {/* Tab Navigation */}
-          <div className="bg-card border border-border rounded-lg p-1 mb-6">
-            <div className="flex">
+          <div className="bg-card border border-border rounded-lg p-2 sm:p-1 mb-6">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setActiveTab('exercises')}
-                className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex-1 min-w-[120px] px-3 py-2 rounded-md text-base sm:text-sm font-medium transition-colors ${
                   activeTab === 'exercises' 
                     ? 'bg-primary text-primary-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <Icon name="Dumbbell" size={16} className="mr-2 inline" />
+                <Icon name="Dumbbell" size={20} className="mr-2 inline" />
                 Exercises
               </button>
               <button
                 onClick={() => setActiveTab('plans')}
-                className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex-1 min-w-[120px] px-3 py-2 rounded-md text-base sm:text-sm font-medium transition-colors ${
                   activeTab === 'plans' 
                     ? 'bg-primary text-primary-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <Icon name="Calendar" size={16} className="mr-2 inline" />
+                <Icon name="Calendar" size={20} className="mr-2 inline" />
                 Preset Plans
               </button>
               <button
                 onClick={() => setActiveTab('create')}
-                className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex-1 min-w-[120px] px-3 py-2 rounded-md text-base sm:text-sm font-medium transition-colors ${
                   activeTab === 'create' 
                     ? 'bg-primary text-primary-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <Icon name="Plus" size={16} className="mr-2 inline" />
+                <Icon name="Plus" size={20} className="mr-2 inline" />
                 Create Plan
               </button>
             </div>
@@ -393,24 +394,24 @@ const ExerciseLibrary = () => {
           {activeTab === 'exercises' && (
             <>
               {/* Search and Filter */}
-              <div className="bg-card border border-border rounded-lg p-6 mb-6">
+              <div className="bg-card border border-border rounded-lg p-4 sm:p-6 mb-6">
                 <div className="flex flex-col lg:flex-row gap-4">
                   {/* Search */}
                   <div className="flex-1">
                     <div className="relative">
-                      <Icon name="Search" size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                      <Icon name="Search" size={22} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                       <input
                         type="text"
                         placeholder="Search exercises by name, muscles, or description..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-border rounded-lg bg-background text-card-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full pl-10 pr-4 py-3 border border-border rounded-lg bg-background text-card-foreground text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     </div>
                   </div>
                   
                   {/* Difficulty Filter */}
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center flex-wrap gap-2">
                     <Button
                       variant={filter === 'all' ? 'default' : 'outline'}
                       size="sm"

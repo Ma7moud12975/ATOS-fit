@@ -669,23 +669,23 @@ User message: ${message}`
                 /* Chat Assistant (chat-only mode) */
                 (<div className="bg-card border border-border rounded-xl min-h-[60vh] sm:min-h-[65vh] md:min-h-[70vh] lg:min-h-[75vh] xl:min-h-[78vh] flex flex-col">
                   {/* Chat Header */}
-                  <div className="p-4 border-b border-border">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                        <Icon name="Bot" size={20} color="white" />
+                  <div className="p-3 sm:p-4 border-b border-border">
+                    <div className="flex items-center flex-wrap gap-3">
+                      <div className="w-12 h-12 md:w-10 md:h-10 bg-primary rounded-full flex items-center justify-center">
+                        <Icon name="Bot" size={22} color="white" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-card-foreground">ATOS fit</h3>
-                        <p className="text-sm text-muted-foreground flex items-center space-x-1">
-                          <div className="w-2 h-2 bg-success rounded-full"></div>
+                      <div className="min-w-[140px]">
+                        <h3 className="font-semibold text-card-foreground text-base sm:text-lg">ATOS fit</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
+                          <div className="w-2.5 h-2.5 bg-success rounded-full"></div>
                           <span>Online</span>
                         </p>
                       </div>
-                      <div className="ml-auto flex items-center gap-2">
-                        <Button size="sm" variant="outline" onClick={() => setShowChatHistory(v => !v)} iconName="History" iconPosition="left">
+                      <div className="ml-auto w-full md:w-auto flex items-center gap-2 mt-2 md:mt-0">
+                        <Button size="sm" variant="outline" onClick={() => setShowChatHistory(v => !v)} iconName="History" iconPosition="left" className="h-10 px-4 md:h-9 md:px-3">
                           {showChatHistory ? 'Hide History' : 'Show History'}
                         </Button>
-                        <Button size="sm" onClick={handleNewChat} iconName="Plus" iconPosition="left">
+                        <Button size="sm" onClick={handleNewChat} iconName="Plus" iconPosition="left" className="h-10 px-4 md:h-9 md:px-3">
                           New Chat
                         </Button>
                       </div>
@@ -694,7 +694,7 @@ User message: ${message}`
                   {/* Chat Messages */}
                   <div 
                     ref={chatContainerRef}
-                    className="flex-1 overflow-y-auto p-4 space-y-4"
+                    className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4"
                   >
                     {messages?.map((message) => (
                       <ChatMessage
@@ -716,23 +716,23 @@ User message: ${message}`
                 /* Chat Assistant */
                 (<div className="bg-card border border-border rounded-xl min-h-[60vh] sm:min-h-[65vh] md:min-h-[70vh] lg:min-h-[75vh] xl:min-h-[78vh] flex flex-col">
                   {/* Chat Header */}
-                  <div className="p-4 border-b border-border">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                        <Icon name="Bot" size={20} color="white" />
+                  <div className="p-3 sm:p-4 border-b border-border">
+                    <div className="flex items-center flex-wrap gap-3">
+                      <div className="w-12 h-12 md:w-10 md:h-10 bg-primary rounded-full flex items-center justify-center">
+                        <Icon name="Bot" size={22} color="white" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-card-foreground">ATOS fit</h3>
-                        <p className="text-sm text-muted-foreground flex items-center space-x-1">
-                          <div className="w-2 h-2 bg-success rounded-full"></div>
+                      <div className="min-w-[140px]">
+                        <h3 className="font-semibold text-card-foreground text-base sm:text-lg">ATOS fit</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
+                          <div className="w-2.5 h-2.5 bg-success rounded-full"></div>
                           <span>Online</span>
                         </p>
                       </div>
-                      <div className="ml-auto flex items-center gap-2">
-                        <Button size="sm" variant="outline" onClick={() => setShowChatHistory(v => !v)} iconName="History" iconPosition="left">
+                      <div className="ml-auto w-full md:w-auto flex items-center gap-2 mt-2 md:mt-0">
+                        <Button size="sm" variant="outline" onClick={() => setShowChatHistory(v => !v)} iconName="History" iconPosition="left" className="h-10 px-4 md:h-9 md:px-3">
                           {showChatHistory ? 'Hide History' : 'Show History'}
                         </Button>
-                        <Button size="sm" onClick={handleNewChat} iconName="Plus" iconPosition="left">
+                        <Button size="sm" onClick={handleNewChat} iconName="Plus" iconPosition="left" className="h-10 px-4 md:h-9 md:px-3">
                           New Chat
                         </Button>
                       </div>
@@ -741,7 +741,7 @@ User message: ${message}`
                   {/* Chat Messages */}
                   <div 
                     ref={chatContainerRef}
-                    className="flex-1 overflow-y-auto p-4 space-y-4"
+                    className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4"
                   >
                     {messages?.map((message) => (
                       <ChatMessage
