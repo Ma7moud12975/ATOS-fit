@@ -36,36 +36,47 @@ type UserStatistics =
    favoriteExercise: opt text;
    lastWorkoutDate: opt Time;
    longestStreak: nat;
+   monthlyCaloriesBurned: float64;
+   thisMonthWorkouts: nat;
+   thisWeekWorkouts: nat;
    totalCaloriesBurned: float64;
    totalDuration: nat;
    totalWorkouts: nat;
    userId: UserId;
    weeklyAverage: float64;
+   weeklyCalorieGoal: float64;
+   weeklyCaloriesBurned: float64;
+   weeklyWorkoutGoal: nat;
  };
 type UserProfile = 
  record {
    activityLevel: text;
    age: nat;
    createdAt: Time;
-   email: text;
-   fitnessGoal: text;
+   email: opt text;
+   fullName: text;
    gender: text;
    height: float64;
    id: UserId;
-   preferences: UserPreferences;
+   preferredWorkoutTime: text;
+   primaryGoals: vec text;
    updatedAt: Time;
-   username: text;
    weight: float64;
- };
-type UserPreferences = 
- record {
-   dietaryRestrictions: vec text;
-   equipmentAvailable: vec text;
-   injuryHistory: vec text;
-   preferredWorkoutTime: opt text;
    workoutReminders: bool;
  };
 type UserId = principal;
+type UserExerciseProgress = 
+ record {
+   allTimeCount: nat;
+   currentLevel: nat;
+   exerciseName: text;
+   id: text;
+   lastUpdated: Time;
+   monthlyCount: nat;
+   unlockedLevels: vec nat;
+   userId: UserId;
+   weeklyCount: nat;
+ };
 type UserContextData = 
  record {
    currentGoal: text;
@@ -175,6 +186,14 @@ type ExerciseData =
    restTime: nat;
    sets: nat;
  };
+type ExerciseAchievement = 
+ record {
+   category: text;
+   createdAt: Time;
+   exerciseName: text;
+   id: text;
+   levels: vec AchievementLevel;
+ };
 type ConversationJSON = 
  record {
    messages: vec Message;
@@ -195,6 +214,16 @@ type AchievementRequirement =
    target: nat;
    "type": text;
  };
+type AchievementLevel = 
+ record {
+   description: text;
+   icon: text;
+   level: nat;
+   name: text;
+   points: nat;
+   target: nat;
+   timeframe: text;
+ };
 type Achievement = 
  record {
    category: text;
@@ -207,19 +236,22 @@ type Achievement =
  };
 service : {
   clearTestData: (adminSecret: text) -> (Result_4);
-  createUserProfile: (username: text, email: text, weight: float64, height:
-   float64, age: nat, gender: text, activityLevel: text, fitnessGoal: 
-   text, preferences: UserPreferences) -> (Result);
+  createUserProfile: (fullName: text, email: opt text, age: nat, height:
+   float64, weight: float64, gender: text, activityLevel: text, primaryGoals:
+   vec text, preferredWorkoutTime: text, workoutReminders: bool) -> (
+   Result);
   createWorkoutPlan: (name: text, description: text, difficulty: text,
    duration: nat, equipment: vec text, exercises: vec PlannedExercise, tags:
    vec text) -> (Result_5);
   deleteAllUserData: () -> (Result_4);
   getAchievements: () -> (vec Achievement) query;
   getChatById: (id: text) -> (opt ChatHistory) query;
+  getExerciseAchievements: () -> (vec ExerciseAchievement) query;
   getFoodAnalysisById: (id: text) -> (opt FoodAnalysis) query;
   getTotalUsers: () -> (nat) query;
   getUserAchievements: () -> (vec UserAchievement);
   getUserChatHistory: (limit: nat) -> (vec ChatHistory);
+  getUserExerciseProgress: () -> (vec UserExerciseProgress);
   getUserFoodAnalyses: (daysBack: nat) -> (vec FoodAnalysis);
   getUserProfile: () -> (opt UserProfile);
   getUserStatistics: () -> (UserStatistics);
@@ -233,7 +265,8 @@ service : {
    float64, averageHeartRate: opt nat) -> (Result_2);
   saveChatHistory: (conversation: ConversationJSON, context: text) ->
    (Result_1);
-  updateUserProfile: (weight: opt float64, height: opt float64, age: 
-   opt nat, activityLevel: opt text, fitnessGoal: opt text, preferences:
-   opt UserPreferences) -> (Result);
+  updateUserProfile: (fullName: opt text, email: opt opt text, age: opt nat,
+   height: opt float64, weight: opt float64, gender: opt text, activityLevel:
+   opt text, primaryGoals: opt vec text, preferredWorkoutTime: opt text,
+   workoutReminders: opt bool) -> (Result);
 }

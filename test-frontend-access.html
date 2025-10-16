@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Access Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        #testResults {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Frontend Access Test</h1>
+        
+        <div class="status info">
+            <h3>📋 Current Canister IDs</h3>
+            <ul>
+                <li><strong>Frontend:</strong> umunu-kh777-77774-qaaca-cai</li>
+                <li><strong>Backend:</strong> uzt4z-lp777-77774-qaabq-cai</li>
+                <li><strong>Internet Identity:</strong> uxrrr-q7777-77774-qaaaq-cai</li>
+            </ul>
+        </div>
+
+        <h3>🔗 Test Frontend URLs</h3>
+        
+        <div>
+            <h4>Method 1: Localhost Subdomain (Recommended)</h4>
+            <a href="http://umunu-kh777-77774-qaaca-cai.localhost:8080/" target="_blank" class="test-button">
+                Test Localhost URL
+            </a>
+            <p><code>http://umunu-kh777-77774-qaaca-cai.localhost:8080/</code></p>
+        </div>
+
+        <div>
+            <h4>Method 2: Legacy Query Parameter</h4>
+            <a href="http://127.0.0.1:8080/?canisterId=umunu-kh777-77774-qaaca-cai" target="_blank" class="test-button">
+                Test Legacy URL
+            </a>
+            <p><code>http://127.0.0.1:8080/?canisterId=umunu-kh777-77774-qaaca-cai</code></p>
+        </div>
+
+        <div>
+            <h4>Method 3: Direct IP</h4>
+            <a href="http://localhost:8080/?canisterId=umunu-kh777-77774-qaaca-cai" target="_blank" class="test-button">
+                Test Direct IP
+            </a>
+            <p><code>http://localhost:8080/?canisterId=umunu-kh777-77774-qaaca-cai</code></p>
+        </div>
+
+        <h3>🧪 Automated Tests</h3>
+        <button onclick="testFrontendAccess()" class="test-button">Run Automated Tests</button>
+        
+        <div id="testResults"></div>
+
+        <h3>🔧 Troubleshooting</h3>
+        <div class="status info">
+            <h4>If the frontend doesn't load:</h4>
+            <ol>
+                <li><strong>Check DFX Status:</strong> Make sure DFX is running on port 8080</li>
+                <li><strong>Clear Browser Cache:</strong> Hard refresh (Ctrl+F5) or clear cache</li>
+                <li><strong>Try Different Browser:</strong> Test in incognito/private mode</li>
+                <li><strong>Check Console:</strong> Open browser dev tools and check for errors</li>
+                <li><strong>Verify Canisters:</strong> Make sure all canisters are deployed</li>
+            </ol>
+        </div>
+
+        <h3>🚀 Development Server Alternative</h3>
+        <div class="status success">
+            <p><strong>If the canister URLs don't work, you can use the development server:</strong></p>
+            <ol>
+                <li>Open terminal in your project directory</li>
+                <li>Run: <code>npm run dev</code></li>
+                <li>Access: <a href="http://localhost:5173" target="_blank">http://localhost:5173</a></li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        async function testFrontendAccess() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="status info">Running tests...</div>';
+            
+            const urls = [
+                'http://umunu-kh777-77774-qaaca-cai.localhost:8080/',
+                'http://127.0.0.1:8080/?canisterId=umunu-kh777-77774-qaaca-cai',
+                'http://localhost:8080/?canisterId=umunu-kh777-77774-qaaca-cai'
+            ];
+            
+            let results = '<h4>Test Results:</h4>';
+            
+            for (let i = 0; i < urls.length; i++) {
+                const url = urls[i];
+                try {
+                    const response = await fetch(url, { 
+                        method: 'HEAD',
+                        mode: 'no-cors'
+                    });
+                    results += `<div class="status success">✅ URL ${i+1}: Accessible</div>`;
+                } catch (error) {
+                    results += `<div class="status error">❌ URL ${i+1}: ${error.message}</div>`;
+                }
+            }
+            
+            results += '<div class="status info"><strong>Note:</strong> Due to CORS restrictions, these tests may show errors even if the URLs work. Try clicking the test buttons above.</div>';
+            
+            resultsDiv.innerHTML = results;
+        }
+    </script>
+</body>
+</html>

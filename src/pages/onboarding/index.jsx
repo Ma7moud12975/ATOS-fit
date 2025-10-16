@@ -256,9 +256,9 @@ const OnboardingScreen = () => {
                 value={formData.preferredWorkoutTime}
                 onChange={(value) => handleInputChange('preferredWorkoutTime', value)}
                 options={[
-                  { value: 'Morning (6am - 12pm)', label: 'Morning (6am - 12pm)' },
-                  { value: 'Afternoon (12pm - 6pm)', label: 'Afternoon (12pm - 6pm)' },
-                  { value: 'Evening (6pm - 12am)', label: 'Evening (6pm - 12am)' },
+                  { value: 'morning', label: 'Morning (6am - 12pm)' },
+                  { value: 'afternoon', label: 'Afternoon (12pm - 6pm)' },
+                  { value: 'evening', label: 'Evening (6pm - 12am)' },
                 ]}
                 placeholder="When do you prefer to workout?"
               />
@@ -285,11 +285,11 @@ const OnboardingScreen = () => {
   const isStepValid = () => {
     switch (currentStep) {
       case 1:
-        return formData.fullName.trim(); // Only full name is required, email is optional
+        return formData.name.trim(); // Only name is required, email is optional
       case 2:
         return formData.age && formData.height && formData.weight && formData.gender && formData.activityLevel;
       case 3:
-        return formData.primaryGoals.length > 0;
+        return formData.goals.length > 0;
       default:
         return false;
     }
@@ -371,7 +371,7 @@ const OnboardingScreen = () => {
               const minimalUserData = {
                 id: principal?.toString(),
                 principalId: principal?.toString(),
-                fullName: formData.fullName || 'New User',
+                name: formData.name || 'New User',
                 email: formData.email || '',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),

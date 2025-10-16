@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Profile Creation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; }
+        input, select { padding: 8px; width: 300px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .result { margin: 20px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4fdd4; }
+        .error { background: #fdd4d4; }
+    </style>
+</head>
+<body>
+    <h1>Test Profile Creation</h1>
+    
+    <form id="profileForm">
+        <div class="form-group">
+            <label>Full Name:</label>
+            <input type="text" id="fullName" value="Test User" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" id="email" value="test@example.com" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Age:</label>
+            <input type="number" id="age" value="25" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Height (cm):</label>
+            <input type="number" id="height" value="175" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Weight (kg):</label>
+            <input type="number" id="weight" value="70" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Gender:</label>
+            <select id="gender" required>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Activity Level:</label>
+            <select id="activityLevel" required>
+                <option value="sedentary">Sedentary</option>
+                <option value="light">Light</option>
+                <option value="moderate">Moderate</option>
+                <option value="active">Active</option>
+                <option value="very_active">Very Active</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Preferred Workout Time:</label>
+            <select id="preferredWorkoutTime" required>
+                <option value="morning">Morning</option>
+                <option value="afternoon">Afternoon</option>
+                <option value="evening">Evening</option>
+            </select>
+        </div>
+        
+        <button type="submit">Create Profile</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script type="module">
+        import { HttpAgent, Actor } from 'https://esm.sh/@dfinity/agent@2.1.1';
+
+        const BACKEND_ID = 'uzt4z-lp777-77774-qaabq-cai';
+        const HOST = 'http://localhost:8000';
+
+        const idlFactory = ({ IDL }) => {
+            return IDL.Service({
+                'createUserProfile': IDL.Func([
+                    IDL.Text, // fullName
+                    IDL.Opt(IDL.Text), // email
+                    IDL.Nat, // age
+                    IDL.Float64, // height
+                    IDL.Float64, // weight
+                    IDL.Text, // gender
+                    IDL.Text, // activityLevel
+                    IDL.Vec(IDL.Text), // primaryGoals
+                    IDL.Text, // preferredWorkoutTime
+                    IDL.Bool // workoutReminders
+                ], [IDL.Variant({ 'ok': IDL.Record({}), 'err': IDL.Text })], []),
+            });
+        };
+
+        const toOptional = (value) => {
+            if (value === undefined || value === null || value === '') {
+                return [];
+            }
+            if (Array.isArray(value)) {
+                return value.length > 0 ? [value[0]] : [];
+            }
+            const cleanValue = typeof value === 'string' ? value.trim() : value;
+            return [cleanValue];
+        };
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="result">🔄 Creating profile...</div>';
+
+            try {
+                const formData = new FormData(e.target);
+                const profileData = {
+                    fullName: document.getElementById('fullName').value,
+                    email: document.getElementById('email').value,
+                    age: parseInt(document.getElementById('age').value),
+                    height: parseFloat(document.getElementById('height').value),
+                    weight: parseFloat(document.getElementById('weight').value),
+                    gender: document.getElementById('gender').value,
+                    activityLevel: document.getElementById('activityLevel').value,
+                    primaryGoals: ['fitness'], // Default goal
+                    preferredWorkoutTime: document.getElementById('preferredWorkoutTime').value,
+                    workoutReminders: false
+                };
+
+                console.log('Profile data:', profileData);
+                console.log('Email before toOptional:', profileData.email);
+                console.log('Email after toOptional:', toOptional(profileData.email));
+
+                const agent = new HttpAgent({ host: HOST });
+                await agent.fetchRootKey();
+                
+                const actor = Actor.createActor(idlFactory, {
+                    agent,
+                    canisterId: BACKEND_ID,
+                });
+
+                const result = await actor.createUserProfile(
+                    profileData.fullName?.trim() || '',
+                    toOptional(profileData.email),
+                    profileData.age,
+                    profileData.height,
+                    profileData.weight,
+                    profileData.gender?.trim() || '',
+                    profileData.activityLevel?.trim() || '',
+                    profileData.primaryGoals || [],
+                    profileData.preferredWorkoutTime?.trim() || '',
+                    profileData.workoutReminders || false
+                );
+
+                console.log('Backend result:', result);
+
+                if ('ok' in result) {
+                    resultDiv.innerHTML = '<div class="result success">✅ Profile created successfully!</div>';
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ Error: ${result.err}</div>`;
+                }
+
+            } catch (error) {
+                console.error('Profile creation failed:', error);
+                resultDiv.innerHTML = `<div class="result error">❌ Failed: ${error.message}</div>`;
+            }
+        });
+    </script>
+</body>
+</html>

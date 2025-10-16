@@ -1,12 +1,5 @@
 export const idlFactory = ({ IDL }) => {
   const Result_4 = IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text });
-  const UserPreferences = IDL.Record({
-    'preferredWorkoutTime' : IDL.Opt(IDL.Text),
-    'injuryHistory' : IDL.Vec(IDL.Text),
-    'dietaryRestrictions' : IDL.Vec(IDL.Text),
-    'equipmentAvailable' : IDL.Vec(IDL.Text),
-    'workoutReminders' : IDL.Bool,
-  });
   const UserId = IDL.Principal;
   const Time = IDL.Int;
   const UserProfile = IDL.Record({
@@ -15,13 +8,14 @@ export const idlFactory = ({ IDL }) => {
     'weight' : IDL.Float64,
     'height' : IDL.Float64,
     'activityLevel' : IDL.Text,
-    'username' : IDL.Text,
-    'fitnessGoal' : IDL.Text,
+    'preferredWorkoutTime' : IDL.Text,
     'createdAt' : Time,
-    'email' : IDL.Text,
-    'preferences' : UserPreferences,
+    'fullName' : IDL.Text,
+    'email' : IDL.Opt(IDL.Text),
     'updatedAt' : Time,
+    'primaryGoals' : IDL.Vec(IDL.Text),
     'gender' : IDL.Text,
+    'workoutReminders' : IDL.Bool,
   });
   const Result = IDL.Variant({ 'ok' : UserProfile, 'err' : IDL.Text });
   const PlannedExercise = IDL.Record({
@@ -84,6 +78,22 @@ export const idlFactory = ({ IDL }) => {
     'createdAt' : Time,
     'conversation' : ConversationJSON,
   });
+  const AchievementLevel = IDL.Record({
+    'timeframe' : IDL.Text,
+    'icon' : IDL.Text,
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+    'level' : IDL.Nat,
+    'target' : IDL.Nat,
+    'points' : IDL.Nat,
+  });
+  const ExerciseAchievement = IDL.Record({
+    'id' : IDL.Text,
+    'createdAt' : Time,
+    'levels' : IDL.Vec(AchievementLevel),
+    'exerciseName' : IDL.Text,
+    'category' : IDL.Text,
+  });
   const FoodItem = IDL.Record({
     'fat' : IDL.Float64,
     'fiber' : IDL.Float64,
@@ -118,16 +128,33 @@ export const idlFactory = ({ IDL }) => {
     'userId' : UserId,
     'progress' : IDL.Float64,
   });
+  const UserExerciseProgress = IDL.Record({
+    'id' : IDL.Text,
+    'allTimeCount' : IDL.Nat,
+    'monthlyCount' : IDL.Nat,
+    'userId' : UserId,
+    'lastUpdated' : Time,
+    'exerciseName' : IDL.Text,
+    'weeklyCount' : IDL.Nat,
+    'currentLevel' : IDL.Nat,
+    'unlockedLevels' : IDL.Vec(IDL.Nat),
+  });
   const UserStatistics = IDL.Record({
+    'thisWeekWorkouts' : IDL.Nat,
+    'monthlyCaloriesBurned' : IDL.Float64,
     'userId' : UserId,
     'totalDuration' : IDL.Nat,
     'totalWorkouts' : IDL.Nat,
+    'weeklyCalorieGoal' : IDL.Float64,
     'totalCaloriesBurned' : IDL.Float64,
+    'thisMonthWorkouts' : IDL.Nat,
+    'weeklyCaloriesBurned' : IDL.Float64,
     'favoriteExercise' : IDL.Opt(IDL.Text),
     'averageWorkoutDuration' : IDL.Float64,
     'lastWorkoutDate' : IDL.Opt(Time),
     'longestStreak' : IDL.Nat,
     'weeklyAverage' : IDL.Float64,
+    'weeklyWorkoutGoal' : IDL.Nat,
     'currentStreak' : IDL.Nat,
   });
   const FormError = IDL.Record({
@@ -168,14 +195,15 @@ export const idlFactory = ({ IDL }) => {
     'createUserProfile' : IDL.Func(
         [
           IDL.Text,
-          IDL.Text,
-          IDL.Float64,
-          IDL.Float64,
+          IDL.Opt(IDL.Text),
           IDL.Nat,
+          IDL.Float64,
+          IDL.Float64,
           IDL.Text,
           IDL.Text,
+          IDL.Vec(IDL.Text),
           IDL.Text,
-          UserPreferences,
+          IDL.Bool,
         ],
         [Result],
         [],
@@ -196,6 +224,11 @@ export const idlFactory = ({ IDL }) => {
     'deleteAllUserData' : IDL.Func([], [Result_4], []),
     'getAchievements' : IDL.Func([], [IDL.Vec(Achievement)], ['query']),
     'getChatById' : IDL.Func([IDL.Text], [IDL.Opt(ChatHistory)], ['query']),
+    'getExerciseAchievements' : IDL.Func(
+        [],
+        [IDL.Vec(ExerciseAchievement)],
+        ['query'],
+      ),
     'getFoodAnalysisById' : IDL.Func(
         [IDL.Text],
         [IDL.Opt(FoodAnalysis)],
@@ -204,6 +237,11 @@ export const idlFactory = ({ IDL }) => {
     'getTotalUsers' : IDL.Func([], [IDL.Nat], ['query']),
     'getUserAchievements' : IDL.Func([], [IDL.Vec(UserAchievement)], []),
     'getUserChatHistory' : IDL.Func([IDL.Nat], [IDL.Vec(ChatHistory)], []),
+    'getUserExerciseProgress' : IDL.Func(
+        [],
+        [IDL.Vec(UserExerciseProgress)],
+        [],
+      ),
     'getUserFoodAnalyses' : IDL.Func([IDL.Nat], [IDL.Vec(FoodAnalysis)], []),
     'getUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], []),
     'getUserStatistics' : IDL.Func([], [UserStatistics], []),
@@ -229,12 +267,16 @@ export const idlFactory = ({ IDL }) => {
     'saveChatHistory' : IDL.Func([ConversationJSON, IDL.Text], [Result_1], []),
     'updateUserProfile' : IDL.Func(
         [
-          IDL.Opt(IDL.Float64),
-          IDL.Opt(IDL.Float64),
+          IDL.Opt(IDL.Text),
+          IDL.Opt(IDL.Opt(IDL.Text)),
           IDL.Opt(IDL.Nat),
+          IDL.Opt(IDL.Float64),
+          IDL.Opt(IDL.Float64),
           IDL.Opt(IDL.Text),
           IDL.Opt(IDL.Text),
-          IDL.Opt(UserPreferences),
+          IDL.Opt(IDL.Vec(IDL.Text)),
+          IDL.Opt(IDL.Text),
+          IDL.Opt(IDL.Bool),
         ],
         [Result],
         [],

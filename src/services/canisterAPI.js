@@ -88,7 +88,18 @@ const nanoToDate = (nano) => new Date(Number(nano) / 1000000);
 /**
  * Handle optional values for Motoko
  */
-const toOptional = (value) => value !== undefined && value !== null ? [value] : [];
+const toOptional = (value) => {
+  if (value === undefined || value === null || value === '') {
+    return [];
+  }
+  // If it's already an array, return it as is (but validate it's not malformed)
+  if (Array.isArray(value)) {
+    return value.length > 0 ? [value[0]] : [];
+  }
+  // Clean the value and wrap in array
+  const cleanValue = typeof value === 'string' ? value.trim() : value;
+  return [cleanValue];
+};
 
 /**
  * Handle Result type responses
@@ -111,17 +122,22 @@ export const userProfileAPI = {
    */
   create: async (profileData) => {
     try {
+      // Debug logging
+      console.log('Creating profile with data:', profileData);
+      console.log('Email before toOptional:', profileData.email);
+      console.log('Email after toOptional:', toOptional(profileData.email));
+      
       const actor = await getBackendActor();
       const result = await actor.createUserProfile(
-        profileData.fullName,
+        profileData.fullName?.trim() || '',
         toOptional(profileData.email),
         profileData.age,
         profileData.height,
         profileData.weight,
-        profileData.gender,
-        profileData.activityLevel,
-        profileData.primaryGoals,
-        profileData.preferredWorkoutTime,
+        profileData.gender?.trim() || '',
+        profileData.activityLevel?.trim() || '',
+        profileData.primaryGoals || [],
+        profileData.preferredWorkoutTime?.trim() || '',
         profileData.workoutReminders || false
       );
       return handleResult(result);

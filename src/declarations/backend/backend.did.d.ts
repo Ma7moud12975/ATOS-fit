@@ -11,6 +11,15 @@ export interface Achievement {
   'category' : string,
   'points' : bigint,
 }
+export interface AchievementLevel {
+  'timeframe' : string,
+  'icon' : string,
+  'name' : string,
+  'description' : string,
+  'level' : bigint,
+  'target' : bigint,
+  'points' : bigint,
+}
 export interface AchievementRequirement {
   'metric' : string,
   'type' : string,
@@ -27,6 +36,13 @@ export interface ConversationJSON {
   'messages' : Array<Message>,
   'summary' : [] | [string],
   'userContext' : UserContextData,
+}
+export interface ExerciseAchievement {
+  'id' : string,
+  'createdAt' : Time,
+  'levels' : Array<AchievementLevel>,
+  'exerciseName' : string,
+  'category' : string,
 }
 export interface ExerciseData {
   'plannedReps' : bigint,
@@ -110,38 +126,49 @@ export interface UserContextData {
   'injuryStatus' : [] | [string],
   'currentWeight' : number,
 }
-export type UserId = Principal;
-export interface UserPreferences {
-  'preferredWorkoutTime' : [] | [string],
-  'injuryHistory' : Array<string>,
-  'dietaryRestrictions' : Array<string>,
-  'equipmentAvailable' : Array<string>,
-  'workoutReminders' : boolean,
+export interface UserExerciseProgress {
+  'id' : string,
+  'allTimeCount' : bigint,
+  'monthlyCount' : bigint,
+  'userId' : UserId,
+  'lastUpdated' : Time,
+  'exerciseName' : string,
+  'weeklyCount' : bigint,
+  'currentLevel' : bigint,
+  'unlockedLevels' : Array<bigint>,
 }
+export type UserId = Principal;
 export interface UserProfile {
   'id' : UserId,
   'age' : bigint,
   'weight' : number,
   'height' : number,
   'activityLevel' : string,
-  'username' : string,
-  'fitnessGoal' : string,
+  'preferredWorkoutTime' : string,
   'createdAt' : Time,
-  'email' : string,
-  'preferences' : UserPreferences,
+  'fullName' : string,
+  'email' : [] | [string],
   'updatedAt' : Time,
+  'primaryGoals' : Array<string>,
   'gender' : string,
+  'workoutReminders' : boolean,
 }
 export interface UserStatistics {
+  'thisWeekWorkouts' : bigint,
+  'monthlyCaloriesBurned' : number,
   'userId' : UserId,
   'totalDuration' : bigint,
   'totalWorkouts' : bigint,
+  'weeklyCalorieGoal' : number,
   'totalCaloriesBurned' : number,
+  'thisMonthWorkouts' : bigint,
+  'weeklyCaloriesBurned' : number,
   'favoriteExercise' : [] | [string],
   'averageWorkoutDuration' : number,
   'lastWorkoutDate' : [] | [Time],
   'longestStreak' : bigint,
   'weeklyAverage' : number,
+  'weeklyWorkoutGoal' : bigint,
   'currentStreak' : bigint,
 }
 export interface WorkoutJSON {
@@ -177,14 +204,15 @@ export interface _SERVICE {
   'createUserProfile' : ActorMethod<
     [
       string,
-      string,
-      number,
-      number,
+      [] | [string],
       bigint,
+      number,
+      number,
       string,
       string,
+      Array<string>,
       string,
-      UserPreferences,
+      boolean,
     ],
     Result
   >,
@@ -203,10 +231,12 @@ export interface _SERVICE {
   'deleteAllUserData' : ActorMethod<[], Result_4>,
   'getAchievements' : ActorMethod<[], Array<Achievement>>,
   'getChatById' : ActorMethod<[string], [] | [ChatHistory]>,
+  'getExerciseAchievements' : ActorMethod<[], Array<ExerciseAchievement>>,
   'getFoodAnalysisById' : ActorMethod<[string], [] | [FoodAnalysis]>,
   'getTotalUsers' : ActorMethod<[], bigint>,
   'getUserAchievements' : ActorMethod<[], Array<UserAchievement>>,
   'getUserChatHistory' : ActorMethod<[bigint], Array<ChatHistory>>,
+  'getUserExerciseProgress' : ActorMethod<[], Array<UserExerciseProgress>>,
   'getUserFoodAnalyses' : ActorMethod<[bigint], Array<FoodAnalysis>>,
   'getUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getUserStatistics' : ActorMethod<[], UserStatistics>,
@@ -223,12 +253,16 @@ export interface _SERVICE {
   'saveChatHistory' : ActorMethod<[ConversationJSON, string], Result_1>,
   'updateUserProfile' : ActorMethod<
     [
-      [] | [number],
-      [] | [number],
+      [] | [string],
+      [] | [[] | [string]],
       [] | [bigint],
+      [] | [number],
+      [] | [number],
       [] | [string],
       [] | [string],
-      [] | [UserPreferences],
+      [] | [Array<string>],
+      [] | [string],
+      [] | [boolean],
     ],
     Result
   >,

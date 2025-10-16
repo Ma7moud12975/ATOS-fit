@@ -128,7 +128,7 @@ actor ATOSfitDB {
     userProfiles.get(msg.caller)
   };
 
-  public shared(_msg) func updateUserProfile(
+  public shared(msg) func updateUserProfile(
     fullName: ?Text,
     email: ??Text,
     age: ?Nat,

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ATOS-fit Interface Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .interface { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4fdd4; }
+        .error { background-color: #fdd4d4; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        a { display: inline-block; padding: 10px 15px; background: #007bff; color: white; text-decoration: none; border-radius: 3px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>ATOS-fit Interface Access Test</h1>
+    
+    <div class="interface">
+        <h3>🌐 Frontend Application</h3>
+        <p>Your main ATOS-fit application</p>
+        <a href="http://umunu-kh777-77774-qaaca-cai.localhost:8000/" target="_blank">Open Frontend (Recommended)</a>
+        <a href="http://127.0.0.1:8000/?canisterId=umunu-kh777-77774-qaaca-cai" target="_blank">Open Frontend (Legacy)</a>
+    </div>
+
+    <div class="interface">
+        <h3>🔧 Backend Candid UI</h3>
+        <p>Test backend methods directly</p>
+        <a href="http://127.0.0.1:8000/?canisterId=umunu-kh777-77774-qaaca-cai&id=uzt4z-lp777-77774-qaabq-cai" target="_blank">Open Backend Candid UI</a>
+    </div>
+
+    <div class="interface">
+        <h3>🔐 Internet Identity</h3>
+        <p>Authentication service</p>
+        <a href="http://127.0.0.1:8000/?canisterId=umunu-kh777-77774-qaaca-cai&id=uxrrr-q7777-77774-qaaaq-cai" target="_blank">Open Internet Identity</a>
+    </div>
+
+    <div class="interface">
+        <h3>🧪 Connection Test</h3>
+        <button onclick="testBackend()">Test Backend Connection</button>
+        <div id="result"></div>
+    </div>
+
+    <script type="module">
+        import { HttpAgent, Actor } from 'https://esm.sh/@dfinity/agent@2.1.1';
+
+        const BACKEND_ID = 'uzt4z-lp777-77774-qaabq-cai';
+        const HOST = 'http://localhost:8000';
+
+        const idlFactory = ({ IDL }) => {
+            return IDL.Service({
+                'getTotalUsers': IDL.Func([], [IDL.Nat], ['query']),
+            });
+        };
+
+        window.testBackend = async () => {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>🔄 Testing backend connection...</p>';
+
+            try {
+                const agent = new HttpAgent({ host: HOST });
+                await agent.fetchRootKey();
+                
+                const actor = Actor.createActor(idlFactory, {
+                    agent,
+                    canisterId: BACKEND_ID,
+                });
+
+                const totalUsers = await actor.getTotalUsers();
+                result.innerHTML = `<p class="success">✅ Backend connected! Total users: ${totalUsers}</p>`;
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Connection failed: ${error.message}</p>`;
+            }
+        };
+    </script>
+</body>
+</html>
