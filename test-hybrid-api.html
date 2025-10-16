@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ATOS-fit Hybrid API Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+        }
+        .success { background-color: #d4fdd4; border-color: #4caf50; }
+        .error { background-color: #fdd4d4; border-color: #f44336; }
+        .info { background-color: #e3f2fd; border-color: #2196f3; }
+        .warning { background-color: #fff3cd; border-color: #ffc107; }
+        button { 
+            padding: 10px 15px; 
+            margin: 5px; 
+            cursor: pointer; 
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            overflow-x: auto; 
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+            max-height: 300px;
+        }
+        .config {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .performance-stats {
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 ATOS-fit Hybrid API Test</h1>
+        <p><strong>Hybrid API:</strong> HTTP-style interface using secure Candid calls</p>
+        
+        <div class="config">
+            <h3>📋 Configuration</h3>
+            <div id="config-info">Loading configuration...</div>
+        </div>
+
+        <div class="grid">
+            <div>
+                <div class="test-section">
+                    <h3>🏥 Health Check</h3>
+                    <p>Test service health and connectivity</p>
+                    <button onclick="testHealth()">GET /api/health</button>
+                    <div id="health-result"></div>
+                </div>
+
+                <div class="test-section">
+                    <h3>👥 Total Users</h3>
+                    <p>Get user count with HTTP-style response</p>
+                    <button onclick="getTotalUsers()">GET /api/users/total</button>
+                    <div id="users-result"></div>
+                </div>
+
+                <div class="test-section">
+                    <h3>👤 User Profile</h3>
+                    <p>Create and retrieve user profiles</p>
+                    <button onclick="createProfile()">POST /api/users/profile</button>
+                    <button onclick="getProfile()">GET /api/users/profile</button>
+                    <div id="profile-result"></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="test-section">
+                    <h3>📊 User Statistics</h3>
+                    <p>Get user workout statistics</p>
+                    <button onclick="getUserStats()">GET /api/users/stats</button>
+                    <div id="stats-result"></div>
+                </div>
+
+                <div class="test-section">
+                    <h3>🏋️ Workouts</h3>
+                    <p>Record and retrieve workouts</p>
+                    <button onclick="recordWorkout()">POST /api/workouts</button>
+                    <button onclick="getWorkouts()">GET /api/workouts</button>
+                    <div id="workouts-result"></div>
+                </div>
+
+                <div class="test-section">
+                    <h3>🏆 Achievements</h3>
+                    <p>Get achievements and user progress</p>
+                    <button onclick="getAchievements()">GET /api/achievements</button>
+                    <button onclick="getUserAchievements()">GET /api/users/achievements</button>
+                    <div id="achievements-result"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>⚡ Performance Test</h3>
+            <p>Test API performance with multiple concurrent calls</p>
+            <button onclick="runPerformanceTest()">Run Performance Test</button>
+            <div id="performance-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔄 API Comparison</h3>
+            <p>Compare Hybrid API vs Direct Candid vs HTTP approaches</p>
+            <button onclick="compareAPIs()">Compare All APIs</button>
+            <div id="comparison-result"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the hybrid API
+        import { hybridAPI, getAPIInfo, isHybridAPIAvailable } from './src/services/hybridAPI.js';
+
+        // Display configuration
+        const apiInfo = getAPIInfo();
+        document.getElementById('config-info').innerHTML = `
+            <strong>API Type:</strong> ${apiInfo.type}<br>
+            <strong>Description:</strong> ${apiInfo.description}<br>
+            <strong>Canister ID:</strong> ${apiInfo.canisterId}<br>
+            <strong>Host:</strong> ${apiInfo.host}<br>
+            <strong>Security:</strong> ${apiInfo.security}
+        `;
+
+        // Helper function to display results
+        function displayResult(elementId, result, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let statusClass = 'info';
+            let statusIcon = 'ℹ️';
+            
+            if (result.status) {
+                if (result.status >= 200 && result.status < 300) {
+                    statusClass = 'success';
+                    statusIcon = '✅';
+                } else if (result.status >= 400) {
+                    statusClass = 'error';
+                    statusIcon = '❌';
+                } else {
+                    statusClass = 'warning';
+                    statusIcon = '⚠️';
+                }
+            }
+            
+            element.innerHTML = `
+                <div class="${statusClass}">
+                    <strong>${timestamp}</strong>: ${statusIcon} 
+                    Status: ${result.status || 'Unknown'}
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                </div>
+            `;
+        }
+
+        // Test functions
+        window.testHealth = async () => {
+            try {
+                const result = await hybridAPI.health();
+                displayResult('health-result', result);
+            } catch (error) {
+                displayResult('health-result', { status: 500, error: error.message });
+            }
+        };
+
+        window.getTotalUsers = async () => {
+            try {
+                const result = await hybridAPI.getTotalUsers();
+                displayResult('users-result', result);
+            } catch (error) {
+                displayResult('users-result', { status: 500, error: error.message });
+            }
+        };
+
+        window.createProfile = async () => {
+            try {
+                const profileData = {
+                    fullName: "Hybrid API Test User",
+                    email: "hybrid-test@example.com",
+                    age: 28,
+                    height: 175.0,
+                    weight: 70.0,
+                    gender: "other",
+                    activityLevel: "moderate",
+                    primaryGoals: ["fitness", "health"],
+                    preferredWorkoutTime: "morning",
+                    workoutReminders: true
+                };
+
+                const result = await hybridAPI.createUserProfile(profileData);
+                displayResult('profile-result', result);
+            } catch (error) {
+                displayResult('profile-result', { status: 500, error: error.message });
+            }
+        };
+
+        window.getProfile = async () => {
+            try {
+                const result = await hybridAPI.getUserProfile();
+                displayResult('profile-result', result);
+            } catch (error) {
+                displayResult('profile-result', { status: 500, error: error.message });
+            }
+        };
+
+        window.getUserStats = async () => {
+            try {
+                const result = await hybridAPI.getUserStats();
+                displayResult('stats-result', result);
+            } catch (error) {
+                displayResult('stats-result', { status: 500, error: error.message });
+            }
+        };
+
+        window.recordWorkout = async () => {
+            try {
+                const workoutData = {
+                    workoutName: "Hybrid API Test Workout",
+                    exercises: [
+                        {
+                            name: "Push-ups",
+                            plannedReps: 20,
+                            completedReps: 18,
+                            sets: 3,
+                            formErrors: [],
+                            restTime: 60,
+                            notes: ["Good form"]
+                        }
+                    ],
+                    duration: 1800, // 30 minutes
+                    caloriesBurned: 250.0,
+                    averageHeartRate: 140,
+                    overallFormScore: 88.5,
+                    completionRate: 90.0
+                };
+
+                const result = await hybridAPI.recordWorkout(workoutData);
+                displayResult('workouts-result', result);
+            } catch (error) {
+                displayResult('workouts-result', { status: 500, error: error.message });
+            }
+        };
+
+        window.getWorkouts = async () => {
+            try {
+                const result = await hybridAPI.getUserWorkouts();
+                displayResult('workouts-result', result);
+            } catch (error) {
+                displayResult('workouts-result', { status: 500, error: error.message });
+            }
+        };
+
+        window.getAchievements = async () => {
+            try {
+                const result = await hybridAPI.getAchievements();
+                displayResult('achievements-result', result);
+            } catch (error) {
+                displayResult('achievements-result', { status: 500, error: error.message });
+            }
+        };
+
+        window.getUserAchievements = async () => {
+            try {
+                const result = await hybridAPI.getUserAchievements();
+                displayResult('achievements-result', result);
+            } catch (error) {
+                displayResult('achievements-result', { status: 500, error: error.message });
+            }
+        };
+
+        window.runPerformanceTest = async () => {
+            try {
+                const result = await hybridAPI.performanceTest();
+                displayResult('performance-result', result);
+            } catch (error) {
+                displayResult('performance-result', { status: 500, error: error.message });
+            }
+        };
+
+        window.compareAPIs = async () => {
+            try {
+                const startTime = performance.now();
+                
+                // Test Hybrid API
+                const hybridStart = performance.now();
+                const hybridResult = await hybridAPI.getTotalUsers();
+                const hybridTime = performance.now() - hybridStart;
+
+                // Test Direct Candid (if available)
+                let candidTime = 0;
+                let candidResult = { status: 'not_tested', message: 'Candid API not available' };
+                
+                try {
+                    const { HttpAgent, Actor } = await import('https://esm.sh/@dfinity/agent@2.1.1');
+                    
+                    const candidStart = performance.now();
+                    const agent = new HttpAgent({ host: 'http://localhost:8000' });
+                    await agent.fetchRootKey();
+                    
+                    const idlFactory = ({ IDL }) => {
+                        return IDL.Service({
+                            'getTotalUsers': IDL.Func([], [IDL.Nat], ['query']),
+                        });
+                    };
+
+                    const actor = Actor.createActor(idlFactory, {
+                        agent,
+                        canisterId: 'uzt4z-lp777-77774-qaabq-cai',
+                    });
+
+                    const totalUsers = await actor.getTotalUsers();
+                    candidTime = performance.now() - candidStart;
+                    candidResult = { 
+                        status: 200, 
+                        data: { total_users: Number(totalUsers) },
+                        message: 'Direct Candid call successful'
+                    };
+                } catch (error) {
+                    candidResult = { status: 500, error: error.message };
+                }
+
+                const totalTime = performance.now() - startTime;
+
+                const comparison = {
+                    status: 200,
+                    message: 'API comparison completed',
+                    data: {
+                        hybrid_api: {
+                            result: hybridResult,
+                            time_ms: hybridTime.toFixed(2),
+                            approach: 'HTTP-style responses via Candid'
+                        },
+                        direct_candid: {
+                            result: candidResult,
+                            time_ms: candidTime.toFixed(2),
+                            approach: 'Direct Candid interface calls'
+                        },
+                        total_time_ms: totalTime.toFixed(2),
+                        winner: hybridTime < candidTime ? 'hybrid_api' : 'direct_candid'
+                    }
+                };
+
+                displayResult('comparison-result', comparison);
+            } catch (error) {
+                displayResult('comparison-result', { status: 500, error: error.message });
+            }
+        };
+
+        // Auto-run health check on load
+        window.addEventListener('load', () => {
+            setTimeout(testHealth, 1000);
+        });
+    </script>
+</body>
+</html>

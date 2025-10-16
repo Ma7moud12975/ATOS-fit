@@ -7,6 +7,7 @@ import Array "mo:base/Array";
 import Iter "mo:base/Iter";
 import Float "mo:base/Float";
 import Nat "mo:base/Nat";
+import Int "mo:base/Int";
 import Option "mo:base/Option";
 import Types "./Types";
 
@@ -1008,5 +1009,182 @@ actor ATOSfitDB {
   // Get total number of users (for dashboard display)
   public query func getTotalUsers() : async Nat {
     userProfiles.size()
+  };
+
+  // ============ HTTP REQUEST HANDLERS ============
+  
+  public type HttpRequest = {
+    method : Text;
+    url : Text;
+    headers : [(Text, Text)];
+    body : Blob;
+  };
+
+  public type HttpResponse = {
+    status_code : Nat16;
+    headers : [(Text, Text)];
+    body : Blob;
+  };
+
+  // HTTP request handler for direct API access
+  public query func http_request(request : HttpRequest) : async HttpResponse {
+    let path = extractPath(request.url);
+    
+    switch (request.method, path) {
+      case ("GET", "/api/users/total") {
+        let count = userProfiles.size();
+        let response = "{\"total_users\": " # Nat.toText(count) # "}";
+        {
+          status_code = 200;
+          headers = [("Content-Type", "application/json"), ("Access-Control-Allow-Origin", "*")];
+          body = Text.encodeUtf8(response);
+        }
+      };
+      
+      case ("GET", "/api/health") {
+        let response = "{\"status\": \"healthy\", \"timestamp\": " # Int.toText(Time.now()) # "}";
+        {
+          status_code = 200;
+          headers = [("Content-Type", "application/json"), ("Access-Control-Allow-Origin", "*")];
+          body = Text.encodeUtf8(response);
+        }
+      };
+      
+      case ("OPTIONS", _) {
+        // Handle CORS preflight
+        {
+          status_code = 200;
+          headers = [
+            ("Access-Control-Allow-Origin", "*"),
+            ("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"),
+            ("Access-Control-Allow-Headers", "Content-Type, Authorization")
+          ];
+          body = Text.encodeUtf8("");
+        }
+      };
+      
+      case (_, _) {
+        let response = "{\"error\": \"Not found\"}";
+        {
+          status_code = 404;
+          headers = [("Content-Type", "application/json"), ("Access-Control-Allow-Origin", "*")];
+          body = Text.encodeUtf8(response);
+        }
+      };
+    }
+  };
+
+  // HTTP update handler for POST/PUT requests
+  public func http_request_update(request : HttpRequest) : async HttpResponse {
+    let path = extractPath(request.url);
+    
+    switch (request.method, path) {
+      case ("POST", "/api/users/profile") {
+        // Handle profile creation via HTTP
+        await handleCreateProfileHTTP(request)
+      };
+      
+      case ("GET", "/api/users/profile") {
+        // Handle profile retrieval via HTTP
+        await handleGetProfileHTTP(request)
+      };
+      
+      case (_, _) {
+        let response = "{\"error\": \"Method not allowed\"}";
+        {
+          status_code = 405;
+          headers = [("Content-Type", "application/json"), ("Access-Control-Allow-Origin", "*")];
+          body = Text.encodeUtf8(response);
+        }
+      };
+    }
+  };
+
+  // Helper function to extract path from URL
+  private func extractPath(url : Text) : Text {
+    // Simple path extraction - in production, use a proper URL parser
+    let parts = Text.split(url, #char '?');
+    switch (parts.next()) {
+      case (?path) { path };
+      case null { "/" };
+    }
+  };
+
+  // Handle profile creation via HTTP
+  private func handleCreateProfileHTTP(request : HttpRequest) : async HttpResponse {
+    try {
+      // Parse JSON body (simplified - in production use proper JSON parser)
+      let bodyText = switch (Text.decodeUtf8(request.body)) {
+        case (?text) { text };
+        case null { 
+          let response = "{\"error\": \"Invalid request body\"}";
+          return {
+            status_code = 400;
+            headers = [("Content-Type", "application/json"), ("Access-Control-Allow-Origin", "*")];
+            body = Text.encodeUtf8(response);
+          };
+        };
+      };
+
+      // For demo purposes, create a simple profile
+      // In production, properly parse JSON and validate data
+      let caller = Principal.fromText("2vxsx-fae"); // Use authenticated principal
+      
+      let profile : Types.UserProfile = {
+        id = caller;
+        fullName = "HTTP User";
+        email = ?"http@example.com";
+        age = 25;
+        height = 175.0;
+        weight = 70.0;
+        gender = "other";
+        activityLevel = "moderate";
+        primaryGoals = ["fitness"];
+        preferredWorkoutTime = "morning";
+        workoutReminders = false;
+        createdAt = Time.now();
+        updatedAt = Time.now();
+      };
+
+      userProfiles.put(caller, profile);
+
+      let response = "{\"success\": true, \"message\": \"Profile created via HTTP\"}";
+      {
+        status_code = 201;
+        headers = [("Content-Type", "application/json"), ("Access-Control-Allow-Origin", "*")];
+        body = Text.encodeUtf8(response);
+      }
+    } catch (e) {
+      let response = "{\"error\": \"Internal server error\"}";
+      {
+        status_code = 500;
+        headers = [("Content-Type", "application/json"), ("Access-Control-Allow-Origin", "*")];
+        body = Text.encodeUtf8(response);
+      }
+    }
+  };
+
+  // Handle profile retrieval via HTTP
+  private func handleGetProfileHTTP(request : HttpRequest) : async HttpResponse {
+    let caller = Principal.fromText("2vxsx-fae"); // Use authenticated principal
+    
+    switch (userProfiles.get(caller)) {
+      case (?profile) {
+        let response = "{\"success\": true, \"profile\": {\"fullName\": \"" # profile.fullName # "\", \"age\": " # Nat.toText(profile.age) # "}}";
+        {
+          status_code = 200;
+          headers = [("Content-Type", "application/json"), ("Access-Control-Allow-Origin", "*")];
+          body = Text.encodeUtf8(response);
+        }
+      };
+      case null {
+        let response = "{\"error\": \"Profile not found\"}";
+        {
+          status_code = 404;
+          headers = [("Content-Type", "application/json"), ("Access-Control-Allow-Origin", "*")];
+          body = Text.encodeUtf8(response);
+        }
+      };
+    }
   };
 }

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ATOS-fit HTTP API Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+        }
+        .success { background-color: #d4fdd4; border-color: #4caf50; }
+        .error { background-color: #fdd4d4; border-color: #f44336; }
+        .info { background-color: #e3f2fd; border-color: #2196f3; }
+        button { 
+            padding: 10px 15px; 
+            margin: 5px; 
+            cursor: pointer; 
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            overflow-x: auto; 
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+        .config {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-online { background: #4caf50; }
+        .status-offline { background: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 ATOS-fit HTTP API Test</h1>
+        
+        <div class="config">
+            <h3>📋 Configuration</h3>
+            <div id="config-info">Loading configuration...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔗 Connection Test</h3>
+            <p>Test direct HTTP connection to canister stable memory</p>
+            <button onclick="testConnection()">Test HTTP Connection</button>
+            <div id="connection-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>👥 Get Total Users</h3>
+            <p>Retrieve user count via HTTP API</p>
+            <button onclick="getTotalUsers()">Get Total Users (HTTP)</button>
+            <div id="users-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>👤 Create Profile</h3>
+            <p>Create user profile via HTTP POST</p>
+            <button onclick="createProfile()">Create Profile (HTTP)</button>
+            <div id="create-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📖 Get Profile</h3>
+            <p>Retrieve user profile via HTTP GET</p>
+            <button onclick="getProfile()">Get Profile (HTTP)</button>
+            <div id="profile-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔄 Compare APIs</h3>
+            <p>Compare HTTP API vs Candid API performance</p>
+            <button onclick="compareAPIs()">Compare Both APIs</button>
+            <div id="compare-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Raw HTTP Test</h3>
+            <p>Test raw HTTP requests to canister</p>
+            <button onclick="testRawHTTP()">Test Raw HTTP</button>
+            <div id="raw-result"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Configuration
+        const BACKEND_CANISTER_ID = 'uzt4z-lp777-77774-qaabq-cai';
+        const IC_HOST = 'http://localhost:8000';
+        
+        // Display configuration
+        document.getElementById('config-info').innerHTML = `
+            <strong>Backend Canister:</strong> ${BACKEND_CANISTER_ID}<br>
+            <strong>IC Host:</strong> ${IC_HOST}<br>
+            <strong>HTTP URL:</strong> ${IC_HOST}?canisterId=${BACKEND_CANISTER_ID}
+        `;
+
+        // Helper function to display results
+        function displayResult(elementId, result, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const statusClass = result.success ? 'success' : 'error';
+            
+            element.innerHTML = `
+                <div class="${statusClass}">
+                    <strong>${timestamp}</strong>: ${result.success ? '✅' : '❌'} 
+                    ${result.success ? 'Success' : 'Error'}
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                </div>
+            `;
+        }
+
+        // HTTP API functions
+        const httpAPI = {
+            async makeRequest(path, options = {}) {
+                const url = `${IC_HOST}${path}?canisterId=${BACKEND_CANISTER_ID}`;
+                
+                const defaultOptions = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                };
+
+                const requestOptions = {
+                    ...defaultOptions,
+                    ...options,
+                    headers: {
+                        ...defaultOptions.headers,
+                        ...options.headers,
+                    },
+                };
+
+                console.log('Making request to:', url);
+                console.log('Options:', requestOptions);
+
+                try {
+                    const response = await fetch(url, requestOptions);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const contentType = response.headers.get('content-type');
+                    let data;
+                    if (contentType && contentType.includes('application/json')) {
+                        data = await response.json();
+                    } else {
+                        data = await response.text();
+                    }
+
+                    return { success: true, data, status: response.status };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            }
+        };
+
+        // Test functions
+        window.testConnection = async () => {
+            const result = await httpAPI.makeRequest('/api/health');
+            displayResult('connection-result', result);
+        };
+
+        window.getTotalUsers = async () => {
+            const result = await httpAPI.makeRequest('/api/users/total');
+            displayResult('users-result', result);
+        };
+
+        window.createProfile = async () => {
+            const profileData = {
+                fullName: "HTTP Test User",
+                email: "http-test@example.com",
+                age: 30,
+                height: 180,
+                weight: 75
+            };
+
+            const result = await httpAPI.makeRequest('/api/users/profile', {
+                method: 'POST',
+                body: JSON.stringify(profileData)
+            });
+            displayResult('create-result', result);
+        };
+
+        window.getProfile = async () => {
+            const result = await httpAPI.makeRequest('/api/users/profile', {
+                method: 'GET'
+            });
+            displayResult('profile-result', result);
+        };
+
+        window.compareAPIs = async () => {
+            const startTime = performance.now();
+            
+            // Test HTTP API
+            const httpStart = performance.now();
+            const httpResult = await httpAPI.makeRequest('/api/users/total');
+            const httpTime = performance.now() - httpStart;
+
+            // Test Candid API (if available)
+            let candidTime = 0;
+            let candidResult = { success: false, error: 'Candid API not tested' };
+            
+            try {
+                const { HttpAgent, Actor } = await import('https://esm.sh/@dfinity/agent@2.1.1');
+                
+                const candidStart = performance.now();
+                const agent = new HttpAgent({ host: IC_HOST });
+                await agent.fetchRootKey();
+                
+                const idlFactory = ({ IDL }) => {
+                    return IDL.Service({
+                        'getTotalUsers': IDL.Func([], [IDL.Nat], ['query']),
+                    });
+                };
+
+                const actor = Actor.createActor(idlFactory, {
+                    agent,
+                    canisterId: BACKEND_CANISTER_ID,
+                });
+
+                const totalUsers = await actor.getTotalUsers();
+                candidTime = performance.now() - candidStart;
+                candidResult = { success: true, data: totalUsers };
+            } catch (error) {
+                candidResult = { success: false, error: error.message };
+            }
+
+            const totalTime = performance.now() - startTime;
+
+            const comparison = {
+                http: {
+                    result: httpResult,
+                    time: `${httpTime.toFixed(2)}ms`
+                },
+                candid: {
+                    result: candidResult,
+                    time: `${candidTime.toFixed(2)}ms`
+                },
+                totalTime: `${totalTime.toFixed(2)}ms`
+            };
+
+            displayResult('compare-result', comparison);
+        };
+
+        window.testRawHTTP = async () => {
+            try {
+                // Test different endpoints
+                const tests = [
+                    { name: 'Health Check', path: '/api/health' },
+                    { name: 'Total Users', path: '/api/users/total' },
+                    { name: 'Not Found', path: '/api/nonexistent' },
+                ];
+
+                const results = {};
+                
+                for (const test of tests) {
+                    const result = await httpAPI.makeRequest(test.path);
+                    results[test.name] = result;
+                }
+
+                displayResult('raw-result', { success: true, tests: results });
+            } catch (error) {
+                displayResult('raw-result', { success: false, error: error.message });
+            }
+        };
+
+        // Auto-run connection test on load
+        window.addEventListener('load', () => {
+            setTimeout(testConnection, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -676,6 +676,111 @@ export const dataManagementAPI = {
   }
 };
 
+// ============ HYBRID HTTP-STYLE API ============
+
+/**
+ * HTTP-style wrapper for Candid calls
+ * Provides REST-like interface while maintaining IC security
+ */
+export const httpStyleAPI = {
+  /**
+   * GET /api/health
+   */
+  health: async () => {
+    try {
+      const actor = await getBackendActor();
+      const totalUsers = await actor.getTotalUsers();
+      
+      return {
+        status: 200,
+        data: {
+          status: 'healthy',
+          totalUsers: Number(totalUsers),
+          timestamp: new Date().toISOString()
+        }
+      };
+    } catch (error) {
+      return {
+        status: 500,
+        error: error.message
+      };
+    }
+  },
+
+  /**
+   * GET /api/users/total
+   */
+  getTotalUsers: async () => {
+    try {
+      const actor = await getBackendActor();
+      const total = await actor.getTotalUsers();
+      
+      return {
+        status: 200,
+        data: { total_users: Number(total) }
+      };
+    } catch (error) {
+      return {
+        status: 500,
+        error: error.message
+      };
+    }
+  },
+
+  /**
+   * POST /api/users/profile
+   */
+  createProfile: async (profileData) => {
+    try {
+      const result = await userProfileAPI.create(profileData);
+      
+      if (result.success) {
+        return {
+          status: 201,
+          data: result.data,
+          message: 'Profile created successfully'
+        };
+      } else {
+        return {
+          status: 400,
+          error: result.error
+        };
+      }
+    } catch (error) {
+      return {
+        status: 500,
+        error: error.message
+      };
+    }
+  },
+
+  /**
+   * GET /api/users/profile
+   */
+  getProfile: async () => {
+    try {
+      const profile = await userProfileAPI.get();
+      
+      if (profile) {
+        return {
+          status: 200,
+          data: { profile }
+        };
+      } else {
+        return {
+          status: 404,
+          error: 'Profile not found'
+        };
+      }
+    } catch (error) {
+      return {
+        status: 500,
+        error: error.message
+      };
+    }
+  }
+};
+
 // Export the actor getter for direct access if needed
-export { getBackendActor };
+export { getBackendActor, httpStyleAPI };
 export default getBackendActor;
