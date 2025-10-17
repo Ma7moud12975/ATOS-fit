@@ -346,20 +346,10 @@ const PricingPage = () => {
                 </div>
 
                 <button
-                  onClick={() => handleGetStarted(plan)}
-                  disabled={isProcessing}
-                  className={`w-full py-4 rounded-2xl font-semibold transition-all duration-300 ${
-                    plan.popular
-                      ? 'bg-[#FF8A00] hover:bg-[#E67B00] text-black hover:shadow-[0px_4px_15px_rgba(255,138,0,0.2)]'
-                      : 'bg-transparent border border-[rgba(255,255,255,0.1)] text-white hover:bg-[rgba(255,255,255,0.05)] hover:border-[#FF8A00]'
-                  } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled
+                  className="w-full py-4 rounded-2xl font-semibold bg-gray-400 text-gray-600 cursor-not-allowed opacity-50"
                 >
-                  {isProcessing ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                      <span>Processing...</span>
-                    </div>
-                  ) : plan.planType === 'Basic' ? (
+                  {plan.planType === 'Basic' ? (
                     'Start Free Beta'
                   ) : (
                     `Choose ${plan.name}`

@@ -265,8 +265,8 @@ const UserProfile = () => {
               <h4 className="text-lg font-medium text-[#232323] dark:text-white mb-2">Free Plan</h4>
               <p className="text-[#232323] dark:text-white mb-6">You're currently on the free plan. Upgrade to unlock premium features!</p>
               <button
-                onClick={handleUpgrade}
-                className="px-6 py-3 bg-gradient-to-r from-[#FF8A00] to-[#E67B00] hover:from-[#E67B00] hover:to-[#CC6600] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                disabled
+                className="px-6 py-3 bg-gray-400 text-gray-600 font-semibold rounded-xl shadow-lg cursor-not-allowed opacity-50"
               >
                 Upgrade to Premium
               </button>
@@ -349,22 +349,7 @@ const UserProfile = () => {
               </div>
             </div>
           </div>
-          {/* Shiny Get Premium Button if not on premium plan */}
-          {(!subscription || subscription.plan !== 'PremiumPlus') && (
-            <div className="text-center mt-8">
-              <button
-                onClick={() => navigate('/pricing')}
-                className="px-8 py-4 rounded-full font-bold text-lg bg-gradient-to-r from-[#FF8A00] via-[#FFB347] to-[#E67B00] hover:from-[#E67B00] hover:via-[#FF8A00] hover:to-[#FFB347] text-white shadow-xl hover:shadow-2xl focus:ring-4 focus:ring-orange-300 focus:ring-offset-2 border-none outline-none select-none transition-all duration-500 transform hover:scale-110 animate-pulse"
-                style={{
-                  background: 'linear-gradient(45deg, #FF8A00, #FFB347, #E67B00, #FF8A00)',
-                  backgroundSize: '300% 300%',
-                  animation: 'gradient-shift 3s ease infinite, pulse 2s infinite'
-                }}
-              >
-                ✨ Get Premium ✨
-              </button>
-            </div>
-          )}
+
         </div>
 
         {/* Upgrade Options */}
@@ -377,8 +362,8 @@ const UserProfile = () => {
                 <p className="text-2xl font-bold text-[#FF8A00] mb-2">$9.99/month</p>
                 <p className="text-[#232323] dark:text-gray-200 text-sm mb-4">Enhanced features for serious fitness enthusiasts</p>
                 <button
-                  onClick={handleUpgrade}
-                  className="w-full py-3 bg-gradient-to-r from-[#FF8A00] to-[#E67B00] hover:from-[#E67B00] hover:to-[#CC6600] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  disabled
+                  className="w-full py-3 bg-gray-400 text-gray-600 font-semibold rounded-lg shadow-lg cursor-not-allowed opacity-50"
                 >
                   Choose Premium
                 </button>
@@ -388,8 +373,8 @@ const UserProfile = () => {
                 <p className="text-2xl font-bold text-[#FF8A00] mb-2">$19.99/month</p>
                 <p className="text-[#232323] dark:text-gray-200 text-sm mb-4">Unlimited access to all features</p>
                 <button
-                  onClick={handleUpgrade}
-                  className="w-full py-3 bg-transparent border-2 border-[#FF8A00] text-[#FF8A00] hover:bg-gradient-to-r hover:from-[#FF8A00] hover:to-[#E67B00] hover:text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  disabled
+                  className="w-full py-3 bg-gray-400 text-gray-600 font-semibold rounded-lg shadow-lg cursor-not-allowed opacity-50"
                 >
                   Choose Premium Plus
                 </button>

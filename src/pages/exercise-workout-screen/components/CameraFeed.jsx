@@ -406,39 +406,39 @@ const CameraFeed = ({
 
       }
       {/* Camera Controls Overlay */}
-      <div className="absolute top-4 right-4 flex space-x-2">
+      <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex space-x-1 sm:space-x-2">
         <Button
           variant="secondary"
           size="icon"
           onClick={() => setShowPoseOverlay(!showPoseOverlay)}
-          className="bg-black/50 hover:bg-black/70 text-white border-white/20">
+          className="bg-black/50 hover:bg-black/70 text-white border-white/20 w-8 h-8 sm:w-10 sm:h-10">
 
-          <Icon name={showPoseOverlay ? "Eye" : "EyeOff"} size={18} />
+          <Icon name={showPoseOverlay ? "Eye" : "EyeOff"} size={16} className="sm:w-[18px] sm:h-[18px]" />
         </Button>
         
         <Button
           variant="secondary"
           size="icon"
           onClick={toggleFullscreen}
-          className="bg-black/50 hover:bg-black/70 text-white border-white/20">
+          className="bg-black/50 hover:bg-black/70 text-white border-white/20 w-8 h-8 sm:w-10 sm:h-10">
 
-          <Icon name={isFullscreen ? "Minimize2" : "Maximize2"} size={18} />
+          <Icon name={isFullscreen ? "Minimize2" : "Maximize2"} size={16} className="sm:w-[18px] sm:h-[18px]" />
         </Button>
         
         <Button
           variant="secondary"
           size="icon"
           onClick={onToggleCamera}
-          className="bg-black/50 hover:bg-black/70 text-white border-white/20">
+          className="bg-black/50 hover:bg-black/70 text-white border-white/20 w-8 h-8 sm:w-10 sm:h-10">
 
-          <Icon name={isActive ? "CameraOff" : "Camera"} size={18} />
+          <Icon name={isActive ? "CameraOff" : "Camera"} size={16} className="sm:w-[18px] sm:h-[18px]" />
         </Button>
       </div>
       {/* Stats Overlay - Push-Ups: reps, Plank: time */}
       {(isPushUpsSelected || isPlankSelected || isSquatSelected || isLungesSelected || isMountainClimbersSelected) && isActive && (
-        <div className="absolute top-4 left-4 bg-black/70 rounded-lg p-3 text-white">
-          <div className="text-center mb-2">
-            <div className="text-2xl font-bold text-green-400">{isPlankSelected ? (poseDetectionRef.current?.getStats()?.timeSec || 0) : pushupCount}</div>
+        <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-black/70 rounded-lg p-2 sm:p-3 text-white">
+          <div className="text-center mb-1 sm:mb-2">
+            <div className="text-xl sm:text-2xl font-bold text-green-400">{isPlankSelected ? (poseDetectionRef.current?.getStats()?.timeSec || 0) : pushupCount}</div>
             <div className="text-xs text-gray-300">
               {isPlankSelected ? 'Plank (sec)' : 
                isSquatSelected ? 'Squats' :
@@ -459,9 +459,9 @@ const CameraFeed = ({
       )}
       {/* Stats Overlay - Burpees */}
       {(isBurpeesSelected && isActive) && (
-        <div className="absolute top-4 left-4 bg-black/70 rounded-lg p-3 text-white">
-          <div className="text-center mb-2">
-            <div className="text-2xl font-bold text-green-400">{pushupCount}</div>
+        <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-black/70 rounded-lg p-2 sm:p-3 text-white">
+          <div className="text-center mb-1 sm:mb-2">
+            <div className="text-xl sm:text-2xl font-bold text-green-400">{pushupCount}</div>
             <div className="text-xs text-gray-300">Burpees</div>
           </div>
           <div className={`text-xs px-2 py-1 rounded text-center ${
@@ -478,7 +478,7 @@ const CameraFeed = ({
 
       {/* Form Feedback Overlay */}
       {formFeedback &&
-      <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-4 py-2 rounded-lg text-white font-medium text-center max-w-xs animate-spring ${
+      <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-3 sm:px-4 py-2 rounded-lg text-white font-medium text-center max-w-xs text-sm sm:text-base animate-spring ${
       formFeedback?.type === 'success' ? 'bg-success' :
       formFeedback?.type === 'warning' ? 'bg-warning' : 'bg-primary'}`
       }>
@@ -488,16 +488,16 @@ const CameraFeed = ({
 
       {/* Posture Warning Overlay - Only for incorrect posture */}
       {postureStatus === 'incorrect' && isPlankSelected && (
-        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-red-600/90 text-white px-6 py-3 rounded-lg text-center animate-pulse">
-          <div className="font-bold text-lg">⚠️ DANGEROUS POSTURE!</div>
-          <div className="text-sm">Straighten your back / reach proper depth</div>
+        <div className="absolute bottom-16 sm:bottom-20 left-1/2 transform -translate-x-1/2 bg-red-600/90 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-center animate-pulse">
+          <div className="font-bold text-base sm:text-lg">⚠️ DANGEROUS POSTURE!</div>
+          <div className="text-xs sm:text-sm">Straighten your back / reach proper depth</div>
         </div>
       )}
       {/* Camera Status Indicator */}
-      <div className="absolute bottom-4 left-4">
-        <div className="flex items-center space-x-2 bg-black/50 rounded-full px-3 py-1">
+      <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4">
+        <div className="flex items-center space-x-2 bg-black/50 rounded-full px-2 sm:px-3 py-1">
           <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-success animate-pulse' : 'bg-muted-foreground'}`}></div>
-          <span className="text-white text-sm font-medium">
+          <span className="text-white text-xs sm:text-sm font-medium">
             {isActive ? 'Live' : 'Offline'}
           </span>
         </div>
@@ -505,10 +505,10 @@ const CameraFeed = ({
       {/* Placeholder when camera is off */}
       {!isActive && !isLoading &&
       <div className="absolute inset-0 bg-muted rounded-lg flex items-center justify-center">
-          <div className="text-center p-6">
-            <Icon name="Camera" size={64} className="text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-foreground mb-2">Camera Ready</h3>
-            <p className="text-muted-foreground mb-4">Start your workout to begin pose tracking</p>
+          <div className="text-center p-4 sm:p-6">
+            <Icon name="Camera" size={48} className="text-muted-foreground mx-auto mb-3 sm:mb-4 sm:w-16 sm:h-16" />
+            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">Camera Ready</h3>
+            <p className="text-sm sm:text-base text-muted-foreground mb-4">Start your workout to begin pose tracking</p>
 
           </div>
         </div>

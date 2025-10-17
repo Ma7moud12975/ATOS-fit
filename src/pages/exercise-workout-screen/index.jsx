@@ -487,16 +487,18 @@ const ExerciseWorkoutScreen = () => {
       {/* Header with Breadcrumb */}
       <div className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/dashboard')}
+                className="w-8 h-8 sm:w-10 sm:h-10"
               >
-                <Icon name="ArrowLeft" size={20} />
+                <Icon name="ArrowLeft" size={18} className="sm:w-5 sm:h-5" />
               </Button>
-              <nav className="flex items-center space-x-2 text-sm">
+              {/* Hide breadcrumb on mobile */}
+              <nav className="hidden sm:flex items-center space-x-2 text-sm">
                 <button 
                   onClick={() => navigate('/dashboard')}
                   className="text-muted-foreground hover:text-foreground transition-colors"
@@ -508,51 +510,56 @@ const ExerciseWorkoutScreen = () => {
                 <Icon name="ChevronRight" size={16} className="text-muted-foreground" />
                 <span className="text-primary font-medium">{currentExercise?.name}</span>
               </nav>
+              {/* Mobile title */}
+              <div className="sm:hidden">
+                <h1 className="text-lg font-semibold text-foreground">{currentExercise?.name || 'Exercise Workout'}</h1>
+              </div>
             </div>
             
-            <div className="flex items-center space-x-3">
-              <Button variant="ghost" size="icon">
-                <Icon name="Settings" size={18} />
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <Button variant="ghost" size="icon" className="w-8 h-8 sm:w-10 sm:h-10">
+                <Icon name="Settings" size={16} className="sm:w-[18px] sm:h-[18px]" />
               </Button>
-              <Button variant="ghost" size="icon">
-                <Icon name="HelpCircle" size={18} />
+              <Button variant="ghost" size="icon" className="w-8 h-8 sm:w-10 sm:h-10">
+                <Icon name="HelpCircle" size={16} className="sm:w-[18px] sm:h-[18px]" />
               </Button>
             </div>
           </div>
         </div>
       </div>
+
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Tab Navigation */}
-        <div className="flex items-center justify-center mb-6">
-          <div className="bg-muted rounded-lg p-1 flex">
+        <div className="flex items-center justify-center mb-4 sm:mb-6">
+          <div className="bg-muted rounded-lg p-1 flex w-full max-w-sm sm:max-w-none sm:w-auto">
             <button
               onClick={() => setActiveTab('live')}
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                 activeTab === 'live' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Icon name="Camera" size={16} className="mr-2 inline" />
+              <Icon name="Camera" size={14} className="mr-1 sm:mr-2 inline w-3 h-3 sm:w-4 sm:h-4" />
               Live Workout
             </button>
             <button
               onClick={() => setActiveTab('upload')}
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                 activeTab === 'upload' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Icon name="Upload" size={16} className="mr-2 inline" />
+              <Icon name="Upload" size={14} className="mr-1 sm:mr-2 inline w-3 h-3 sm:w-4 sm:h-4" />
               Video Analysis
             </button>
           </div>
         </div>
 
         {activeTab === 'live' ? (
-          /* Live Workout Layout */
-          (<div className="grid lg:grid-cols-3 gap-6">
-            {/* Camera Feed - Takes 2 columns on desktop */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="aspect-video bg-black rounded-lg overflow-hidden">
+          /* Live Workout Layout - Unified Responsive Design */
+          (<div className="lg:grid lg:grid-cols-3 lg:gap-6 space-y-4 lg:space-y-0">
+            {/* Camera Feed - Full width on mobile, 2 columns on desktop */}
+            <div className="lg:col-span-2">
+              <div className="aspect-[4/3] sm:aspect-video bg-black rounded-lg overflow-hidden">
                 <CameraFeed
                   isActive={isCameraActive}
                   onToggleCamera={handleCameraToggle}
@@ -566,8 +573,8 @@ const ExerciseWorkoutScreen = () => {
                 />
               </div>
               
-              {/* Mobile Stats - Only visible on mobile */}
-              <div className="lg:hidden">
+              {/* Mobile Stats - Visible on mobile only */}
+              <div className="lg:hidden mt-4">
                 <WorkoutStats
                   workoutTime={workoutTime}
                   caloriesBurned={Math.round(caloriesBurned)}
@@ -578,8 +585,9 @@ const ExerciseWorkoutScreen = () => {
                 />
               </div>
             </div>
-            {/* Controls Sidebar */}
-            <div className="space-y-6">
+            
+            {/* Controls Sidebar - Desktop only */}
+            <div className="hidden lg:block space-y-6">
               <ExerciseControls
                 selectedExercise={currentExercise}
                 onExerciseChange={handleExerciseChange}
@@ -602,17 +610,40 @@ const ExerciseWorkoutScreen = () => {
                 planExercise={planExercise}
               />
               
-              {/* Desktop Stats - Only visible on desktop */}
-              <div className="hidden lg:block">
-                <WorkoutStats
-                  workoutTime={workoutTime}
-                  caloriesBurned={Math.round(caloriesBurned)}
-                  heartRate={heartRate}
-                  formScore={Math.round(formScore)}
-                  repsCompleted={repsCompleted}
-                  isActive={isWorkoutActive && !isPaused}
-                />
-              </div>
+              {/* Desktop Stats */}
+              <WorkoutStats
+                workoutTime={workoutTime}
+                caloriesBurned={Math.round(caloriesBurned)}
+                heartRate={heartRate}
+                formScore={Math.round(formScore)}
+                repsCompleted={repsCompleted}
+                isActive={isWorkoutActive && !isPaused}
+              />
+            </div>
+
+            {/* Mobile Controls - Bottom section for mobile */}
+            <div className="lg:hidden">
+              <ExerciseControls
+                selectedExercise={currentExercise}
+                onExerciseChange={handleExerciseChange}
+                onWorkoutStart={handleWorkoutStart}
+                onWorkoutPause={handleWorkoutPause}
+                onWorkoutStop={handleWorkoutStop}
+                onNextExercise={handleNextExercise}
+                onExerciseComplete={handleExerciseComplete}
+                hasNextExercise={Boolean(todayPlan?.items && (() => {
+                  const currentIdx = todayPlan.items.findIndex((e) => 
+                    normalizeName(e.name) === normalizeName(currentExercise?.name)
+                  );
+                  return currentIdx >= 0 && currentIdx < todayPlan.items.length - 1;
+                })())}
+                isWorkoutActive={isWorkoutActive}
+                isPaused={isPaused}
+                currentSet={currentSet}
+                currentRep={currentRep}
+                workoutTime={workoutTime}
+                planExercise={planExercise}
+              />
             </div>
           </div>)
         ) : (

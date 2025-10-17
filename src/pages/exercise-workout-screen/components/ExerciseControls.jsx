@@ -104,86 +104,86 @@ const ExerciseControls = ({
   }, [isWorkoutActive, currentSet, currentRep, workoutTime, targetReps, targetSets, setDurationSeconds, isTimeBased]);
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6 space-y-6">
+    <div className="bg-card border border-border rounded-lg p-3 sm:p-6 space-y-3 sm:space-y-6">
       {/* Exercise Selection Header */}
-      <div className="space-y-4">
+      <div className="space-y-2 sm:space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-card-foreground">Exercise Setup</h2>
-          <Button variant="ghost" size="icon">
-            <Icon name="MoreVertical" size={18} />
+          <h2 className="text-lg sm:text-xl font-semibold text-card-foreground">Exercise Setup</h2>
+          <Button variant="ghost" size="icon" className="w-8 h-8 sm:w-10 sm:h-10">
+            <Icon name="MoreVertical" size={16} className="sm:w-[18px] sm:h-[18px]" />
           </Button>
         </div>
 
         {/* Current Exercise Info */}
-        <div className="bg-muted rounded-lg p-4">
+        <div className="bg-muted rounded-lg p-3 sm:p-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-card-foreground">{currentExercise?.name}</h3>
-            <span className={`text-sm font-medium ${getDifficultyColor(currentExercise?.difficulty)}`}>
+            <h3 className="text-base sm:text-lg font-semibold text-card-foreground">{currentExercise?.name}</h3>
+            <span className={`text-xs sm:text-sm font-medium ${getDifficultyColor(currentExercise?.difficulty)}`}>
               {currentExercise?.difficulty}
             </span>
           </div>
-          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+          <div className="flex items-center space-x-3 sm:space-x-4 text-xs sm:text-sm text-muted-foreground">
             <span className="flex items-center space-x-1">
-              <Icon name="Tag" size={14} />
+              <Icon name="Tag" size={12} className="sm:w-[14px] sm:h-[14px]" />
               <span>{currentExercise?.category}</span>
             </span>
             <span className="flex items-center space-x-1">
-              <Icon name="Clock" size={14} />
+              <Icon name="Clock" size={12} className="sm:w-[14px] sm:h-[14px]" />
               <span>{currentExercise?.duration}</span>
             </span>
           </div>
         </div>
       </div>
       {/* Workout Configuration */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium text-card-foreground">Configuration</h3>
+      <div className="space-y-3 sm:space-y-4">
+        <h3 className="text-base sm:text-lg font-medium text-card-foreground">Configuration</h3>
         
         {/* Primary Configuration: Reps or Time */}
         {isTimeBased ? (
-          <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+          <div className="flex items-center justify-between p-2 sm:p-3 bg-muted rounded-lg">
             <div>
-              <label className="text-sm font-medium text-card-foreground">Set Duration</label>
+              <label className="text-xs sm:text-sm font-medium text-card-foreground">Set Duration</label>
               <p className="text-xs text-muted-foreground">Seconds per set</p>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => setSetDurationSeconds(Math.max(5, setDurationSeconds - 5))}
-                className="w-8 h-8"
+                className="w-7 h-7 sm:w-8 sm:h-8"
               >
-                <Icon name="Minus" size={14} />
+                <Icon name="Minus" size={12} className="sm:w-[14px] sm:h-[14px]" />
               </Button>
-              <span className="text-lg font-semibold text-card-foreground w-12 text-center">
+              <span className="text-base sm:text-lg font-semibold text-card-foreground w-10 sm:w-12 text-center">
                 {setDurationSeconds}s
               </span>
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => setSetDurationSeconds(Math.min(600, setDurationSeconds + 5))}
-                className="w-8 h-8"
+                className="w-7 h-7 sm:w-8 sm:h-8"
               >
-                <Icon name="Plus" size={14} />
+                <Icon name="Plus" size={12} className="sm:w-[14px] sm:h-[14px]" />
               </Button>
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+          <div className="flex items-center justify-between p-2 sm:p-3 bg-muted rounded-lg">
             <div>
-              <label className="text-sm font-medium text-card-foreground">Target Reps</label>
+              <label className="text-xs sm:text-sm font-medium text-card-foreground">Target Reps</label>
               <p className="text-xs text-muted-foreground">Repetitions per set</p>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <Button
                 variant="outline"
                 size="icon"
                 onClick={repsControl?.decrement}
                 disabled={targetReps <= 5}
-                className="w-8 h-8"
+                className="w-7 h-7 sm:w-8 sm:h-8"
               >
-                <Icon name="Minus" size={14} />
+                <Icon name="Minus" size={12} className="sm:w-[14px] sm:h-[14px]" />
               </Button>
-              <span className="text-lg font-semibold text-card-foreground w-8 text-center">
+              <span className="text-base sm:text-lg font-semibold text-card-foreground w-7 sm:w-8 text-center">
                 {targetReps}
               </span>
               <Button
@@ -191,31 +191,31 @@ const ExerciseControls = ({
                 size="icon"
                 onClick={repsControl?.increment}
                 disabled={targetReps >= 50}
-                className="w-8 h-8"
+                className="w-7 h-7 sm:w-8 sm:h-8"
               >
-                <Icon name="Plus" size={14} />
+                <Icon name="Plus" size={12} className="sm:w-[14px] sm:h-[14px]" />
               </Button>
             </div>
           </div>
         )}
 
         {/* Sets Configuration */}
-        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+        <div className="flex items-center justify-between p-2 sm:p-3 bg-muted rounded-lg">
           <div>
-            <label className="text-sm font-medium text-card-foreground">Target Sets</label>
+            <label className="text-xs sm:text-sm font-medium text-card-foreground">Target Sets</label>
             <p className="text-xs text-muted-foreground">Number of sets</p>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <Button
               variant="outline"
               size="icon"
               onClick={setsControl?.decrement}
               disabled={targetSets <= 1}
-              className="w-8 h-8"
+              className="w-7 h-7 sm:w-8 sm:h-8"
             >
-              <Icon name="Minus" size={14} />
+              <Icon name="Minus" size={12} className="sm:w-[14px] sm:h-[14px]" />
             </Button>
-            <span className="text-lg font-semibold text-card-foreground w-8 text-center">
+            <span className="text-base sm:text-lg font-semibold text-card-foreground w-7 sm:w-8 text-center">
               {targetSets}
             </span>
             <Button
@@ -223,30 +223,30 @@ const ExerciseControls = ({
               size="icon"
               onClick={setsControl?.increment}
               disabled={targetSets >= 10}
-              className="w-8 h-8"
+              className="w-7 h-7 sm:w-8 sm:h-8"
             >
-              <Icon name="Plus" size={14} />
+              <Icon name="Plus" size={12} className="sm:w-[14px] sm:h-[14px]" />
             </Button>
           </div>
         </div>
 
         {/* Rest Duration */}
-        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+        <div className="flex items-center justify-between p-2 sm:p-3 bg-muted rounded-lg">
           <div>
-            <label className="text-sm font-medium text-card-foreground">Rest Time</label>
+            <label className="text-xs sm:text-sm font-medium text-card-foreground">Rest Time</label>
             <p className="text-xs text-muted-foreground">Seconds between sets</p>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <Button
               variant="outline"
               size="icon"
               onClick={restControl?.decrement}
               disabled={restDuration <= 15}
-              className="w-8 h-8"
+              className="w-7 h-7 sm:w-8 sm:h-8"
             >
-              <Icon name="Minus" size={14} />
+              <Icon name="Minus" size={12} className="sm:w-[14px] sm:h-[14px]" />
             </Button>
-            <span className="text-sm font-semibold text-card-foreground w-12 text-center">
+            <span className="text-xs sm:text-sm font-semibold text-card-foreground w-10 sm:w-12 text-center">
               {restDuration}s
             </span>
             <Button
@@ -254,9 +254,9 @@ const ExerciseControls = ({
               size="icon"
               onClick={restControl?.increment}
               disabled={restDuration >= 300}
-              className="w-8 h-8"
+              className="w-7 h-7 sm:w-8 sm:h-8"
             >
-              <Icon name="Plus" size={14} />
+              <Icon name="Plus" size={12} className="sm:w-[14px] sm:h-[14px]" />
             </Button>
           </div>
         </div>
@@ -270,50 +270,52 @@ const ExerciseControls = ({
           value={exerciseNotes}
           onChange={(e) => setExerciseNotes(e?.target?.value)}
           description="Personal notes for this workout session"
+          className="text-sm"
         />
       </div>
       {/* Voice Guidance Toggle */}
-      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+      <div className="flex items-center justify-between p-2 sm:p-3 bg-muted rounded-lg">
         <div>
-          <label className="text-sm font-medium text-card-foreground">Voice Guidance</label>
+          <label className="text-xs sm:text-sm font-medium text-card-foreground">Voice Guidance</label>
           <p className="text-xs text-muted-foreground">Audio coaching during workout</p>
         </div>
         <Button
           variant={voiceGuidance ? "default" : "outline"}
           size="sm"
           onClick={() => setVoiceGuidance(!voiceGuidance)}
+          className="text-xs sm:text-sm"
         >
-          <Icon name={voiceGuidance ? "Volume2" : "VolumeX"} size={16} className="mr-2" />
+          <Icon name={voiceGuidance ? "Volume2" : "VolumeX"} size={14} className="mr-1 sm:mr-2 sm:w-4 sm:h-4" />
           {voiceGuidance ? "On" : "Off"}
         </Button>
       </div>
       {/* Workout Progress (shown during active workout) */}
       {isWorkoutActive && (
-        <div className="space-y-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+        <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-primary/5 border border-primary/20 rounded-lg">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-card-foreground">Workout Progress</h3>
-            <span className="text-sm text-muted-foreground">{formatTime(workoutTime)}</span>
+            <h3 className="text-base sm:text-lg font-semibold text-card-foreground">Workout Progress</h3>
+            <span className="text-xs sm:text-sm text-muted-foreground">{formatTime(workoutTime)}</span>
           </div>
           
           {/* Current Set/Rep Display */}
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
             <div>
-              <p className="text-2xl font-bold text-primary">{currentSet}</p>
+              <p className="text-xl sm:text-2xl font-bold text-primary">{currentSet}</p>
               <p className="text-xs text-muted-foreground">Current Set</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-success">{currentRep}</p>
+              <p className="text-xl sm:text-2xl font-bold text-success">{currentRep}</p>
               <p className="text-xs text-muted-foreground">Current Rep</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-card-foreground">{targetSets}</p>
+              <p className="text-xl sm:text-2xl font-bold text-card-foreground">{targetSets}</p>
               <p className="text-xs text-muted-foreground">Total Sets</p>
             </div>
           </div>
 
           {/* Progress Bar */}
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-xs sm:text-sm">
               <span className="text-muted-foreground">Overall Progress</span>
               <span className="text-card-foreground font-medium">{Math.round(getProgressPercentage())}%</span>
             </div>
@@ -327,45 +329,47 @@ const ExerciseControls = ({
         </div>
       )}
       {/* Control Buttons */}
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {!isWorkoutActive ? (
           <Button
             onClick={onWorkoutStart}
-            className="w-full"
+            className="w-full text-sm sm:text-base"
             size="lg"
           >
-            <Icon name="Play" size={20} className="mr-2" />
+            <Icon name="Play" size={18} className="mr-2 sm:w-5 sm:h-5" />
             Start Workout
           </Button>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <Button
               onClick={isPaused ? onWorkoutStart : onWorkoutPause}
               variant={isPaused ? "default" : "secondary"}
               size="lg"
+              className="text-sm sm:text-base"
             >
-              <Icon name={isPaused ? "Play" : "Pause"} size={18} className="mr-2" />
+              <Icon name={isPaused ? "Play" : "Pause"} size={16} className="mr-1 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
               {isPaused ? "Resume" : "Pause"}
             </Button>
             <Button
               onClick={onWorkoutStop}
               variant="destructive"
               size="lg"
+              className="text-sm sm:text-base"
             >
-              <Icon name="Square" size={18} className="mr-2" />
+              <Icon name="Square" size={16} className="mr-1 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
               Stop
             </Button>
           </div>
         )}
 
         {/* Quick Exercise Switch */}
-        <Button variant="outline" className="w-full" onClick={() => setShowSwitchModal(true)}>
-          <Icon name="RotateCcw" size={18} className="mr-2" />
+        <Button variant="outline" className="w-full text-sm sm:text-base" onClick={() => setShowSwitchModal(true)}>
+          <Icon name="RotateCcw" size={16} className="mr-1 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
           Switch Exercise
         </Button>
         {isWorkoutActive && hasNextExercise && (
-          <Button variant="secondary" className="w-full" onClick={onNextExercise}>
-            <Icon name="ChevronRight" size={18} className="mr-2" />
+          <Button variant="secondary" className="w-full text-sm sm:text-base" onClick={onNextExercise}>
+            <Icon name="ChevronRight" size={16} className="mr-1 sm:mr-2 sm:w-[18px] sm:h-[18px]" />
             Next Exercise
           </Button>
         )}
@@ -377,9 +381,9 @@ const ExerciseControls = ({
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowSwitchModal(false)} />
           <div className="relative bg-card border border-border rounded-xl shadow-elevation-3 w-full max-w-md p-4">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-lg font-semibold text-card-foreground">Choose Exercise</h4>
-              <Button variant="ghost" size="icon" onClick={() => setShowSwitchModal(false)}>
-                <Icon name="X" size={18} />
+              <h4 className="text-base sm:text-lg font-semibold text-card-foreground">Choose Exercise</h4>
+              <Button variant="ghost" size="icon" onClick={() => setShowSwitchModal(false)} className="w-8 h-8">
+                <Icon name="X" size={16} className="sm:w-[18px] sm:h-[18px]" />
               </Button>
             </div>
             <div className="max-h-96 overflow-y-auto space-y-2">
@@ -391,7 +395,7 @@ const ExerciseControls = ({
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-card-foreground">{ex.name}</p>
+                      <p className="text-sm sm:text-base font-medium text-card-foreground">{ex.name}</p>
                       <p className="text-xs text-muted-foreground">{ex.category} • {ex.duration}</p>
                     </div>
                     <span className="text-xs text-muted-foreground">{ex.difficulty}</span>
