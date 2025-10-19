@@ -14,7 +14,7 @@
 > It uses **TensorFlow.js** and **pose estimation** to analyze your workout form, count repetitions in real time, and provide instant feedback — all directly through your webcam.
 
 <p align="center">
-<img width="2400" height="1350" alt="ATOS fit Persentaion (1)" src="https://github.com/user-attachments/assets/592f92ad-a37b-464e-9a8a-0452b1760987" />
+<img width="2400" height="1350" alt="ATOS fit Persentaion (2)" src="https://github.com/user-attachments/assets/b3bc3e93-cb79-4f7e-9a65-924bc4552b5f" />
 </p>
 
 ---
