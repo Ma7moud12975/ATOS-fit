@@ -14,7 +14,7 @@
 > It uses **TensorFlow.js** and **pose estimation** to analyze your workout form, count repetitions in real time, and provide instant feedback — all directly through your webcam.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/b6fdb398-fda3-4a1b-a1f3-ef48c45eaed2" width="85%"/>
+  <img width="1563" height="1563" alt="Yellow Black Modern Bulb Tech Logo Design" src="https://github.com/user-attachments/assets/93ed6b3d-e841-4523-a721-c1fba2bcbf3c" />
 </p>
 
 ---
