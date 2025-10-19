@@ -29,12 +29,19 @@ It’s a fully in-browser experience that analyzes your movements using advanced
 ## 🧆 Key Highlights
 
 ✅ **Real-Time Pose Detection** – Powered by MoveNet and TensorFlow.js for precise tracking.
+
 ✅ **Automatic Repetition Counting** – Smart algorithms based on joint angles & motion states.
+
 ✅ **Live Form Feedback** – Prevent injuries with real-time posture correction.
+
 ✅ **Custom Workouts** – Tailor exercises, sets, and reps to your fitness level.
+
 ✅ **Comprehensive Dashboard** – Track progress, calories, streaks, and more.
+
 ✅ **AI Food Scanner** – Instantly identify food and get nutritional info.
+
 ✅ **Integrated AI Assistant** – Your in-app fitness guide and knowledge hub.
+
 ✅ **Web3 + Decentralization** – Hosted on the Internet Computer for speed and security.
 
 ---
@@ -52,7 +59,7 @@ It’s a fully in-browser experience that analyzes your movements using advanced
 | Category              | Technologies                      |
 | --------------------- | --------------------------------- |
 | **Frontend**          | React (Hooks & Context API), Vite |
-| **AI / ML**           | TensorFlow.js, MoveNet            |
+| **AI**           | TensorFlow.js, MoveNet            |
 | **Styling**           | Tailwind CSS, Shadcn UI           |
 | **Backend & Hosting** | DFINITY Internet Computer         |
 | **Database**          | Dexie.js (IndexedDB)              |
