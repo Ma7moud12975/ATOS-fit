@@ -62,7 +62,7 @@ It’s a fully in-browser experience that analyzes your movements using advanced
 | **AI**           | TensorFlow.js, MoveNet            |
 | **Styling**           | Tailwind CSS, Shadcn UI           |
 | **Backend & Hosting** | DFINITY Internet Computer         |
-| **Database**          | Dexie.js (IndexedDB)              |
+| **Database**          | Stable Memory              |
 | **Routing**           | React Router DOM                  |
 
 ---
