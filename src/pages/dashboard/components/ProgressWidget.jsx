@@ -1,16 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
+import useWorkoutData from '../../../hooks/useWorkoutData';
 
 const ProgressWidget = ({ progressData }) => {
-  const progress = {
-    weeklyGoal: progressData?.weeklyGoal || 5,
-    completedWorkouts: progressData?.completedWorkouts || 0,
-    currentStreak: progressData?.currentStreak || 0,
-    totalWorkouts: progressData?.totalWorkouts || 0,
-    caloriesBurned: progressData?.caloriesBurned || 0,
-    weeklyCalorieGoal: progressData?.weeklyCalorieGoal || 2000,
-    achievements: progressData?.achievements || []
-  };
+  const { workoutStats, dailyProgress, achievements, loading } = useWorkoutData();
+  const [progress, setProgress] = useState({
+    weeklyGoal: 5,
+    completedWorkouts: 0,
+    currentStreak: 0,
+    totalWorkouts: 0,
+    caloriesBurned: 0,
+    weeklyCalorieGoal: 2000,
+    achievements: []
+  });
+
+  useEffect(() => {
+    if (!loading && workoutStats && dailyProgress) {
+      setProgress({
+        weeklyGoal: 5, // Could be made configurable
+        completedWorkouts: workoutStats.weeklyWorkouts || 0,
+        currentStreak: workoutStats.currentStreak || 0,
+        totalWorkouts: workoutStats.totalWorkouts || 0,
+        caloriesBurned: Math.round(workoutStats.totalCalories || 0),
+        weeklyCalorieGoal: 2000, // Could be made configurable
+        achievements: achievements.map(badge => ({
+          id: badge.id,
+          name: badge.title,
+          icon: badge.icon || 'Award',
+          earned: true,
+          color: 'text-primary'
+        })) || []
+      });
+    }
+  }, [workoutStats, dailyProgress, achievements, loading]);
 
   const weeklyProgress = (progress?.completedWorkouts / progress?.weeklyGoal) * 100;
   const calorieProgress = (progress?.caloriesBurned / progress?.weeklyCalorieGoal) * 100;

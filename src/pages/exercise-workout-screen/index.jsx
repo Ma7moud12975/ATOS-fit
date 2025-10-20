@@ -10,6 +10,7 @@ import WorkoutStats from './components/WorkoutStats';
 // Import database modules normally - let React handle errors
 import { db, recordWorkoutSession, updateAggregateStats } from '../../utils/db';
 import { evaluateAchievements } from '../../utils/achievements';
+import { recordCompletedWorkout } from '../../utils/workoutStorage';
 
 const ExerciseWorkoutScreen = () => {
   const navigate = useNavigate();
@@ -423,27 +424,43 @@ const ExerciseWorkoutScreen = () => {
     try {
       const sessionItemsToSave = sessionItems.map(i => ({ ...i }));
       const sessionUser = JSON.parse(localStorage.getItem('user') || '{}');
-      if (sessionUser?.id) {
-        const { recordWorkoutSession, updateAggregateStats } = await import('../../utils/db');
-        const sessionId = await recordWorkoutSession(sessionUser.id, sessionItemsToSave);
-        // Compute calories and attach to user profile
-        const { calculateSessionCalories } = await import('../../utils/calories');
-        const { total, breakdown } = calculateSessionCalories(sessionItemsToSave, sessionUser);
+      
+      if (sessionUser?.id && sessionItemsToSave.length > 0) {
+        // Use the new centralized workout storage system
+        const sessionData = {
+          exerciseName: currentExercise?.name || 'Workout',
+          name: currentExercise?.name || 'Workout',
+          reps: repsCompleted || currentRep,
+          sets: currentSet,
+          durationSec: workoutTime,
+          workoutTime: workoutTime,
+          sessionItems: sessionItemsToSave
+        };
 
-        // Update user's total calories burned in profile and stats
-        await updateAggregateStats(sessionUser.id, sessionItemsToSave);
-        // Save total calories on user profile
-        try {
-          const { updateUserProfile, getUserById } = await import('../../utils/db');
-          const dbUser = await getUserById(sessionUser.id);
-          const prevTotal = Number(dbUser?.totalCaloriesBurned || 0);
-          const newTotal = prevTotal + total;
-          await updateUserProfile(sessionUser.id, { totalCaloriesBurned: newTotal, totalWorkoutTime: (Number(dbUser?.totalWorkoutTime || 0) + (workoutTime || 0)) });
-        } catch (err) {
-          console.error('Error updating user profile with calories:', err);
+        // Record workout using centralized system (handles localStorage, IndexedDB, events, notifications)
+        const result = await recordCompletedWorkout(sessionData);
+        
+        if (result.success) {
+          console.log('Workout recorded successfully:', result);
+          setShowCelebration(true);
+          
+          // Auto-hide celebration after 3 seconds
+          setTimeout(() => {
+            setShowCelebration(false);
+          }, 3000);
+        } else {
+          console.error('Failed to record workout:', result.error);
         }
 
-        console.log('Session saved', sessionId, 'calories', total, breakdown);
+        // Also persist to IndexedDB for detailed tracking (fallback)
+        try {
+          const { recordWorkoutSession, updateAggregateStats } = await import('../../utils/db');
+          const sessionId = await recordWorkoutSession(sessionUser.id, sessionItemsToSave);
+          await updateAggregateStats(sessionUser.id, sessionItemsToSave);
+          console.log('Session also saved to IndexedDB:', sessionId);
+        } catch (dbError) {
+          console.warn('IndexedDB storage failed, but localStorage succeeded:', dbError);
+        }
       }
     } catch (error) {
       console.error('Error persisting session:', error);

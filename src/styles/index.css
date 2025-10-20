@@ -11,8 +11,7 @@ body {
   margin: unset;
 }
 
-/* Import premium animations */
-@import './premium-animations.css';
+/* Premium animations moved to tailwind.css */
 
 .filter-white {
   filter: brightness(0) saturate(100%) invert(1) sepia(0) saturate(0) hue-rotate(0deg) brightness(1.5);

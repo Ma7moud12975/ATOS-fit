@@ -11,6 +11,10 @@ import DashboardCharts from './components/DashboardCharts';
 import WaterMonitoringCard from './components/WaterMonitoringCard';
 import AdvancedAnalytics from './components/AdvancedAnalytics';
 import SubscriptionStatusCard from './components/SubscriptionStatusCard';
+import WorkoutNotifications from '../../components/ui/WorkoutNotifications';
+import WorkoutStorageDemo from '../../components/ui/WorkoutStorageDemo';
+import ExerciseProgressCards from '../../components/ui/ExerciseProgressCards';
+import ProgressOverview from '../../components/ui/ProgressOverview';
 import paymentService from '../../utils/paymentService';
 
 const Dashboard = () => {
@@ -137,6 +141,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Workout Notifications */}
+      <WorkoutNotifications />
+      
       {/* Header */}
       <AppHeader
         onSidebarToggle={handleSidebarToggle}
@@ -172,6 +179,11 @@ const Dashboard = () => {
             estimatedDuration: 30,
             difficulty: "Intermediate"
           }} />
+
+          {/* Progress Overview */}
+          <div className="mb-6">
+            <ProgressOverview />
+          </div>
 
           {/* Progress & Tips Row */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -210,7 +222,15 @@ const Dashboard = () => {
             </div>
           </div>
 
+          {/* Exercise Progress Cards */}
+          <div className="mb-6">
+            <ExerciseProgressCards />
+          </div>
 
+          {/* Workout Storage Demo (Development Only) */}
+          <div className="mb-6">
+            <WorkoutStorageDemo />
+          </div>
 
           {/* Footer */}
           <footer className="mt-12 pt-8 border-t border-border">
