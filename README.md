@@ -1,4 +1,5 @@
-# ATOS Fit: AI-Powered Fitness Coach
+# 🏋️‍♂️ ATOS Fit: AI-Powered Fitness Coach
+
 
 <div align="center">
   <img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg"/>
@@ -6,7 +7,7 @@
   <img alt="TensorFlow" src="https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white"/>
   <img alt="Internet Computer" src="https://img.shields.io/badge/Internet%20Computer-3B00B9?style=for-the-badge&logo=dfinity&logoColor=white"/>
   <img alt="TailwindCSS" src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white"/>
-
+---
 
 ---
 
