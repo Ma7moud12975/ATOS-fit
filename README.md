@@ -8,6 +8,8 @@
   <img alt="TailwindCSS" src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white"/>
 ---
 
+
+
 > **ATOS Fit** is a next-generation fitness web app powered by **AI and computer vision**.
 > It uses **TensorFlow.js** and **pose estimation** to analyze your workout form, count repetitions in real time, and provide instant feedback — all directly through your webcam.
 
@@ -197,4 +199,3 @@ Then open a Pull Request 🚀
 <p align="center">
   <b>💪 ATOS Fit — Built for a smarter, healthier future.</b>
 </p>
-
