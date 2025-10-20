@@ -203,6 +203,10 @@ const AdvancedAnalytics = () => {
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Best Streak</span>
+              <span className="font-semibold text-card-foreground">{analytics.bestStreak} days</span>
+            </div>
+            <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Favorite Exercise</span>
               <span className="font-semibold text-card-foreground">{analytics.favoriteExercise}</span>
             </div>
