@@ -6,11 +6,12 @@ import SidebarNavigation from '../../components/ui/SidebarNavigation';
 import WelcomeSection from './components/WelcomeSection';
 import TodayWorkoutCard from './components/TodayWorkoutCard';
 import DailyTipsCard from './components/DailyTipsCard';
-import ProgressWidget from './components/ProgressWidget';
-import DashboardCharts from './components/DashboardCharts';
 import WaterMonitoringCard from './components/WaterMonitoringCard';
 import AdvancedAnalytics from './components/AdvancedAnalytics';
 import SubscriptionStatusCard from './components/SubscriptionStatusCard';
+import { AchievementsCard, CaloriesGoalsCard, PerformanceOverviewCard, DailyMotivationCard } from './components/SquareCards';
+import WorkoutNotifications from '../../components/ui/WorkoutNotifications';
+import WorkoutStorageDemo from '../../components/ui/WorkoutStorageDemo';
 import paymentService from '../../utils/paymentService';
 
 const Dashboard = () => {
@@ -67,34 +68,6 @@ const Dashboard = () => {
       setIsLoadingSubscription(false);
     }
   }, []);
-
-  // Check if user needs to complete onboarding
-  useEffect(() => {
-    if (skipLoginFlag) {
-      // Developer override: do not redirect to onboarding/login
-      return;
-    }
-
-    const userData = localStorage.getItem('user');
-    if (!userData) {
-      // No user data, redirect to onboarding
-      navigate('/onboarding', { replace: true });
-      return;
-    }
-    
-    try {
-      const user = JSON.parse(userData);
-      // Check if user has completed basic onboarding (name and email)
-      if (!user.name || !user.email) {
-        navigate('/onboarding', { replace: true });
-      }
-    } catch (error) {
-      // Invalid user data, redirect to onboarding
-      navigate('/onboarding', { replace: true });
-    }
-  }, [navigate]);
-
-
 
   // Mock progress data
   const [progressData, setProgressData] = useState({
@@ -165,6 +138,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Workout Notifications */}
+      <WorkoutNotifications />
+      
       {/* Header */}
       <AppHeader
         onSidebarToggle={handleSidebarToggle}
@@ -185,60 +161,57 @@ const Dashboard = () => {
           {/* Welcome Section */}
           <WelcomeSection user={user} />
 
-          {/* Today's Workout */}
-          <TodayWorkoutCard workoutData={{
-            name: "Full Body Strength",
-            scheduledTime: "6:00 PM",
-            exercises: [
-              { name: "Push-ups", sets: 3, reps: 15, completed: true },
-              { name: "Wide Push Ups", sets: 3, reps: 12, completed: false },
-              { name: "Squats", sets: 3, reps: 20, completed: true },
-              { name: "Plank", sets: 3, duration: "30s", completed: false },
-              { name: "Lunges", sets: 3, reps: 12, completed: false },
-              { name: "Mountain Climbers", sets: 3, reps: 15, completed: false }
-            ],
-            estimatedDuration: 30,
-            difficulty: "Intermediate"
-          }} />
-
-          {/* Progress & Tips Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Top Priority Section - Today's Workout and Water Intake */}
+          <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 mb-6">
+            <div className="lg:col-span-5">
+              <TodayWorkoutCard workoutData={{
+                name: "Full Body Strength",
+                scheduledTime: "6:00 PM",
+                exercises: [
+                  { name: "Push-ups", sets: 3, reps: 15, completed: true },
+                  { name: "Wide Push Ups", sets: 3, reps: 12, completed: false },
+                  { name: "Squats", sets: 3, reps: 20, completed: true },
+                  { name: "Plank", sets: 3, duration: "30s", completed: false },
+                  { name: "Lunges", sets: 3, reps: 12, completed: false },
+                  { name: "Mountain Climbers", sets: 3, reps: 15, completed: false }
+                ],
+                estimatedDuration: 30,
+                difficulty: "Intermediate"
+              }} />
+            </div>
             <div className="lg:col-span-2">
-              <ProgressWidget progressData={progressData} />
-            </div>
-            <div>
-              <DailyTipsCard />
-            </div>
-          </div>
-
-          {/* Subscription Status & Water Monitoring */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div>
-              <SubscriptionStatusCard 
-                subscription={subscription} 
-                isLoading={isLoadingSubscription} 
-              />
-            </div>
-            <div>
               <WaterMonitoringCard />
             </div>
           </div>
 
-          {/* Analytics */}
-          <div className="grid grid-cols-1 gap-6 mb-6">
-            <div>
-              <AdvancedAnalytics />
-            </div>
+          {/* Square Cards Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <AchievementsCard />
+            <CaloriesGoalsCard />
+            <PerformanceOverviewCard />
+            <DailyMotivationCard />
           </div>
 
-          {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <div className="lg:col-span-2">
-              <DashboardCharts />
-            </div>
+          {/* Secondary Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <DailyTipsCard />
+            <SubscriptionStatusCard 
+              subscription={subscription} 
+              isLoading={isLoadingSubscription} 
+            />
           </div>
 
+          {/* Advanced Analytics */}
+          <AdvancedAnalytics />
 
+
+
+
+
+          {/* Workout Storage Demo (Development Only) */}
+          <div className="mb-6">
+            <WorkoutStorageDemo />
+          </div>
 
           {/* Footer */}
           <footer className="mt-12 pt-8 border-t border-border">

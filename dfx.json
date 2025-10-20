@@ -3,7 +3,8 @@
     "frontend": {
       "type": "assets",
       "source": [
-        "build/"
+        "build/",
+        "assets/"
       ],
       "assets": [
         ["index.html", {"path": "/"}],
@@ -11,6 +12,10 @@
       ],
       "exclude": [
         "**/*.map"
+      ],
+      "custom_domains": [
+        "atosfit.com",
+        "www.atosfit.com"
       ]
     },
     "backend": {

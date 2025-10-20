@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
+import AppImage from '../../components/AppImage';
 
 const AboutPage = () => {
   const navigate = useNavigate();
@@ -9,19 +10,23 @@ const AboutPage = () => {
   const teamMembers = [
     {
       name: 'Ahmed Harfoush',
-      linkedin: 'https://www.linkedin.com/in/ahmed-harfoush-109a29241/'
+      linkedin: 'https://www.linkedin.com/in/ahmed-harfoush-109a29241/',
+      image: '/Ahmed Harfoush.jpeg'
     },
     {
       name: 'Mahmoud Ayman',
-      linkedin: 'https://www.linkedin.com/in/mahmoud-ayman-041462361'
+      linkedin: 'https://www.linkedin.com/in/mahmoud-ayman-041462361',
+      image: '/Mahmoud Ayman.jpeg'
     },
     {
       name: 'Khaled Zakaria',
-      linkedin: 'https://www.linkedin.com/in/khaled-zakaria-6627a5253'
+      linkedin: 'https://www.linkedin.com/in/khaled-zakaria-6627a5253',
+      image: '/Khaled Zakaria.jpg'
     },
     {
       name: 'Mohamed Aamer',
-      linkedin: 'https://www.linkedin.com/in/mohammed-aamer-790298383/'
+      linkedin: 'https://www.linkedin.com/in/mohammed-aamer-790298383/',
+      image: '/Mohamed Aamer.jpeg'
     }
   ];
 
@@ -149,7 +154,7 @@ const AboutPage = () => {
             Meet the <span className="text-[#FF8A00]">ATOS fit</span> Team
           </h1>
           <p className="text-xl text-[#E0E0E0] leading-relaxed mb-12">
-            We're a group of passionate Egyptian AI students and friends, 
+            We're a group of passionate Egyptian AI Experts and friends, 
             united by a shared mission to create technology that genuinely benefits people's lives.
           </p>
           
@@ -182,8 +187,12 @@ const AboutPage = () => {
                 key={index}
                 className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-8 text-center hover:border-[rgba(255,138,0,0.4)] hover:shadow-[0px_0px_40px_rgba(255,138,0,0.15)] transition-all duration-300"
               >
-                <div className="w-20 h-20 bg-[rgba(255,138,0,0.1)] rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Icon name="User" size={32} className="text-[#FF8A00]" />
+                <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-6 border-2 border-[rgba(255,138,0,0.3)]">
+                  <AppImage
+                    src={member.image}
+                    alt={`${member.name} profile picture`}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 
                 <h3 className="text-xl font-semibold text-white mb-6">{member.name}</h3>
@@ -205,10 +214,10 @@ const AboutPage = () => {
           <div className="bg-[#1A1A1A] border border-[rgba(255,255,255,0.1)] rounded-[32px] p-10 text-center hover:border-[rgba(255,138,0,0.3)] hover:shadow-[0px_0px_40px_rgba(255,138,0,0.1)] transition-all duration-300">
             <div className="flex items-center justify-center space-x-4 mb-6">
               <Icon name="GraduationCap" size={40} className="text-[#FF8A00]" />
-              <h3 className="text-3xl font-semibold text-white">Egyptian AI Students</h3>
+              <h3 className="text-3xl font-semibold text-white">Egyptian AI Experts</h3>
             </div>
             <p className="text-lg text-[#E0E0E0] leading-relaxed max-w-3xl mx-auto">
-              We're Egyptian students passionate about Artificial Intelligence and its applications in health and wellness. 
+              We're Egyptian Experts passionate about Artificial Intelligence and its applications in health and wellness. 
               Our academic journey has provided us with a strong foundation in machine learning, computer vision, 
               and AI ethics, which we apply directly to building ATOS fit. Our diverse backgrounds and collaborative spirit 
               drive us to create innovative solutions that work for everyone.
@@ -263,10 +272,10 @@ const AboutPage = () => {
                   <h3 className="text-xl font-medium text-white mb-2">The Idea</h3>
                   <p className="text-[#E0E0E0] leading-relaxed">
                     It started with a simple observation: existing fitness apps compromise user privacy and often 
-                    provide generic advice. As AI students, we knew we could do better by combining cutting-edge 
+                    provide generic advice. As AI Experts, we knew we could do better by combining cutting-edge 
                     technology with privacy-first design.
                   </p>
-                </div>
+                </div> 
               </div>
 
               <div className="flex items-start space-x-4">
@@ -276,7 +285,7 @@ const AboutPage = () => {
                 <div>
                   <h3 className="text-xl font-medium text-white mb-2">The Development</h3>
                   <p className="text-[#E0E0E0] leading-relaxed">
-                    Combining our diverse expertise in AI, blockchain, and mobile development, we built ATOS fit 
+                    Combining our diverse expertise in AI, blockchain, we built ATOS fit 
                     from the ground up. Every line of code reflects our commitment to user privacy and 
                     technological excellence.
                   </p>

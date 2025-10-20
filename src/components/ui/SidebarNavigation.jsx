@@ -53,6 +53,14 @@ const SidebarNavigation = ({
     }
   ];
 
+  // Add Community at the end
+  navigationItems.push({
+    label: 'Community',
+    path: '/community',
+    icon: 'Users',
+    tooltip: 'Share workouts & posts – Coming soon!'
+  });
+
   const secondaryItems = [];
 
   const handleNavigation = (path) => {

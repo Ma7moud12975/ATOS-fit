@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
+import useWorkoutData from '../../../hooks/useWorkoutData';
+import { getExerciseStats, STORAGE_KEYS } from '../../../utils/workoutStorage';
 
 const AdvancedAnalytics = () => {
+  const { workoutStats, dailyProgress, loading } = useWorkoutData();
   const [analytics, setAnalytics] = useState({
     weeklyWorkouts: 0,
     monthlyWorkouts: 0,
@@ -16,103 +19,82 @@ const AdvancedAnalytics = () => {
   });
 
   useEffect(() => {
-    // Load analytics from localStorage and calculate stats
-    const loadAnalytics = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (user?.id) {
-          const { db } = await import('../../../utils/db');
-          const sessions = await db.sessions.where({ userId: user.id }).toArray();
+    if (!loading && workoutStats) {
+      // Calculate analytics from workout storage data
+      const loadAnalytics = () => {
+        try {
+          // Get daily progress data for calculations
+          const stored = localStorage.getItem(STORAGE_KEYS.DAILY_PROGRESS);
+          const allProgress = stored ? JSON.parse(stored) : {};
           
           // Calculate weekly stats
           const oneWeekAgo = new Date();
           oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-          const weeklySessions = sessions.filter(s => new Date(s.date) >= oneWeekAgo);
+          const weekAgoStr = oneWeekAgo.toISOString().split('T')[0];
+          
+          let weeklyWorkouts = 0;
+          let weeklyCalories = 0;
+          let monthlyWorkouts = 0;
+          let monthlyCalories = 0;
           
           // Calculate monthly stats
           const oneMonthAgo = new Date();
           oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
-          const monthlySessions = sessions.filter(s => new Date(s.date) >= oneMonthAgo);
+          const monthAgoStr = oneMonthAgo.toISOString().split('T')[0];
           
-          // Calculate average duration
-          const totalDuration = sessions.reduce((sum, s) => sum + (s.duration || 0), 0);
-          const avgDuration = sessions.length > 0 ? Math.round(totalDuration / sessions.length) : 0;
-          
-          // Calculate calories
-          const weeklyCalories = weeklySessions.reduce((sum, s) => sum + (s.caloriesBurned || 0), 0);
-          const monthlyCalories = monthlySessions.reduce((sum, s) => sum + (s.caloriesBurned || 0), 0);
-          
-          // Calculate streaks
-          const sortedSessions = sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
-          let currentStreak = 0;
-          let bestStreak = 0;
-          let tempStreak = 0;
-          
-          const today = new Date().toDateString();
-          let lastDate = null;
-          
-          for (const session of sortedSessions) {
-            const sessionDate = new Date(session.date).toDateString();
-            if (sessionDate !== lastDate) {
-              if (tempStreak > bestStreak) bestStreak = tempStreak;
-              tempStreak = 1;
-              lastDate = sessionDate;
-            } else {
-              tempStreak++;
-            }
-          }
-          
-          if (tempStreak > bestStreak) bestStreak = tempStreak;
-          
-          // Calculate current streak
-          const todayStr = new Date().toDateString();
-          let streakCount = 0;
-          let checkDate = new Date();
-          
-          for (let i = 0; i < 30; i++) {
-            const dateStr = checkDate.toDateString();
-            const hasWorkout = sessions.some(s => new Date(s.date).toDateString() === dateStr);
-            if (hasWorkout) {
-              streakCount++;
-              checkDate.setDate(checkDate.getDate() - 1);
-            } else {
-              break;
-            }
-          }
-          
-          // Find favorite exercise
+          // Count exercise occurrences for favorite
           const exerciseCounts = {};
-          sessions.forEach(s => {
-            if (s.exercises) {
-              s.exercises.forEach(ex => {
-                exerciseCounts[ex.name] = (exerciseCounts[ex.name] || 0) + 1;
+          
+          Object.entries(allProgress).forEach(([date, dayProgress]) => {
+            if (date >= weekAgoStr) {
+              weeklyWorkouts += dayProgress.workoutsCompleted || 0;
+              weeklyCalories += dayProgress.caloriesBurned || 0;
+            }
+            if (date >= monthAgoStr) {
+              monthlyWorkouts += dayProgress.workoutsCompleted || 0;
+              monthlyCalories += dayProgress.caloriesBurned || 0;
+            }
+            
+            // Count exercises for favorite
+            if (dayProgress.exercisesCompleted) {
+              dayProgress.exercisesCompleted.forEach(exercise => {
+                exerciseCounts[exercise] = (exerciseCounts[exercise] || 0) + 1;
               });
             }
           });
-          const favoriteExercise = Object.keys(exerciseCounts).reduce((a, b) => 
-            exerciseCounts[a] > exerciseCounts[b] ? a : b, 'Push-ups'
-          );
+          
+          // Find favorite exercise
+          const favoriteExercise = Object.keys(exerciseCounts).length > 0 
+            ? Object.keys(exerciseCounts).reduce((a, b) => 
+                exerciseCounts[a] > exerciseCounts[b] ? a : b
+              )
+            : 'Push-ups';
+          
+          // Calculate average workout duration
+          const avgDuration = workoutStats.totalWorkouts > 0 
+            ? Math.round(workoutStats.totalWorkoutTime / workoutStats.totalWorkouts)
+            : 0;
           
           setAnalytics({
-            weeklyWorkouts: weeklySessions.length,
-            monthlyWorkouts: monthlySessions.length,
+            weeklyWorkouts: workoutStats.weeklyWorkouts || weeklyWorkouts,
+            monthlyWorkouts: workoutStats.monthlyWorkouts || monthlyWorkouts,
             averageWorkoutDuration: avgDuration,
             caloriesThisWeek: Math.round(weeklyCalories),
             caloriesThisMonth: Math.round(monthlyCalories),
-            streakDays: streakCount,
-            bestStreak,
+            streakDays: workoutStats.currentStreak || 0,
+            bestStreak: workoutStats.longestStreak || 0,
             favoriteExercise,
-            weeklyGoalProgress: Math.min(100, (weeklySessions.length / 5) * 100), // Assuming 5 workouts per week goal
-            monthlyGoalProgress: Math.min(100, (monthlySessions.length / 20) * 100) // Assuming 20 workouts per month goal
+            weeklyGoalProgress: Math.min(100, ((workoutStats.weeklyWorkouts || weeklyWorkouts) / 5) * 100),
+            monthlyGoalProgress: Math.min(100, ((workoutStats.monthlyWorkouts || monthlyWorkouts) / 20) * 100)
           });
+        } catch (error) {
+          console.error('Error loading analytics:', error);
         }
-      } catch (error) {
-        console.error('Error loading analytics:', error);
-      }
-    };
+      };
 
-    loadAnalytics();
-  }, []);
+      loadAnalytics();
+    }
+  }, [workoutStats, dailyProgress, loading]);
 
   const StatCard = ({ title, value, subtitle, icon, color = 'text-primary' }) => (
     <div className="bg-card border border-border rounded-lg p-4">
@@ -221,43 +203,13 @@ const AdvancedAnalytics = () => {
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Best Streak</span>
-              <span className="font-semibold text-card-foreground">{analytics.bestStreak} days</span>
-            </div>
-            <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Favorite Exercise</span>
               <span className="font-semibold text-card-foreground">{analytics.favoriteExercise}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Current Streak</span>
-              <span className="font-semibold text-card-foreground">{analytics.streakDays} days</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center">
-            <Icon name="Target" size={20} className="mr-2 text-primary" />
-            Quick Insights
-          </h3>
-          <div className="space-y-3">
-            <div className="text-sm text-muted-foreground">
-              {analytics.weeklyWorkouts >= 5 ? 
-                "🎉 You're crushing your weekly goal!" : 
-                `You need ${5 - analytics.weeklyWorkouts} more workouts this week to reach your goal.`
-              }
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {analytics.streakDays >= 7 ? 
-                "🔥 Amazing consistency! Keep the streak going!" : 
-                "💪 Build your streak by working out daily."
-              }
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Your favorite exercise is {analytics.favoriteExercise}. Try mixing it up for better results!
-            </div>
-          </div>
-        </div>
+
       </div>
     </div>
   );

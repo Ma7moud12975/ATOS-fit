@@ -109,7 +109,7 @@ const PresetPlans = ({ onStartPlan }) => {
   ];
 
   const PlanCard = ({ plan }) => (
-    <div className="bg-card border border-border rounded-lg p-6 hover:shadow-elevation-2 transition-shadow">
+    <div className="bg-card border border-border rounded-lg p-5 sm:p-6 hover:shadow-elevation-2 transition-shadow">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center space-x-2 mb-2">
@@ -117,17 +117,17 @@ const PresetPlans = ({ onStartPlan }) => {
             <h3 className="text-lg font-semibold text-card-foreground">{plan.name}</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-3">{plan.description}</p>
-          <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+          <div className="flex items-center flex-wrap gap-3 text-xs sm:text-xs text-muted-foreground">
             <span className="flex items-center space-x-1">
-              <Icon name="Clock" size={14} />
+              <Icon name="Clock" size={18} />
               <span>{plan.duration}</span>
             </span>
             <span className="flex items-center space-x-1">
-              <Icon name="Zap" size={14} />
+              <Icon name="Zap" size={18} />
               <span>{plan.calories} cal</span>
             </span>
             <span className="flex items-center space-x-1">
-              <Icon name="Target" size={14} />
+              <Icon name="Target" size={18} />
               <span>{plan.targetMuscles}</span>
             </span>
           </div>

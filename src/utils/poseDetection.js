@@ -2730,12 +2730,11 @@ class PoseDetectionUtils {
 
   // Draw pose landmarks on canvas
   drawPoseOverlay(canvasCtx, results, canvasWidth, canvasHeight, transform = null) {
-    // Only log occasionally to avoid spam
-    if (Math.random() < 0.05) {
-      console.log('🎨 Drawing pose overlay with', results.poseLandmarks?.length || 0, 'landmarks');
-    }
+    // Always log to help debug landmark visibility
+    console.log('🎨 Drawing pose overlay with', results.poseLandmarks?.length || 0, 'landmarks');
 
     if (!results.poseLandmarks || !canvasCtx) {
+      console.log('❌ No landmarks or canvas context available');
       return;
     }
 
@@ -2747,7 +2746,7 @@ class PoseDetectionUtils {
     let drawnLandmarks = 0;
 
     landmarks.forEach((landmark, index) => {
-      if (landmark.visibility && landmark.visibility > 0.5) {
+      if (landmark.visibility && landmark.visibility > 0.3) {
         let x, y;
         
         if (transform) {
@@ -2761,7 +2760,9 @@ class PoseDetectionUtils {
         }
 
         // Enhanced landmark styling with professional gradient and shadow effects
-        const radius = landmark.visibility > 0.9 ? 10 : landmark.visibility > 0.7 ? 8 : 6;
+        const radius = landmark.visibility > 0.9 ? 12 : 
+                      landmark.visibility > 0.7 ? 10 : 
+                      landmark.visibility > 0.5 ? 8 : 6;
         const shadowBlur = 6;
         
         // Draw outer glow effect first
@@ -2793,12 +2794,18 @@ class PoseDetectionUtils {
           gradient.addColorStop(0.4, '#FCD34D'); // Bright amber
           gradient.addColorStop(0.8, '#F59E0B'); // Rich amber
           gradient.addColorStop(1, '#D97706');   // Deep amber edge
-        } else {
+        } else if (landmark.visibility > 0.5) {
           // Lower confidence - professional rose gradient
           gradient.addColorStop(0, '#FCE7F3');   // Light rose center
           gradient.addColorStop(0.4, '#F9A8D4'); // Bright rose
           gradient.addColorStop(0.8, '#EC4899'); // Rich rose
           gradient.addColorStop(1, '#BE185D');   // Deep rose edge
+        } else {
+          // Very low confidence - bright yellow gradient for visibility
+          gradient.addColorStop(0, '#FEF9C3');   // Light yellow center
+          gradient.addColorStop(0.4, '#FDE047'); // Bright yellow
+          gradient.addColorStop(0.8, '#EAB308'); // Rich yellow
+          gradient.addColorStop(1, '#CA8A04');   // Deep yellow edge
         }
         
         // Draw the main landmark circle with professional styling

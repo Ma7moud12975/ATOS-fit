@@ -15,7 +15,6 @@ const CameraFeed = ({
 }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const containerRef = useRef(null);
   const poseDetectionRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [error, setError] = useState(null);
@@ -26,6 +25,48 @@ const CameraFeed = ({
   const [postureStatus, setPostureStatus] = useState('unknown');
   const [isPoseDetectionReady, setIsPoseDetectionReady] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef(null);
+
+  // Fullscreen helpers
+  const enterFullscreen = async () => {
+    const el = containerRef.current;
+    if (!el) return;
+    try {
+      if (el.requestFullscreen) {
+        await el.requestFullscreen();
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen();
+      } else if (el.msRequestFullscreen) {
+        el.msRequestFullscreen();
+      }
+      setIsFullscreen(true);
+    } catch (e) {
+      console.error('Failed to enter fullscreen:', e);
+    }
+  };
+
+  const exitFullscreen = async () => {
+    try {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+      setIsFullscreen(false);
+    } catch (e) {
+      console.error('Failed to exit fullscreen:', e);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      enterFullscreen();
+    } else {
+      exitFullscreen();
+    }
+  };
 
   // Normalize exercise name
   const isPushUpsSelected = (() => {
@@ -44,131 +85,36 @@ const CameraFeed = ({
     const name = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
     return name.includes('lunge');
   })();
-  const isSitUpsSelected = (() => {
+  const isMountainClimbersSelected = (() => {
     const name = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
-    return name.includes('sit') || name.includes('situp') || name.includes('sit-ups');
-  })();
-  // High Knees detection
-  const isHighKneesSelected = (() => {
-    const name = (selectedExercise?.name || '').toLowerCase();
-    return name.includes('high') && name.includes('knee');
-    return name.includes('sit') || name.includes('situp') || name.includes('crunch');
-  })();
-  // Wide Push Ups detection
-  const isWidePushSelected = (() => {
-    const name = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
-    return name.includes('wide') && name.includes('push');
-  })();
-  // Narrow Push Ups detection
-  const isNarrowPushSelected = (() => {
-    const name = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
-    return name.includes('narrow') && name.includes('push');
-  })();
-  // Diamond Push Ups detection
-  const isDiamondPushSelected = (() => {
-    const name = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
-    return name.includes('diamond') && name.includes('push');
-  })();
-  // Knee Push Ups detection
-  const isKneePushSelected = (() => {
-    const name = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
-    return name.includes('knee') && name.includes('push');
+    return name.includes('mountain') || name.includes('climber');
   })();
   // Add Burpees detection
   const isBurpeesSelected = (() => {
     const name = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
     return name.includes('burpee');
   })();
-  // Add Jumping Jacks detection
-  const isJumpingJacksSelected = (() => {
-    const name = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
-    return name.includes('jumpingjack');
-  })();
-  // Add Side Plank detection
-  const isSidePlankSelected = (() => {
-    const name = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
-    return name.includes('side') && name.includes('plank');
-  })();
-  // Reverse Plank detection
-  const isReversePlankSelected = (() => {
-    const name = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
-    return name === 'reverseplank';
-  })();
-
-  // Straight Arm Plank detection (accept names like 'straight arm plank', 'straightarmplank')
-  const isStraightArmPlankSelected = (() => {
-    const name = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
-    return (name.includes('straight') && name.includes('arm') && name.includes('plank')) || name.includes('straightarmplank');
-  })();
-
-  const isKneePlankSelected = (() => {
-    const name = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
-    return (name.includes('knee') && name.includes('plank')) || name.includes('kneeplank');
-  })();
-
-  // Reverse Straight Arm Plank detection (mirror of straight arm plank naming)
-  const isReverseStraightArmPlankSelected = (() => {
-    const name = (selectedExercise?.name || '').toLowerCase().replace(/[^a-z]/g, '');
-    return (name.includes('reverse') && name.includes('straight') && name.includes('arm') && name.includes('plank')) || name.includes('reversestraightarmplank');
-  })();
 
   // Initialize MediaPipe pose detection
   const initializePoseDetection = async () => {
     try {
-      console.log('🚀 Starting pose detection initialization...');
-      console.log('Exercise selections:', {
-        isPushUpsSelected,
-        isPlankSelected,
-        isSquatSelected,
-        isLungesSelected,
-        isBurpeesSelected,
-        isJumpingJacksSelected,
-        isSidePlankSelected,
-        isHighKneesSelected,
-        isSitUpsSelected,
-        isDiamondPushSelected,
-        isStraightArmPlankSelected,
-        isKneePlankSelected
-      });
-      
       // Only initialize for supported exercises
-      if (!isPushUpsSelected && !isPlankSelected && !isSquatSelected && !isLungesSelected && !isBurpeesSelected && !isJumpingJacksSelected && !isSidePlankSelected && !isHighKneesSelected && !isSitUpsSelected && !isDiamondPushSelected && !isStraightArmPlankSelected && !isKneePlankSelected && !isSitUpsSelected) {
-        console.log('⚠️ No supported exercises selected, skipping pose detection initialization');
+      if (!isPushUpsSelected && !isPlankSelected && !isSquatSelected && !isLungesSelected && !isBurpeesSelected) {
         return;
       }
 
       if (!poseDetectionRef.current) {
-        console.log('📦 Importing PoseDetectionUtils...');
         // Dynamic import to avoid loading MediaPipe for other exercises
         const { default: PoseDetectionUtils } = await import('../../../utils/poseDetection');
-        console.log('✅ PoseDetectionUtils imported successfully');
-        
         poseDetectionRef.current = new PoseDetectionUtils();
-        console.log('✅ PoseDetectionUtils instance created');
-        
-        const exerciseMode = isReversePlankSelected ? 'reverseplank' :
-          isReverseStraightArmPlankSelected ? 'reversestraightarmplank' :
-          isStraightArmPlankSelected ? 'straightarmplank' :
-          isKneePlankSelected ? 'kneeplank' :
+        poseDetectionRef.current.setExerciseMode(
           isPlankSelected ? 'plank' :
           isSquatSelected ? 'squats' :
           isLungesSelected ? 'lunges' :
           isBurpeesSelected ? 'burpees' :
-          isJumpingJacksSelected ? 'jumpingjacks' :
-          isSidePlankSelected ? 'sideplank' :
-          isHighKneesSelected ? 'highknees' :
-          isSitUpsSelected ? 'situps' :
-          isDiamondPushSelected ? 'diamondpushups' :
-          isNarrowPushSelected ? 'narrowpushups' :
-          isWidePushSelected ? 'widepushups' :
-          isKneePushSelected ? 'kneepushups' :
-          'pushups';
-          
-        console.log('🎯 Setting exercise mode to:', exerciseMode);
-        poseDetectionRef.current.setExerciseMode(exerciseMode);
-        
+          'pushups'
+        );
         // Set up callbacks
-        console.log('🔗 Setting up pose detection callbacks...');
         poseDetectionRef.current.setCallbacks({
           onPushupCount: (count) => {
             setPushupCount(count);
@@ -195,26 +141,15 @@ const CameraFeed = ({
             setPoseResults(poseDetectionRef.current?.getLastResults() || null);
           }
         });
-        
-        console.log('🚀 Initializing pose detection backend...');
         const initialized = await poseDetectionRef.current.initialize();
-        
         if (!initialized) {
-          console.warn('⚠️ Pose detection not available, falling back to basic mode');
+          console.warn('Pose detection not available, falling back to basic mode');
         } else {
           setIsPoseDetectionReady(true);
-          console.log('✅ PoseDetection initialized and ready for', selectedExercise?.name);
         }
-      } else {
-        console.log('ℹ️ Pose detection already initialized');
       }
     } catch (error) {
-      console.error('❌ Error initializing pose detection:', error);
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
+      console.error('Error initializing pose detection:', error);
     }
   };
 
@@ -229,16 +164,6 @@ const CameraFeed = ({
     }
   }, [isActive]);
 
-  // Keep track of fullscreen state
-  useEffect(() => {
-    const onFullScreenChange = () => {
-      const fsEl = document.fullscreenElement;
-      setIsFullscreen(!!fsEl);
-    };
-    document.addEventListener('fullscreenchange', onFullScreenChange);
-    return () => document.removeEventListener('fullscreenchange', onFullScreenChange);
-  }, []);
-
   // Use requestAnimationFrame for perfectly synced pose detection and overlay
   useEffect(() => {
     let rafId;
@@ -247,7 +172,7 @@ const CameraFeed = ({
         isActive &&
         poseDetectionRef.current &&
         videoRef.current &&
-        (isPushUpsSelected || isPlankSelected || isSquatSelected || isLungesSelected || isBurpeesSelected || isJumpingJacksSelected || isSidePlankSelected || isHighKneesSelected || isSitUpsSelected || isStraightArmPlankSelected || isKneePlankSelected)
+        (isPushUpsSelected || isPlankSelected || isSquatSelected || isLungesSelected || isBurpeesSelected)
       ) {
         if (videoRef.current.readyState >= 2) {
           await poseDetectionRef.current.processFrame(videoRef.current);
@@ -257,42 +182,10 @@ const CameraFeed = ({
           if (canvasRef.current && results && showPoseOverlay) {
             const canvas = canvasRef.current;
             const video = videoRef.current;
-            
-            // Get the actual displayed video dimensions (accounting for object-cover)
-            const videoRect = video.getBoundingClientRect();
-            const containerRect = video.parentElement.getBoundingClientRect();
-            
-            // Set canvas to match the container size exactly
-            canvas.width = containerRect.width;
-            canvas.height = containerRect.height;
-            
-            // Calculate video scaling and positioning within container
-            const videoAspect = video.videoWidth / video.videoHeight;
-            const containerAspect = containerRect.width / containerRect.height;
-            
-            let scaleX, scaleY, offsetX = 0, offsetY = 0;
-            
-            if (videoAspect > containerAspect) {
-              // Video is wider - fit to height, crop sides
-              scaleY = containerRect.height / video.videoHeight;
-              scaleX = scaleY;
-              offsetX = (containerRect.width - (video.videoWidth * scaleX)) / 2;
-            } else {
-              // Video is taller - fit to width, crop top/bottom
-              scaleX = containerRect.width / video.videoWidth;
-              scaleY = scaleX;
-              offsetY = (containerRect.height - (video.videoHeight * scaleY)) / 2;
-            }
-            
+            canvas.width = video?.videoWidth || 640;
+            canvas.height = video?.videoHeight || 480;
             const ctx = canvas.getContext('2d');
-            poseDetectionRef.current.drawPoseOverlay(ctx, results, canvas.width, canvas.height, {
-              scaleX,
-              scaleY,
-              offsetX,
-              offsetY,
-              videoWidth: video.videoWidth,
-              videoHeight: video.videoHeight
-            });
+            poseDetectionRef.current.drawPoseOverlay(ctx, results, canvas.width, canvas.height);
           }
         }
         rafId = requestAnimationFrame(runFrame);
@@ -354,30 +247,6 @@ const CameraFeed = ({
     setIsPoseDetectionReady(false);
   };
 
-  const toggleFullScreen = async () => {
-    try {
-      const container = containerRef.current || videoRef.current;
-      if (!container) return;
-      if (!document.fullscreenElement) {
-        // Request fullscreen on the container (prefer the wrapper)
-        if (container.requestFullscreen) {
-          await container.requestFullscreen();
-        } else if (container.webkitRequestFullscreen) {
-          // Safari
-          await container.webkitRequestFullscreen();
-        }
-      } else {
-        if (document.exitFullscreen) {
-          await document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          await document.webkitExitFullscreen();
-        }
-      }
-    } catch (err) {
-      console.error('Fullscreen error', err);
-    }
-  };
-
   const drawPoseOverlay = () => {
     console.log('🎨 drawPoseOverlay called:', {
       hasCanvas: !!canvasRef?.current,
@@ -394,47 +263,40 @@ const CameraFeed = ({
 
     const canvas = canvasRef?.current;
     const video = videoRef?.current;
+    const container = containerRef?.current;
     const ctx = canvas?.getContext('2d');
 
-    // Get the actual displayed video dimensions (accounting for object-cover)
-    const videoRect = video.getBoundingClientRect();
-    const containerRect = video.parentElement.getBoundingClientRect();
-    
-    // Set canvas to match the container size exactly
-    canvas.width = containerRect.width;
-    canvas.height = containerRect.height;
-    
-    // Calculate video scaling and positioning within container
-    const videoAspect = video.videoWidth / video.videoHeight;
-    const containerAspect = containerRect.width / containerRect.height;
-    
-    let scaleX, scaleY, offsetX = 0, offsetY = 0;
-    
-    if (videoAspect > containerAspect) {
-      // Video is wider - fit to height, crop sides
-      scaleY = containerRect.height / video.videoHeight;
-      scaleX = scaleY;
-      offsetX = (containerRect.width - (video.videoWidth * scaleX)) / 2;
-    } else {
-      // Video is taller - fit to width, crop top/bottom
-      scaleX = containerRect.width / video.videoWidth;
-      scaleY = scaleX;
-      offsetY = (containerRect.height - (video.videoHeight * scaleY)) / 2;
-    }
+    // Draw overlay to match displayed size, not intrinsic video size
+    const containerW = container?.clientWidth || video?.clientWidth || video?.videoWidth || 640;
+    const containerH = container?.clientHeight || video?.clientHeight || video?.videoHeight || 480;
 
-    console.log('🎨 Canvas dimensions:', canvas.width, 'x', canvas.height);
+    canvas.width = containerW;
+    canvas.height = containerH;
 
-    // Use MediaPipe's built-in drawing function if available
+    // Compute displayed video rectangle inside container for object-fit
+    const vw = video?.videoWidth || 640;
+    const vh = video?.videoHeight || 480;
+    const fitContain = false; // use cover mapping to avoid black bars in fullscreen
+    const scale = fitContain 
+      ? Math.min(containerW / vw, containerH / vh)
+      : Math.max(containerW / vw, containerH / vh);
+    const displayW = vw * scale;
+    const displayH = vh * scale;
+    const offsetX = (containerW - displayW) / 2;
+    const offsetY = (containerH - displayH) / 2;
+
+    console.log('🎨 Canvas(container) dimensions:', containerW, 'x', containerH, 'display rect:', displayW, 'x', displayH, 'offset', offsetX, offsetY);
+
+    // Use MediaPipe's built-in drawing function with transform mapping
     if (poseDetectionRef.current && poseResults) {
-      console.log('🎨 Calling poseDetection.drawPoseOverlay...');
-      poseDetectionRef.current.drawPoseOverlay(ctx, poseResults, canvas.width, canvas.height, {
-        scaleX,
-        scaleY,
-        offsetX,
-        offsetY,
-        videoWidth: video.videoWidth,
-        videoHeight: video.videoHeight
-      });
+      console.log('🎨 Calling poseDetection.drawPoseOverlay with transform...');
+      poseDetectionRef.current.drawPoseOverlay(
+        ctx,
+        poseResults,
+        containerW,
+        containerH,
+        { scaleX: displayW, scaleY: displayH, offsetX, offsetY }
+      );
     }
   };
 
@@ -442,24 +304,12 @@ const CameraFeed = ({
 
   // Reset counter when exercise changes
   useEffect(() => {
-    if (poseDetectionRef.current && (isPushUpsSelected || isPlankSelected || isSquatSelected || isLungesSelected || isBurpeesSelected || isJumpingJacksSelected || isSidePlankSelected || isHighKneesSelected || isSitUpsSelected || isDiamondPushSelected || isNarrowPushSelected || isWidePushSelected || isKneePushSelected || isStraightArmPlankSelected || isReverseStraightArmPlankSelected)) {
+    if (poseDetectionRef.current && (isPushUpsSelected || isPlankSelected || isSquatSelected || isLungesSelected || isBurpeesSelected)) {
       poseDetectionRef.current.setExerciseMode(
-        isReversePlankSelected ? 'reverseplank' :
-        isReverseStraightArmPlankSelected ? 'reversestraightarmplank' :
-        isStraightArmPlankSelected ? 'straightarmplank' :
-        isKneePlankSelected ? 'kneeplank' :
         isPlankSelected ? 'plank' :
         isSquatSelected ? 'squats' :
         isLungesSelected ? 'lunges' :
         isBurpeesSelected ? 'burpees' :
-        isJumpingJacksSelected ? 'jumpingjacks' :
-        isSidePlankSelected ? 'sideplank' :
-        isHighKneesSelected ? 'highknees' :
-        isSitUpsSelected ? 'situps' :
-        isDiamondPushSelected ? 'diamondpushups' :
-        isNarrowPushSelected ? 'narrowpushups' :
-        isWidePushSelected ? 'widepushups' :
-        isKneePushSelected ? 'kneepushups' :
         'pushups'
       );
       poseDetectionRef.current.resetCounter();
@@ -467,6 +317,43 @@ const CameraFeed = ({
       setPostureStatus('unknown');
     }
   }, [selectedExercise]);
+
+  // Handle fullscreen functionality
+  useEffect(() => {
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+
+    if (isFullscreen) {
+      document.addEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isFullscreen]);
+
+  // Sync isFullscreen state with browser Fullscreen API
+  useEffect(() => {
+    const sync = () => {
+      const active = !!document.fullscreenElement || !!document.webkitFullscreenElement || !!document.msFullscreenElement;
+      setIsFullscreen(active);
+    };
+    document.addEventListener('fullscreenchange', sync);
+    document.addEventListener('webkitfullscreenchange', sync);
+    document.addEventListener('msfullscreenchange', sync);
+    return () => {
+      document.removeEventListener('fullscreenchange', sync);
+      document.removeEventListener('webkitfullscreenchange', sync);
+      document.removeEventListener('msfullscreenchange', sync);
+    };
+  }, []);
 
   if (error) {
     return (
@@ -484,7 +371,10 @@ const CameraFeed = ({
   }
 
   return (
-    <div ref={containerRef} className="relative w-full h-full bg-black rounded-lg overflow-hidden">
+    <div 
+      ref={containerRef}
+      className={`relative w-full h-full bg-black rounded-lg overflow-hidden ${isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''}`}
+    >
       {/* Loading State */}
       {isLoading &&
       <div className="absolute inset-0 bg-muted rounded-lg flex items-center justify-center z-10">
@@ -500,7 +390,8 @@ const CameraFeed = ({
         autoPlay
         playsInline
         muted
-        className="w-full h-full object-cover"
+        className={`w-full h-full ${isFullscreen ? 'object-cover' : 'object-cover'}`}
+        style={{ transform: 'scaleX(-1)' }}
         onLoadedMetadata={drawPoseOverlay} />
 
       {/* Pose Overlay Canvas */}
@@ -509,54 +400,50 @@ const CameraFeed = ({
         ref={canvasRef}
         className="absolute inset-0 w-full h-full pointer-events-none"
         style={{ 
-          zIndex: 10
+          zIndex: 10,
+          transform: 'scaleX(-1)'
         }} />
 
       }
       {/* Camera Controls Overlay */}
-      <div className="absolute top-4 right-4 flex space-x-2">
-        <Button
-          variant="secondary"
-          size="icon"
-          onClick={toggleFullScreen}
-          title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-          className="bg-black/50 hover:bg-black/70 text-white border-white/20">
-
-          {/* Inline 'extend screen' SVG (lucide/settings-like style, width 18) */}
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-maximize">
-            <path d="M8 3H5a2 2 0 0 0-2 2v3" />
-            <path d="M16 3h3a2 2 0 0 1 2 2v3" />
-            <path d="M8 21H5a2 2 0 0 1-2-2v-3" />
-            <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
-          </svg>
-        </Button>
+      <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex space-x-1 sm:space-x-2">
         <Button
           variant="secondary"
           size="icon"
           onClick={() => setShowPoseOverlay(!showPoseOverlay)}
-          className="bg-black/50 hover:bg-black/70 text-white border-white/20">
+          className="bg-black/50 hover:bg-black/70 text-white border-white/20 w-8 h-8 sm:w-10 sm:h-10">
 
-          <Icon name={showPoseOverlay ? "Eye" : "EyeOff"} size={18} />
+          <Icon name={showPoseOverlay ? "Eye" : "EyeOff"} size={16} className="sm:w-[18px] sm:h-[18px]" />
         </Button>
         
-        {/* Camera toggle removed: camera now starts with "Start Workout" */}
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={toggleFullscreen}
+          className="bg-black/50 hover:bg-black/70 text-white border-white/20 w-8 h-8 sm:w-10 sm:h-10">
+
+          <Icon name={isFullscreen ? "Minimize2" : "Maximize2"} size={16} className="sm:w-[18px] sm:h-[18px]" />
+        </Button>
+        
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={onToggleCamera}
+          className="bg-black/50 hover:bg-black/70 text-white border-white/20 w-8 h-8 sm:w-10 sm:h-10">
+
+          <Icon name={isActive ? "CameraOff" : "Camera"} size={16} className="sm:w-[18px] sm:h-[18px]" />
+        </Button>
       </div>
       {/* Stats Overlay - Push-Ups: reps, Plank: time */}
-  {(isPushUpsSelected || isPlankSelected || isSquatSelected || isLungesSelected || isSitUpsSelected || isJumpingJacksSelected || isSidePlankSelected || isHighKneesSelected || isStraightArmPlankSelected || isReverseStraightArmPlankSelected) && isActive && (
-        <div className="absolute top-4 left-4 bg-black/70 rounded-lg p-3 text-white">
-          <div className="text-center mb-2">
-            <div className="text-2xl font-bold text-green-400">{(isPlankSelected || isSidePlankSelected || isReversePlankSelected || isStraightArmPlankSelected || isReverseStraightArmPlankSelected) ? (poseDetectionRef.current?.getStats()?.timeSec || 0) : pushupCount}</div>
+      {(isPushUpsSelected || isPlankSelected || isSquatSelected || isLungesSelected || isMountainClimbersSelected) && isActive && (
+        <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-black/70 rounded-lg p-2 sm:p-3 text-white">
+          <div className="text-center mb-1 sm:mb-2">
+            <div className="text-xl sm:text-2xl font-bold text-green-400">{isPlankSelected ? (poseDetectionRef.current?.getStats()?.timeSec || 0) : pushupCount}</div>
             <div className="text-xs text-gray-300">
-              {isReverseStraightArmPlankSelected ? 'Reverse Straight Arm Plank (sec)' :
-              isReversePlankSelected ? 'Reverse Plank (sec)' :
-              isStraightArmPlankSelected ? 'Straight Arm Plank (sec)' :
-              isPlankSelected ? 'Plank (sec)' : 
-               isSidePlankSelected ? 'Side Plank (sec)' :
+              {isPlankSelected ? 'Plank (sec)' : 
                isSquatSelected ? 'Squats' :
                isLungesSelected ? 'Lunges' :
-               isSitUpsSelected ? 'Sit-Ups' :
-          isJumpingJacksSelected ? 'Jumping Jacks' :
-          isHighKneesSelected ? 'High Knees' : 'Push-ups'}
+               isMountainClimbersSelected ? 'Mountain Climbers' : 'Push-ups'}
             </div>
           </div>
           <div className={`text-xs px-2 py-1 rounded text-center ${
@@ -572,9 +459,9 @@ const CameraFeed = ({
       )}
       {/* Stats Overlay - Burpees */}
       {(isBurpeesSelected && isActive) && (
-        <div className="absolute top-4 left-4 bg-black/70 rounded-lg p-3 text-white">
-          <div className="text-center mb-2">
-            <div className="text-2xl font-bold text-green-400">{pushupCount}</div>
+        <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-black/70 rounded-lg p-2 sm:p-3 text-white">
+          <div className="text-center mb-1 sm:mb-2">
+            <div className="text-xl sm:text-2xl font-bold text-green-400">{pushupCount}</div>
             <div className="text-xs text-gray-300">Burpees</div>
           </div>
           <div className={`text-xs px-2 py-1 rounded text-center ${
@@ -591,7 +478,7 @@ const CameraFeed = ({
 
       {/* Form Feedback Overlay */}
       {formFeedback &&
-      <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-4 py-2 rounded-lg text-white font-medium text-center max-w-xs animate-spring ${
+      <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-3 sm:px-4 py-2 rounded-lg text-white font-medium text-center max-w-xs text-sm sm:text-base animate-spring ${
       formFeedback?.type === 'success' ? 'bg-success' :
       formFeedback?.type === 'warning' ? 'bg-warning' : 'bg-primary'}`
       }>
@@ -600,22 +487,17 @@ const CameraFeed = ({
       }
 
       {/* Posture Warning Overlay - Only for incorrect posture */}
-      {postureStatus === 'incorrect' && (isPlankSelected || isSidePlankSelected || isStraightArmPlankSelected) && (
-        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-red-600/90 text-white px-6 py-3 rounded-lg text-center animate-pulse">
-          <div className="font-bold text-lg">⚠️ DANGEROUS POSTURE!</div>
-          <div className="text-sm">
-            {isPlankSelected ? 'Straighten your back / reach proper depth' : 
-             isStraightArmPlankSelected ? 'Fix your straight arm plank form - keep body straight!' :
-             isSidePlankSelected ? 'Fix your side plank form - keep body straight!' : 
-             'Fix your posture!'}
-          </div>
+      {postureStatus === 'incorrect' && isPlankSelected && (
+        <div className="absolute bottom-16 sm:bottom-20 left-1/2 transform -translate-x-1/2 bg-red-600/90 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-center animate-pulse">
+          <div className="font-bold text-base sm:text-lg">⚠️ DANGEROUS POSTURE!</div>
+          <div className="text-xs sm:text-sm">Straighten your back / reach proper depth</div>
         </div>
       )}
       {/* Camera Status Indicator */}
-      <div className="absolute bottom-4 left-4">
-        <div className="flex items-center space-x-2 bg-black/50 rounded-full px-3 py-1">
+      <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4">
+        <div className="flex items-center space-x-2 bg-black/50 rounded-full px-2 sm:px-3 py-1">
           <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-success animate-pulse' : 'bg-muted-foreground'}`}></div>
-          <span className="text-white text-sm font-medium">
+          <span className="text-white text-xs sm:text-sm font-medium">
             {isActive ? 'Live' : 'Offline'}
           </span>
         </div>
@@ -623,10 +505,11 @@ const CameraFeed = ({
       {/* Placeholder when camera is off */}
       {!isActive && !isLoading &&
       <div className="absolute inset-0 bg-muted rounded-lg flex items-center justify-center">
-          <div className="text-center p-6">
-            <Icon name="Camera" size={64} className="text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-foreground mb-2">Camera Ready</h3>
-            <p className="text-muted-foreground">Press "Start Workout" to turn on the camera and begin pose tracking</p>
+          <div className="text-center p-4 sm:p-6">
+            <Icon name="Camera" size={48} className="text-muted-foreground mx-auto mb-3 sm:mb-4 sm:w-16 sm:h-16" />
+            <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">Camera Ready</h3>
+            <p className="text-sm sm:text-base text-muted-foreground mb-4">Start your workout to begin pose tracking</p>
+
           </div>
         </div>
       }

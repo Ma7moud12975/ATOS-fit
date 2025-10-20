@@ -38,8 +38,6 @@ const PricingPage = () => {
         repCounting: true,
         basicWorkouts: true,
         dataPrivacy: true,
-        cloudSync: false,
-        advancedAnalytics: false,
         personalizedPlans: false,
         prioritySupport: false,
         unlimitedTracking: false,
@@ -52,7 +50,7 @@ const PricingPage = () => {
     },
     {
       name: 'Premium',
-      price: { monthly: 19.99, yearly: 199.99 },
+      price: { monthly: 9.99, yearly: 99.99 },
       description: 'Enhanced features for serious fitness enthusiasts',
       features: {
         tracking: '100 hours/month',
@@ -62,8 +60,6 @@ const PricingPage = () => {
         repCounting: true,
         basicWorkouts: true,
         dataPrivacy: true,
-        cloudSync: true,
-        advancedAnalytics: true,
         personalizedPlans: true,
         prioritySupport: false,
         unlimitedTracking: false,
@@ -71,12 +67,12 @@ const PricingPage = () => {
         unlimitedFoodScanning: false
       },
       popular: true,
-      betaNote: 'Free during beta - $19.99/month after launch',
+      betaNote: 'Free during beta - $9.99/month after launch',
       planType: 'Premium'
     },
     {
       name: 'Premium Plus',
-      price: { monthly: 29.99, yearly: 299.99 },
+      price: { monthly: 19.99, yearly: 199.99 },
       description: 'Unlimited access to all ATOS fit features',
       features: {
         tracking: 'Unlimited',
@@ -86,8 +82,6 @@ const PricingPage = () => {
         repCounting: true,
         basicWorkouts: true,
         dataPrivacy: true,
-        cloudSync: true,
-        advancedAnalytics: true,
         personalizedPlans: true,
         prioritySupport: true,
         unlimitedTracking: true,
@@ -95,7 +89,7 @@ const PricingPage = () => {
         unlimitedFoodScanning: true
       },
       popular: false,
-      betaNote: 'Free during beta - $29.99/month after launch',
+      betaNote: 'Free during beta - $19.99/month after launch',
       planType: 'PremiumPlus'
     }
   ];
@@ -108,8 +102,6 @@ const PricingPage = () => {
     { key: 'repCounting', label: 'Automatic Rep Counting', icon: 'BarChart3' },
     { key: 'basicWorkouts', label: 'Basic Workout Library', icon: 'Dumbbell' },
     { key: 'dataPrivacy', label: 'Complete Data Privacy', icon: 'Shield' },
-    { key: 'cloudSync', label: 'Cloud Sync & Backup', icon: 'Cloud' },
-    { key: 'advancedAnalytics', label: 'Advanced Analytics', icon: 'TrendingUp' },
     { key: 'personalizedPlans', label: 'Personalized Workout Plans', icon: 'User' },
     { key: 'prioritySupport', label: '24/7 Priority Support', icon: 'Headphones' }
   ];
@@ -354,20 +346,10 @@ const PricingPage = () => {
                 </div>
 
                 <button
-                  onClick={() => handleGetStarted(plan)}
-                  disabled={isProcessing}
-                  className={`w-full py-4 rounded-2xl font-semibold transition-all duration-300 ${
-                    plan.popular
-                      ? 'bg-[#FF8A00] hover:bg-[#E67B00] text-black hover:shadow-[0px_4px_15px_rgba(255,138,0,0.2)]'
-                      : 'bg-transparent border border-[rgba(255,255,255,0.1)] text-white hover:bg-[rgba(255,255,255,0.05)] hover:border-[#FF8A00]'
-                  } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled
+                  className="w-full py-4 rounded-2xl font-semibold bg-gray-400 text-gray-600 cursor-not-allowed opacity-50"
                 >
-                  {isProcessing ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                      <span>Processing...</span>
-                    </div>
-                  ) : plan.planType === 'Basic' ? (
+                  {plan.planType === 'Basic' ? (
                     'Start Free Beta'
                   ) : (
                     `Choose ${plan.name}`

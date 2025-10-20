@@ -23,6 +23,7 @@ import Exercises from './pages/exercise-library';
 import AchievementsPage from './pages/achievements';
 import PaymentSuccess from './pages/payment-success';
 import PaymentCancel from './pages/payment-cancel';
+import CommunityPage from './pages/dashboard/CommunityPage';
 
 const Routes = () => {
   return (
@@ -32,21 +33,23 @@ const Routes = () => {
           <ScrollToTop />
           <RouterRoutes>
             {/* Define your route here */}
-            {/* Make the landing page the app root (public) again */}
+            {/* Make the landing page the app root */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/ai-assistant-food-scanner" element={<AIAssistantFoodScanner />} />
-            <Route path="/ai-chat" element={<AIChatPage />} />
+            <Route path="/ai-chat" element={<AIAssistantFoodScanner chatOnly={true} />} />
             <Route path="/food-scanner" element={<FoodScannerPage />} />
             <Route path="/login-screen" element={<LoginScreen />} />
             {/* Keep a /dashboard route as alias (public) */}
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/exercise-workout-screen" element={<ExerciseWorkoutScreen />} />
             <Route path="/register-screen" element={<RegisterScreen />} />
             <Route path="/onboarding" element={<ProtectedRoute><OnboardingScreen /></ProtectedRoute>} />
             <Route path="/user-profile" element={<UserProfile />} />
+            <Route path="/community" element={<CommunityPage />} />
             
             {/* Schedule route removed per request */}
             <Route path="/exercise-library" element={<Exercises />} />
